@@ -19934,7 +19934,7 @@ textarea.form-control-lg {
             animation: show-navbar-dropdown 0.25s ease forwards;
   }
   .dropdown .dropdown-menu.show:before {
-    top: -20px;
+    top: -17px;
   }
   .dropdown.nav-item .dropdown-menu {
     position: absolute;

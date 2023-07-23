@@ -52,12 +52,12 @@ $colors: (
 ) !default;
 // scss-docs-end colors-map
 
-$primary:       #f5365c !default;
+$primary:       #5e72e4 !default;
 $secondary:     #8392ab !default;
 $info:          #11cdef !default;
 $success:       #2dce89 !default;
 $warning:       #fb6340 !default;
-$danger:        #5e72e4 !default;
+$danger:        #f5365c !default;
 $light:         $gray-200 !default;
 $dark:          $h-color !default;
 
@@ -76,8 +76,8 @@ $theme-colors: (
 // scss-docs-end theme-colors-map
 
 // Gradient colors
-$primary-gradient:            #f5365c !default;
-$primary-gradient-state:      #f56036 !default;
+$primary-gradient:            #5e72e4 !default;
+$primary-gradient-state:      #825ee4 !default;
 
 $secondary-gradient:          #627594 !default;
 $secondary-gradient-state:    #a8b8d8 !default;
@@ -88,8 +88,8 @@ $info-gradient-state:         #11cdef !default;
 $success-gradient:            #2dce89 !default;
 $success-gradient-state:      #2dcecc !default;
 
-$danger-gradient:             #5e72e4 !default;
-$danger-gradient-state:       #825ee4 !default;
+$danger-gradient:             #d63384 !default;
+$danger-gradient-state:       #F56565 !default;
 
 $warning-gradient:            #fb6340 !default;
 $warning-gradient-state:      #fbb140 !default;
@@ -1501,7 +1501,7 @@ $breadcrumb-margin-bottom:          1rem !default;
 $breadcrumb-bg:                     $gray-200 !default;
 $breadcrumb-divider-color:          $gray-600 !default;
 $breadcrumb-active-color:           $gray-600 !default;
-$breadcrumb-divider:                quote("/") !default;
+$breadcrumb-divider:                quote("|") !default;
 $breadcrumb-border-radius:          $border-radius-md !default;
 
 // Carousel

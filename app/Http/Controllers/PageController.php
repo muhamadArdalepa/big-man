@@ -2,47 +2,72 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Tim;
+use App\Models\Kota;
+use App\Models\User;
+use App\Models\Anggota;
+use App\Models\JenisGangguan;
 use Illuminate\Http\Request;
 
 class PageController extends Controller
 {
-    /**
-     * Display all the static pages when authenticated
-     *
-     * @param string $page
-     * @return \Illuminate\View\View
-     */
-    public function index(string $page)
+    public function home()
     {
-        if (view()->exists("pages.{$page}")) {
-            return view("pages.{$page}");
-        }
-
-        return abort(404);
+        return view('pages.dashboard');
+    }
+    public function laporan(){
+        $kotas = Kota::all();
+        $date = date('Y-m-d');
+        $jenis_gangguans = JenisGangguan::select('id','jenis_gangguan')->get();
+        $this->addBreadcrumb('laporan',route('laporan'));
+        return view('pages.laporan',compact('kotas','date','jenis_gangguans'));
+    }
+    public function laporan_show($id){
+        $this->addBreadcrumb('Laporan', route('laporan'));
+        $this->addBreadcrumb('Laporan '.$id, route('laporan.show',$id));
+    
+        return view('pages.laporan_show');
+    }
+    public function tim()
+    {
+        $this->addBreadcrumb('tim',route('tim'));
+        $kotas = Kota::all();
+        return view('pages.tim',compact('kotas'));
+    }
+    public function absen()
+    {
+        $this->addBreadcrumb('absen',route('absen'));
+        return view('pages.absen');
+    }
+    public function pekerjaan()
+    {
+        $this->addBreadcrumb('pekerjaan',route('pekerjaan'));
+        return view('pages.pekerjaan');
     }
 
-    public function vr()
+    public function teknisi()
     {
-        return view("pages.virtual-reality");
+        $this->addBreadcrumb('teknisi',route('teknisi'));
+        $kotas = Kota::all();
+        return view('pages.teknisi',compact('kotas'));
     }
-
-    public function rtl()
+   
+    public function teknisi_show($id)
     {
-        return view("pages.rtl");
+        $this->addBreadcrumb('teknisi_show',route('teknisi_show'));
+        $teknisi = User::with('kota','tims')->findOrFail($id);
+        return view('pages.teknisi-show',compact('teknisi'));
+    }
+    public function pelanggan()
+    {
+        $this->addBreadcrumb('pelanggan',route('pelanggan'));
+        $kotas = Kota::all();
+        return view('pages.pelanggan',compact('kotas'));
     }
 
     public function profile()
     {
-        return view("pages.profile-static");
-    }
-
-    public function signin()
-    {
-        return view("pages.sign-in-static");
-    }
-
-    public function signup()
-    {
-        return view("pages.sign-up-static");
+        $this->addBreadcrumb('profile',route('profile'));
+        return view('pages.user-profile');
     }
 }

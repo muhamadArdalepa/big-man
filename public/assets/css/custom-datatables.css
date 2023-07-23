@@ -1,0 +1,31 @@
+#table_wrapper>div.d-flex.flex-column.gap-3.align-items-center>div:nth-child(1)>div button {
+    margin: 0 !important;
+}
+
+#table_wrapper>div.row.align-items-center>div:nth-child(1)>div,
+#table_length>label,
+#table_filter>label {
+    margin: 0 !important;
+}
+
+.force-wrap-space {
+    white-space: break-spaces !important;
+}
+
+div.dataTables_wrapper div.dataTables_length select {
+    width: 5rem;
+}
+
+.table td {
+    vertical-align: middle !important;
+}
+
+.btn-circle {
+    width: 2rem !important;
+    height: 2rem !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}

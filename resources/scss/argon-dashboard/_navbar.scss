@@ -130,7 +130,7 @@
   }
 }
 
-@include media-breakpoint-up(lg) {
+@include media-breakpoint-up(md) {
   :not(.main-content) .navbar {
     .dropdown {
       .dropdown-menu {
