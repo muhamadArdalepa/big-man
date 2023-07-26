@@ -121,7 +121,7 @@ function toggleSidenav() {
 let html = document.getElementsByTagName('html')[0];
 
 html.addEventListener("click", function (e) {
-  if (body.classList.contains('g-sidenav-pinned') && !e.target.classList.contains('sidenav-toggler-line')) {
+  if (body.classList.contains('g-sidenav-pinned') && !e.target.classList.contains('nav-toggler')) {
     body.classList.remove(className);
   }
 });

@@ -2,20 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-
-Route::get('/', function () {
-	return view('welcome');
-});
 
 use App\Http\Controllers\ResetPassword;
 use App\Http\Controllers\TimController;
@@ -28,6 +14,17 @@ use App\Http\Controllers\StorageController;
 use App\Http\Controllers\TeknisiController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\UserProfileController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
 
 // guest
 Route::group(['middleware' => 'guest'], function () {
@@ -49,6 +46,9 @@ Route::group(['middleware' => 'auth'], function () {
 	});
 	Route::get('/home', function () {
 		return redirect(route('home'));
+	});
+	Route::get('/test', function () {
+		return view('pages.test');
 	});
 	// pages
 	Route::get('/dashboard', 					[PageController::class, 'home'])->name('home');
@@ -80,6 +80,7 @@ Route::middleware('auth.api')->group(function () {
 	
 	// select2-data
 	Route::get('api/select2-laporan-pelanggan',		[LaporanController::class,'select2_pelanggan']);
+	Route::get('api/select2-tim-teknisi',			[TimController::class,'select2_teknisi']);
 });
 
 

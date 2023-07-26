@@ -88,7 +88,7 @@ class TeknisiController extends Controller
      */
     public function show($id)
     {
-        return $id;
+        return response()->json(User::with('kota','tims')->findOrFail($id));
     }
 
     /**

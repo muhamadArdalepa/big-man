@@ -8,51 +8,49 @@
 
 @section('content')
 @include('layouts.navbars.auth.topnav', ['title' => 'Pelanggan'])
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header pb-0 d-flex align-items-center">
-                    <div class="d-flex align-items-center">
-                        <label for="kota" class="m-0">Kota</label>
-                        <select class="form-control ms-2" id="kota" onchange="(gantiKota())">
-                            <option value="">Semua Kota</option>
-                            @foreach ($kotas as $kota)
-                            <option value="{{$kota->id}}" {{auth()->user()->kota_id == $kota->id ? 'selected' : ''}}>{{$kota->kota}}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <button class="btn btn-icon btn-3 btn-primary m-0 ms-auto" type="button" data-bs-toggle="modal"
-                        data-bs-target="#Modal">
-                        <span class="btn-inner--icon"><i class="fas fa-plus"></i></span>
-                        <span class="btn-inner--text">Tambah Pelanggan</span>
-                    </button>
+<div class="container-fluid px-0 px-sm-4 py-4">
+    <div class="card mb-4">
+        <div class="card-header pb-0">
+            <div class="d-flex gap-3">
+                <div class="d-flex align-items-center">
+                    <label for="kota" class="m-0">Kota</label>
+                    <select class="form-control ms-2" id="kota" onchange="(gantiKota())">
+                        <option value="">Semua Kota</option>
+                        @foreach ($kotas as $kota)
+                        <option value="{{$kota->id}}" {{auth()->
+                            user()->kota_id==$kota->id?'selected':''}}>{{$kota->kota}}
+                        </option>
+                        @endforeach
+                    </select>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover" id="table" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ">
-                                        #</th>
-                                    <th
-                                        class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                        Pelanggan</th>
-                                    <th
-                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                        No Telepon</th>
-                                    <th
-                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                        Alamat</th>
-                                    <th
-                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                        Aksi</th>
-                                </tr>
-                            </thead>
+                <button class="btn btn-icon btn-3 btn-primary m-0 ms-auto" type="button" data-bs-toggle="modal"
+                    data-bs-target="#Modal" data-bs-title="Tambah Laporan">
+                    <span class="btn-inner--icon"><i class="fas fa-plus"></i></span>
+                    <span class="btn-inner--text d-none d-sm-inline-block">Tambah Laporan</span>
+                </button>
 
-                        </table>
-                    </div>
-                </div>
+            </div>
+
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="table" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ">
+                                #</th>
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                Pelanggan</th>
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                No Telepon</th>
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                Alamat</th>
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                Aksi</th>
+                        </tr>
+                    </thead>
+
+                </table>
             </div>
         </div>
     </div>
@@ -163,7 +161,7 @@
             serverside: true,
             dataSrc: '',
         },
-        dom: "<'d-flex flex-column flex-md-row gap-3 align-items-center '<'whitespace-nowrap'B><l><'ms-0 ms-md-auto'f>>" +
+        dom: "<'d-flex flex-column flex-md-row gap-3 align-items-center '<'d-flex align-items-center w-100 w-sm-auto'<'whitespace-nowrap'B><'ms-sm-3 ms-auto'l>><'ms-0 ms-md-auto'f>>" +
             "<'row'<'col-sm-12't>>" +
             "<'row'<'col-sm-5'i><'col-sm-7'p>>",
         buttons: [

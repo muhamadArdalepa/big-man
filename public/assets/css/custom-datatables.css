@@ -15,6 +15,9 @@
 div.dataTables_wrapper div.dataTables_length select {
     width: 5rem;
 }
+div.dataTables_wrapper div.dataTables_filter input {
+    width: unset;
+}
 
 .table td {
     vertical-align: middle !important;

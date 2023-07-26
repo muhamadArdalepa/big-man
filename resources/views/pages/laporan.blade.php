@@ -11,62 +11,59 @@
 
 @section('content')
 @include('layouts.navbars.auth.topnav', ['title' => 'Laporan'])
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header pb-0 d-flex align-items-center">
-                    <div class="d-flex align-items-center">
-                        <label for="kota" class="m-0">Kota</label>
-                        <select class="form-control ms-2" id="kota" onchange="(gantiKota())">
-                            <option value="">Semua Kota</option>
-                            @foreach ($kotas as $kota)
-                            <option value="{{$kota->id}}" {{auth()->user()->kota_id == $kota->id ? 'selected' :
-                                ''}}>{{$kota->kota}}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="d-flex align-items-center ms-3">
-                        <label for="tanggal" class="m-0">Tanggal</label>
-                        <input type="date" id="tanggal" class="form-control ms-2" value="{{$date}}">
-                    </div>
-                    <button class="btn btn-icon btn-3 btn-primary m-0 ms-auto" type="button" data-bs-toggle="modal"
-                        data-bs-target="#Modal">
-                        <span class="btn-inner--icon"><i class="fas fa-plus"></i></span>
-                        <span class="btn-inner--text">Tambah Laporan</span>
-                    </button>
+<div class="container-fluid px-0 px-sm-4 py-sm-4">
+    <div class="card mb-4">
+        <div class="card-header pb-0">
+            <div class="d-flex gap-3">
+                <div class="d-flex align-items-center">
+                    <label for="kota" class="m-0 d-none d-sm-inline-block">Kota</label>
+                    <select class="form-control m-0 ms-sm-2" id="kota">
+                        <option value="">Semua Kota</option>
+                        @foreach ($kotas as $kota)
+                        <option value="{{$kota->id}}" {{auth()->
+                            user()->kota_id==$kota->id?'selected':''}}>{{$kota->kota}}
+                        </option>
+                        @endforeach
+                    </select>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover" id="table" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ">
-                                        #</th>
-                                    <th
-                                        class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                        Pelapor</th>
-                                    <th
-                                        class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                        Penerima</th>
-                                    <th
-                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                        Jenis Gangguan</th>
-                                    <th
-                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                        Status</th>
-                                    <th
-                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                    </th>
-                                </tr>
-                            </thead>
+                <div class="d-flex align-items-center">
+                    <label for="tanggal" class="m-0 d-none d-sm-inline-block">Tanggal</label>
+                    <input type="date" id="tanggal" class="form-control ms-2" value="{{$date}}">
+                </div>
+                <button class="btn btn-icon btn-3 btn-primary m-0 ms-auto" type="button" data-bs-toggle="modal"
+                    data-bs-target="#Modal" data-bs-title="Tambah Laporan">
+                    <span class="btn-inner--icon"><i class="fas fa-plus"></i></span>
+                    <span class="btn-inner--text d-none d-sm-inline-block">Tambah Laporan</span>
+                </button>
 
-                        </table>
-                    </div>
-                </div>
+            </div>
+
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="table" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ">
+                                #</th>
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                Pelapor</th>
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                Penerima</th>
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                Jenis Gangguan</th>
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                Status</th>
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                            </th>
+                        </tr>
+                    </thead>
+
+                </table>
             </div>
         </div>
     </div>
+
     @include('layouts.footers.auth.footer')
 </div>
 
@@ -102,8 +99,7 @@
                             <div class="d-flex align-items-center">
                                 <label for="nama" class="form-control-label">Nama Pelanggan</label>
                                 <div class="form-check form-switch ms-auto">
-                                    <input class="form-check-input" type="checkbox" id="pelanggan-baru"
-                                        onchange="ubahTipePelanggan()">
+                                    <input class="form-check-input" type="checkbox" id="pelanggan-baru">
                                     <label class="form-check-label" for="pelanggan-baru">Pelanggan baru</label>
                                 </div>
                             </div>
@@ -189,158 +185,24 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     // init
-    const kota = $('#kota').val();
-    const tanggal = $('#tanggal').val();
+    let kota = $('#kota').val();
+    let kotaModal = $('#kota_id').val();
+    let tanggal = $('#tanggal').val();
     const baseUrl = 'api/laporan'
     let url = `${baseUrl}?kota=${kota}&tanggal=${tanggal}`
 
     let isNewPelanggan = false;
 
-    // caller
-    ubahTipePelanggan();
-
-
-    // datatable init
-    let table = $('#table').DataTable({
-        ajax: {
-            url: url,
-            type: 'GET',
-            serverside: true,
-            dataSrc: '',
-        },
-        dom: "<'d-flex flex-column flex-md-row gap-3 align-items-center '<'whitespace-nowrap'B><l><'ms-0 ms-md-auto'f>>" +
-            "<'row'<'col-sm-12't>>" +
-            "<'row'<'col-sm-5'i><'col-sm-7'p>>",
-        buttons: [
-            'excel', 'pdf'
-        ],
-        order: [
-            [0, "desc"]
-        ],
-        columns: [
-
-            {
-                data: 'id',
-                className: 'text-center',
-            },
-            {
-                data: 'pelapor.nama',
-            },
-            {
-                data: 'penerima.nama',
-            },
-            {
-                data: 'jenis_gangguan.jenis_gangguan',
-            },
-            {
-                data: 'status',
-                className: 'text-center',
-                render: function (data, type) {
-                    if (type === 'display') {
-                        let badge = []
-                        switch (data) {
-                            case 1:
-                                badge[0] = 'warning'
-                                badge[1] = 'Pending'
-                                break;
-                            case 2:
-                                badge[0] = 'secondary'
-                                badge[1] = 'Diterima'
-                                break;
-                            case 3:
-                                badge[0] = 'secondary'
-                                badge[1] = 'Diproses'
-                                break;
-                            case 4:
-                                badge[0] = 'success'
-                                badge[1] = 'Selesai'
-                                break;
-                            default:
-                                break;
-                        }
-                        return `
-                        <span class="badge badge-sm text-xxs bg-gradient-${badge[0]}">${badge[1]}</span>
-                        `
-                    }
-                    return data
-                }
-            },
-            {
-                data: 'id',
-                orderable: false,
-                searchable: false,
-                className: 'text-center',
-                render: function (data, type) {
-                    if (type === 'display') {
-                        return `
-                        <a href="/teknisi/${data}" class="btn btn-link text-secondary font-weight-normal">
-                            Detail
-                        </a>
-                        `
-                    }
-                    return data;
-                }
-            },
-        ],
-        language: {
-            oPaginate: {
-                sNext: '<i class="fa fa-forward"></i>',
-                sPrevious: '<i class="fa fa-backward"></i>',
-                sFirst: '<i class="fa fa-step-backward"></i>',
-                sLast: '<i class="fa fa-step-forward"></i>'
-            }
-        },
-        createdRow: function (row) {
-            let cell = $('td:eq(3)', row);
-            cell.addClass('force-wrap-space');
-        },
-    });
-
-
     // functions
-    function gantiKota() {
-        url = baseUrl + '?kota=' + $('#kota').val()
-        table.ajax.url(url).load()
-    }
-
-    function ubahTipePelanggan() {
-        isNewPelanggan = (!isNewPelanggan);
-        $('#nama').hide();
-        $('#pelanggan').hide()
-
-        if (isNewPelanggan) {
-            $('#nama').hide();
-            $('#pelanggan').show()
-        } else {
-            $('#nama').show();
-            $('#pelanggan').hide()
-        }
-        $('#nama').val('');
-        $('#pelanggan').val(null).trigger('change');
-    }
-
-
-
-    function showTeknisi(id) {
-        window.location.href = "{{env('APP_URL')}}/teknisi/" + id;
-    }
-
-    // event listener
-
-    table.on('draw.dt', function () {
-
-    })
-
-    $('#Modal').on('shown.bs.modal', function () {
-        $('#kota_id').val(kota)
+    function initSelect2(kotaModal) {
         $('#pelanggan').select2({
             ajax: {
-                url: `api/select2-laporan-pelanggan?kota=${$('#kota_id').val()}`, 
+                url: `api/select2-laporan-pelanggan?kota=${kotaModal}`,
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
                     return {
-                        nama: params.term,
+                        terms: params.term,
                     };
                 },
                 processResults: function (data) {
@@ -348,103 +210,15 @@
                         results: data.results,
                     };
                 },
-                cache: true
+                cache: true,
             },
-            cache: true,
+            width: '100%',
             dropdownParent: $('#Modal'),
             theme: 'bootstrap-5',
-        })
-        $(this).find('[autofocus]').focus();
-        $(this).on('keypress', function (event) {
-            if (event.keyCode === 13) {
-                event.preventDefault();
-                $('#simpan').click()
-            }
         });
-    });
+    }
 
-    $('#Modal').on('hide.bs.modal', function () {
-        $('#Modal').find('.form-control').removeClass('is-invalid');
-        $('#Modal').find('.invalidFeedback').hide();
-    });
 
-    $(document).on('click', '#simpan', function (e) {
-        e.preventDefault();
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-        $.ajax({
-            url: 'api/laporan',
-            type: 'POST',
-            data: {
-                is_new: 'true',
-                nama: $('#nama').val(),
-                email: $('#email').val(),
-                password: $('#password').val(),
-                no_telp: $('#no_telp').val(),
-                kota_id: $('#kota_id').val(),
-                alamat: $('#alamat').val(),
-                jenis_gangguan_id: $('#jenis_gangguan_id').val(),
-                ket: $('#ket').val(),
-            },
-            success: function (response) {
-                if (response.status == 400) {
-                    console.log(response);
-                    $('#Modal').find('.invalidFeedback').show();
-                    if (response.errors['nama'] == undefined) {
-                        $('#nama').removeClass('is-invalid');
-                        $('#namaFeedback').hide();
-                    } else {
-                        $('#namaFeedback').text(response.errors['nama']);
-                        $('#nama').addClass('is-invalid');
-                    }
-                    if (response.errors['email'] == undefined) {
-                        $('#email').removeClass('is-invalid');
-                        $('#emailFeedback').hide();
-                    } else {
-                        $('#emailFeedback').text(response.errors['email']);
-                        $('#email').addClass('is-invalid');
-                    }
-                    if (response.errors['password'] == undefined) {
-                        $('#password').removeClass('is-invalid');
-                        $('#passwordFeedback').hide();
-                    } else {
-                        $('#passwordFeedback').text(response.errors['password']);
-                        $('#password').addClass('is-invalid');
-                    }
-                    if (response.errors['no_telp'] == undefined) {
-                        $('#no_telp').removeClass('is-invalid');
-                        $('#no_telpFeedback').hide();
-                    } else {
-                        $('#no_telpFeedback').text(response.errors['no_telp']);
-                        $('#no_telp').addClass('is-invalid');
-                    }
-                    if (response.errors['kota_id'] == undefined) {
-                        $('#kota_id').removeClass('is-invalid');
-                        $('#kota_idFeedback').hide();
-                    } else {
-                        $('#kota_idFeedback').text(response.errors['kota_id']);
-                        $('#kota_id').addClass('is-invalid');
-                    }
-                } else {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.message,
-                        timer: 1500,
-                        showConfirmButton: false,
-                    });
-                    $('#Modal').find('.form-control').val('');
-                    $('#Modal').find('.form-control').removeClass('is-invalid');
-                    $('#Modal').find('.invalidFeedback').hide();
-                    $('#Modal').modal('hide');
-                    table.ajax.reload();
-                }
-            }
-        });
-    });
     function deleteTeknisi(id) {
         Swal.fire({
             title: 'Konfirmasi',
@@ -478,6 +252,289 @@
             }
         });
     }
+
+    // end functions
+
+    // event listeners
+    $(document).ready(function () {
+        let table = $('#table').DataTable({
+            ajax: {
+                url: url,
+                type: 'GET',
+                serverside: true,
+                dataSrc: '',
+            },
+            dom:"<'d-flex flex-column flex-md-row gap-3 align-items-center '<'d-flex align-items-center w-100 w-sm-auto'<'whitespace-nowrap'B><'ms-sm-3 ms-auto'l>><'ms-0 ms-md-auto'f>>" +
+                "<'row'<'col-sm-12't>>" +
+                "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+            buttons: [
+                'excel', 'pdf'
+            ],
+            order: [
+                [0, "desc"]
+            ],
+            columns: [
+
+                {
+                    data: 'id',
+                    className: 'text-center',
+                },
+                {
+                    data: 'pelapor.nama',
+                },
+                {
+                    data: 'penerima.nama',
+                },
+                {
+                    data: 'jenis_gangguan.jenis_gangguan',
+                },
+                {
+                    data: 'status',
+                    className: 'text-center',
+                    render: function (data, type) {
+                        if (type === 'display') {
+                            let badge = []
+                            switch (data) {
+                                case 1:
+                                    badge[0] = 'warning'
+                                    badge[1] = 'Pending'
+                                    break;
+                                case 2:
+                                    badge[0] = 'secondary'
+                                    badge[1] = 'Diterima'
+                                    break;
+                                case 3:
+                                    badge[0] = 'secondary'
+                                    badge[1] = 'Diproses'
+                                    break;
+                                case 4:
+                                    badge[0] = 'success'
+                                    badge[1] = 'Selesai'
+                                    break;
+                                default:
+                                    break;
+                            }
+                            return `
+                        <span class="badge badge-sm text-xxs bg-gradient-${badge[0]}">${badge[1]}</span>
+                        `
+                        }
+                        return data
+                    }
+                },
+                {
+                    data: 'id',
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-center',
+                    render: function (data, type) {
+                        if (type === 'display') {
+                            return `
+                        <a href="/teknisi/${data}" class="btn btn-link text-secondary font-weight-normal">
+                            Detail
+                        </a>
+                        `
+                        }
+                        return data;
+                    }
+                },
+            ],
+            language: {
+                oPaginate: {
+                    sNext:      '<i class="fa fa-forward"></i>',
+                    sPrevious:  '<i class="fa fa-backward"></i>',
+                    sFirst:     '<i class="fa fa-step-backward"></i>',
+                    sLast:      '<i class="fa fa-step-forward"></i>'
+                }
+            },
+            createdRow: function (row) {
+                let cell = $('td:eq(3)', row);
+                cell.addClass('force-wrap-space');
+            },
+        });
+        initSelect2(kotaModal);
+        const pBaru = document.getElementById('nama');
+        pBaru.style.display = 'none';
+
+        $('#kota').on('change', function () {
+            kota = $('#kota').val()
+            tanggal = $('#tanggal').val()
+            url = `${baseUrl}?kota=${kota}&tanggal=${tanggal}`
+            table.ajax.url(url).load()
+            kotaModal = kota
+        });
+
+        $('#tanggal').on('change', function () {
+            kota = $('#kota').val()
+            tanggal = $('#tanggal').val()
+            url = `${baseUrl}?kota=${kota}&tanggal=${tanggal}`
+            table.ajax.url(url).load()
+            kotaModal = kota
+        });
+
+
+        $('#kota_id').on('change', function () {
+            kotaModal = $('#kota_id').val();
+            if (!isNewPelanggan) {
+                $('#pelanggan').select2('destroy');
+                $('#pelanggan').val(null).trigger('change');
+                initSelect2(kotaModal)
+            }
+        });
+
+
+        $('#pelanggan-baru').on('click', function () {
+            const pLama = document.getElementById('pelanggan').nextElementSibling;
+            isNewPelanggan = (!isNewPelanggan);
+            if (isNewPelanggan) {
+                pBaru.style.display = 'inline-block';
+                pLama.style.display = 'none';
+            } else {
+                pBaru.style.display = 'none';
+                initSelect2(kotaModal)
+                pLama.style.display = 'inline-block';
+            }
+            $('#nama').val('');
+            $('#pelanggan').val(null).trigger('change');
+        })
+
+        $('#pelanggan').on('change', function () {
+            let pelangganId = $('#pelanggan').val();
+
+            if (pelangganId != null) {
+                $.ajax({
+                    url: 'api/pelanggan/' + pelangganId,
+                    type: 'GET',
+                    data: {
+                        id: pelangganId,
+                    },
+                    success: function (response) {
+                        $('#nama').val(response.nama)
+                        $('#no_telp').val(response.no_telp)
+                        $('#email').val(response.email)
+                        $('#alamat').val(response.pemasangan.alamat)
+                        $('#nama').removeClass('is-invalid');
+                        $('#namaFeedback').hide();
+                        $('#email').removeClass('is-invalid');
+                        $('#emailFeedback').hide();
+                        $('#no_telp').removeClass('is-invalid');
+                        $('#no_telpFeedback').hide();
+                        $('#alamat').removeClass('is-invalid');
+                        $('#alamatFeedback').hide();
+                        $('#kota_id').removeClass('is-invalid');
+                        $('#kota_idFeedback').hide();
+                    }
+                })
+            }
+        })
+
+        $('#Modal').on('shown.bs.modal', function () {
+            $(this).find('[autofocus]').focus();
+            $(this).on('keypress', function (event) {
+                if (event.keyCode === 13) {
+                    event.preventDefault();
+                    $('#simpan').click()
+                }
+            });
+        });
+
+        $('#Modal').on('hide.bs.modal', function () {
+            $('#Modal').find('.form-control').removeClass('is-invalid');
+            $('#Modal').find('.invalidFeedback').hide();
+            $('#Modal').find('.form-control').val('');
+            $('#Modal').find('select').val();
+        });
+
+        $('#simpan').on('click', function (e) {
+            e.preventDefault();
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.ajax({
+                url: 'api/laporan',
+                type: 'POST',
+                data: {
+                    is_new: isNewPelanggan,
+                    id: $('#pelanggan').val(),
+                    nama: $('#nama').val(),
+                    email: $('#email').val(),
+                    password: $('#password').val(),
+                    no_telp: $('#no_telp').val(),
+                    kota_id: $('#kota_id').val(),
+                    alamat: $('#alamat').val(),
+                    jenis_gangguan_id: $('#jenis_gangguan_id').val(),
+                    ket: $('#ket').val(),
+                },
+                success: function (response) {
+                    if (response.status == 400) {
+                        console.log(response);
+                        $('#Modal').find('.invalidFeedback').show();
+                        if (response.errors['nama'] == undefined) {
+                            $('#nama').removeClass('is-invalid');
+                            $('#namaFeedback').hide();
+                        } else {
+                            $('#namaFeedback').text(response.errors['nama']);
+                            $('#nama').addClass('is-invalid');
+                        }
+                        if (response.errors['email'] == undefined) {
+                            $('#email').removeClass('is-invalid');
+                            $('#emailFeedback').hide();
+                        } else {
+                            $('#emailFeedback').text(response.errors['email']);
+                            $('#email').addClass('is-invalid');
+                        }
+                        if (response.errors['no_telp'] == undefined) {
+                            $('#no_telp').removeClass('is-invalid');
+                            $('#no_telpFeedback').hide();
+                        } else {
+                            $('#no_telpFeedback').text(response.errors['no_telp']);
+                            $('#no_telp').addClass('is-invalid');
+                        }
+                        if (response.errors['alamat'] == undefined) {
+                            $('#alamat').removeClass('is-invalid');
+                            $('#alamatFeedback').hide();
+                        } else {
+                            $('#alamatFeedback').text(response.errors['alamat']);
+                            $('#alamat').addClass('is-invalid');
+                        }
+                        if (response.errors['kota_id'] == undefined) {
+                            $('#kota_id').removeClass('is-invalid');
+                            $('#kota_idFeedback').hide();
+                        } else {
+                            $('#kota_idFeedback').text(response.errors['kota_id']);
+                            $('#kota_id').addClass('is-invalid');
+                        }
+                        if (response.errors['jenis_gangguan_id'] == undefined) {
+                            $('#jenis_gangguan_id').removeClass('is-invalid');
+                            $('#jenis_gangguan_idFeedback').hide();
+                        } else {
+                            $('#jenis_gangguan_idFeedback').text(response.errors['jenis_gangguan_id']);
+                            $('#jenis_gangguan_id').addClass('is-invalid');
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false,
+                        });
+                        $('#Modal').find('.form-control').val('');
+                        $('#Modal').find('.form-control').removeClass('is-invalid');
+                        $('#Modal').find('.invalidFeedback').hide();
+                        $('#Modal').modal('hide');
+                        table.ajax.reload();
+                    }
+                }
+            });
+        });
+
+    });
+
+
+
+    // end event listners
 </script>
 
 @endpush

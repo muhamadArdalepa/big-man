@@ -93,7 +93,7 @@ class PelangganController extends Controller
      */
     public function show($id)
     {
-        //
+        return response()->json(User::with('kota','pemasangan')->findOrFail($id));
     }
 
     /**

@@ -42,8 +42,8 @@ class LaporanController extends Controller
             $pelanggans->where('kota_id', $request->kota);
         }
 
-        if ($request->has('nama') && !empty($request->nama)) {
-            $pelanggans->where('nama', 'LIKE', '%' . $request->nama . '%');
+        if ($request->has('terms') && !empty($request->terms)) {
+            $pelanggans->where('nama', 'LIKE', '%' . $request->terms . '%');
         }
 
         $pelangganData = $pelanggans->get();
@@ -83,54 +83,60 @@ class LaporanController extends Controller
      */
     public function store(Request $request)
     {
-        if ($request->is_new) {
-            $validator = Validator::make($request->all(), [
-                'nama' => 'required|min:3',
-                'email' => 'required|email',
-                'kota_id' => 'required',
-                'no_telp' => 'required|numeric|digits_between:11,15',
-                'jenis_gangguan_id' => 'required'
-            ], [
-                'nama.required' => 'Nama harus diisi.',
-                'nama.min' => 'Nama harus memiliki minimal 3 karakter.',
-                'email.required' => 'Email harus diisi.',
-                'email.email' => 'Format email tidak valid.',
-                'kota_id.required' => 'Kota harus dipilih.',
-                'no_telp.required' => 'Nomor telepon harus diisi.',
-                'no_telp.numeric' => 'Nomor telepon harus berupa angka.',
-                'no_telp.digits_between' => 'Nomor telepon memiliki minimal 11 karakter.',
+
+        $validator = Validator::make($request->all(), [
+            'nama' => 'required|min:3',
+            'email' => 'required|email',
+            'kota_id' => 'required',
+            'no_telp' => 'required|numeric|digits_between:11,15',
+            'alamat' => 'required',
+            'jenis_gangguan_id' => 'required',
+        ], [
+            'nama.required' => 'Nama harus diisi.',
+            'nama.min' => 'Nama harus memiliki minimal 3 karakter.',
+            'email.required' => 'Email harus diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'kota_id.required' => 'Kota harus dipilih.',
+            'no_telp.required' => 'Nomor telepon harus diisi.',
+            'no_telp.numeric' => 'Nomor telepon harus berupa angka.',
+            'no_telp.digits_between' => 'Nomor telepon memiliki minimal 11 karakter.',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->messages()
             ]);
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => 400,
-                    'errors' => $validator->messages()
-                ]);
-            } else {
-                $pelanggaan = new User;
-                $pelanggaan->nama = ucwords(trim($request->nama));
-                $pelanggaan->role = 3;
-                $pelanggaan->email = $request->email;
-                $pelanggaan->password = bcrypt(Str::random(6));
-                $pelanggaan->kota_id = $request->kota_id;
-                $pelanggaan->no_telp = $request->no_telp;
-                $pelanggaan->foto_profil = 'dummy.png';
-                $pelanggaan->save();
+        } else {
+            $pelanggan = null;
+            $pemasangan = null;
+            if ($request->is_new == 'true') {
+                $pelanggan = new User;
+                $pelanggan->password = bcrypt(Str::random(6));
+                $pelanggan->role = 3;
                 $pemasangan = new Pemasangan;
-                $pemasangan->user_id = $pelanggaan->id;
-                $pemasangan->alamat = $request->alamat;
-                $pemasangan->save();
-                $laporan = new Laporan;
-                $laporan->pelapor = $pelanggaan->id;
-                $laporan->penerima = auth()->user()->id;
-                $laporan->jenis_gangguan_id = $request->jenis_gangguan_id;
-                $laporan->status = 2;
-                $laporan->ket = $request->ket;
-                $laporan->save();
-                return response()->json([
-                    'status' => 200,
-                    'message' => 'Pelanggan baru telah ditambahkan',
-                ]);
+                $pemasangan->user_id = $pelanggan->id;
+            } else {
+                $pelanggan = User::findOrFail($request->id);
+                $pemasangan = Pemasangan::where('user_id', $request->id)->first();
             }
+            $pelanggan->email = $request->email;
+            $pelanggan->nama = ucwords(trim($request->nama));
+            $pelanggan->no_telp = $request->no_telp;
+            $pelanggan->foto_profil = 'dummy.png';
+            $pelanggan->save();
+            $pemasangan->alamat = $request->alamat;
+            $pemasangan->save();
+            $laporan = new Laporan;
+            $laporan->pelapor = $pelanggan->id;
+            $laporan->penerima = auth()->user()->id;
+            $laporan->jenis_gangguan_id = $request->jenis_gangguan_id;
+            $laporan->status = 2;
+            $laporan->ket = $request->ket;
+            $laporan->save();
+            return response()->json([
+                'status' => 200,
+                'message' => 'Pelanggan baru telah ditambahkan',
+            ]);
         }
     }
 

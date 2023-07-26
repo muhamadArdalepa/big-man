@@ -30,7 +30,7 @@ return new class extends Migration
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
             $table->tinyInteger('status')->length(1);
-            $table->string('ket');
+            $table->string('ket')->nullable();
             $table->timestamps();
         });
     }

@@ -4,30 +4,36 @@
 <link href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
 <link href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" rel="stylesheet" />
 <link href="{{asset('assets/css/custom-datatables.css')}}" rel="stylesheet" />
+<link href="{{asset('assets/css/custom-select2.css')}}" rel="stylesheet" />
+
 
 @endpush
 
 @section('content')
 @include('layouts.navbars.auth.topnav', ['title' => 'Teknisi'])
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
+<div class="container-fluid px-0 px-sm-4 py-4">
             <div class="card mb-4">
-                <div class="card-header pb-0 d-flex align-items-center">
-                    <div class="d-flex align-items-center">
-                        <label for="kota" class="m-0">Kota</label>
-                        <select class="form-control ms-2" id="kota" onchange="(gantiKota())">
-                            <option value="">Semua Kota</option>
-                            @foreach ($kotas as $kota)
-                            <option value="{{$kota->id}}" {{auth()->user()->kota_id == $kota->id ? 'selected' : ''}}>{{$kota->kota}}</option>
-                            @endforeach
-                        </select>
+                <div class="card-header pb-0">
+                    <div class="d-flex gap-3">
+                        <div class="d-flex align-items-center">
+                            <label for="kota" class="m-0">Kota</label>
+                            <select class="form-control ms-2" id="kota" onchange="(gantiKota())">
+                                <option value="">Semua Kota</option>
+                                @foreach ($kotas as $kota)
+                                <option value="{{$kota->id}}" {{auth()->
+                                    user()->kota_id==$kota->id?'selected':''}}>{{$kota->kota}}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button class="btn btn-icon btn-3 btn-primary m-0 ms-auto" type="button" data-bs-toggle="modal"
+                            data-bs-target="#Modal" data-bs-title="Tambah Laporan">
+                            <span class="btn-inner--icon"><i class="fas fa-plus"></i></span>
+                            <span class="btn-inner--text d-none d-sm-inline-block">Tambah Teknisi</span>
+                        </button>
+        
                     </div>
-                    <button class="btn btn-icon btn-3 btn-primary m-0 ms-auto" type="button" data-bs-toggle="modal"
-                        data-bs-target="#Modal">
-                        <span class="btn-inner--icon"><i class="fas fa-plus"></i></span>
-                        <span class="btn-inner--text">Tambah Teknisi</span>
-                    </button>
+        
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -145,11 +151,9 @@
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 <script>
-
-
     const baseUrl = 'api/teknisi'
     let url = baseUrl + '?kota=' + $('#kota').val()
-
+    
     let table = $('#table').DataTable({
         ajax: {
             url: url,

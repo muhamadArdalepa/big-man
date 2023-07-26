@@ -30,9 +30,10 @@ class PageController extends Controller
     }
     public function tim()
     {
-        $this->addBreadcrumb('tim',route('tim'));
+        $date = date('Y-m-d');
         $kotas = Kota::all();
-        return view('pages.tim',compact('kotas'));
+        $this->addBreadcrumb('tim',route('tim'));
+        return view('pages.tim',compact('kotas','date'));
     }
     public function absen()
     {
