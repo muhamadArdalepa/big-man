@@ -15,7 +15,8 @@ class PageController extends Controller
     {
         return view('pages.dashboard');
     }
-    public function laporan(){
+    public function laporan()
+    {
         $kotas = Kota::all();
         $date = date('Y-m-d');
         $jenis_gangguans = JenisGangguan::select('id','jenis_gangguan')->get();
@@ -37,8 +38,10 @@ class PageController extends Controller
     }
     public function absen()
     {
+        $kotas = Kota::all();
+        $date = date('Y-m-d');
         $this->addBreadcrumb('absen',route('absen'));
-        return view('pages.absen');
+        return view('pages.absen',compact('kotas','date'));
     }
     public function pekerjaan()
     {

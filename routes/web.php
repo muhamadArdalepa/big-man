@@ -1,19 +1,19 @@
 <?php
 
+
 use Illuminate\Support\Facades\Route;
-
-
 use App\Http\Controllers\ResetPassword;
 use App\Http\Controllers\TimController;
 use App\Http\Controllers\ChangePassword;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\AbsenController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LaporanController;
-use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\StorageController;
 use App\Http\Controllers\TeknisiController;
 use App\Http\Controllers\RegisterController;
-use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\PelangganController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -77,6 +77,7 @@ Route::middleware('auth.api')->group(function () {
 	Route::resource('api/tim',					TimController::class);
 	Route::resource('api/teknisi',				TeknisiController::class);
 	Route::resource('api/pelanggan',			PelangganController::class);
+	Route::resource('api/absen',				AbsenController::class);
 	
 	// select2-data
 	Route::get('api/select2-laporan-pelanggan',		[LaporanController::class,'select2_pelanggan']);

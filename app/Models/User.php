@@ -71,4 +71,13 @@ class User extends Authenticatable
     {
         return $this->hasOne(Pemasangan::class);
     }
+    public function absens()
+    {
+        return $this->hasMany(Absen::class);
+    }
+    public function absen_details()
+    {
+        return $this->hasManyThrough(AbsenDetail::class,Absen::class);
+    }
+
 }

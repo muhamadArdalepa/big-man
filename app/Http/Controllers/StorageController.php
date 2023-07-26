@@ -18,7 +18,6 @@ class StorageController extends Controller
     {
         $file = Storage::disk('private')->get($path);
         $type = Storage::disk('private')->mimeType($path);
-
         return Response::make($file, 200, ['Content-Type' => $type]);
     }
 }

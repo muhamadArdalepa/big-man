@@ -13,8 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('absen_models', function (Blueprint $table) {
+        Schema::create('absens', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')
+                ->constrained()
+                ->onDelete('restrict')
+                ->onUpdate('cascade');
+            $table->date('tanggal');
             $table->timestamps();
         });
     }
@@ -26,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('absen_models');
+        Schema::dropIfExists('absens');
     }
 };
