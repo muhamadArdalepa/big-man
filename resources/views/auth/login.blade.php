@@ -22,14 +22,12 @@
                                 <div class="card-body">
                                     <form role="form" method="POST" action="{{ route('login.perform') }}">
                                         @csrf
-                                        @method('post')
                                         <div class="flex flex-col mb-3">
                                             <input type="email" name="email" class="form-control form-control-lg" value="{{ old('email')}}" aria-label="Email" placeholder="Email" autofocus autocomplete="1">
-                                            @error('email') <p class="text-danger text-xs pt-1"> {{$message}} </p>@enderror
                                         </div>
                                         <div class="flex flex-col mb-3">
                                             <input type="password" name="password" class="form-control form-control-lg" aria-label="Password" placeholder="Password">
-                                            @error('password') <p class="text-danger text-xs pt-1"> {{$message}} </p>@enderror
+                                            @error('email') <p class="text-danger text-xs pt-1"> {{$message}} </p>@enderror
                                         </div>
                                         <div class="text-center">
                                             <button type="submit" class="btn btn-lg btn-danger btn-lg w-100 mt-4 mb-0">Masuk</button>

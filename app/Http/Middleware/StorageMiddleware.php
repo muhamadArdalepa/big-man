@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class AuthorizeStorageAccess
+class StorageMiddleware
 {
     /**
      * Handle an incoming request.

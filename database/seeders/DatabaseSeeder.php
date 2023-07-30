@@ -32,14 +32,25 @@ class DatabaseSeeder extends Seeder
             'role' => 1,
             'email' => 'admin@big.com',
             'password' => bcrypt('123'),
+            'foto_profil' => 'kamisato.webp',
             'kota_id' => 1,
-            'no_telp' => "081521544674",
+            'no_telp' => "6281521544674",
+        ]);
+        DB::table('users')->insert([
+            'nama' => 'Nilou',
+            'role' => 1,
+            'email' => 'niloucantik@big.com',
+            'password' => bcrypt('sumeru'),
+            'foto_profil' => 'Nilou.webp',
+            'kota_id' => 1,
+            'no_telp' => "6281521544674",
         ]);
         \App\Models\User::factory()->count(50)->create();
         \App\Models\Tim::factory()->count(10)->create();
         \App\Models\TimAnggota::factory()->count(25)->create();
         \App\Models\JenisGangguan::factory()->count(5)->create();
         \App\Models\Laporan::factory()->count(30)->create();
+
         $pelanggan = \App\Models\User::where('role',3)->get();
         foreach ($pelanggan as $key => $value) {
             DB::table('pemasangans')->insert([

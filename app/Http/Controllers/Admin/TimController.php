@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Models\Tim;
 use App\Models\User;
 use App\Models\TimAnggota;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use App\Http\Controllers\Controller;
 
 class TimController extends Controller
 {

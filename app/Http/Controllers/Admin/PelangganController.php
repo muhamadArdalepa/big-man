@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Models\Pemasangan;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Controller;
 
-class TeknisiController extends Controller
+class PelangganController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,9 +18,9 @@ class TeknisiController extends Controller
     public function index(Request $request)
     {
         if ($request->has('kota') && $request->kota != '') {
-            return response()->json(User::with('kota')->where('role',2)->where('kota_id',$request->kota)->get());
-        }else{
-            return response()->json(User::with('kota')->where('role',2)->get());
+            return response()->json(User::with('kota', 'pemasangan')->where('role', 3)->where('kota_id', $request->kota)->get());
+        } else {
+            return response()->json(User::with('kota', 'pemasangan')->where('role', 3)->get());
         }
     }
 
@@ -45,7 +47,7 @@ class TeknisiController extends Controller
             'email' => 'required|email',
             'password' => 'required|min:6',
             'kota_id' => 'required',
-            'no_telp' => 'required|numeric'
+            'no_telp' => 'required|numeric|digits_between:11,15'
         ], [
             'nama.required' => 'Nama harus diisi.',
             'nama.min' => 'Nama harus memiliki minimal 3 karakter.',
@@ -56,6 +58,7 @@ class TeknisiController extends Controller
             'kota_id.required' => 'Kota harus dipilih.',
             'no_telp.required' => 'Nomor telepon harus diisi.',
             'no_telp.numeric' => 'Nomor telepon harus berupa angka.',
+            'no_telp.digits_between' => 'Nomor telepon memiliki minimal 11 karakter.',
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -63,19 +66,22 @@ class TeknisiController extends Controller
                 'errors' => $validator->messages()
             ]);
         } else {
-            $data = [
-                'nama' => ucwords(trim($request->nama)),
-                'role' => 2,
-                'email' => $request->email,
-                'password' => bcrypt($request->password),
-                'kota_id' => $request->kota_id,
-                'no_telp' => $request->no_telp,
-                'foto_profil' => 'dummy.png',
-            ];
-            User::create($data);
+            $pelanggaan = new User;
+            $pelanggaan->nama = ucwords(trim($request->nama));
+            $pelanggaan->role = 3;
+            $pelanggaan->email = $request->email;
+            $pelanggaan->password = bcrypt($request->password);
+            $pelanggaan->kota_id = $request->kota_id;
+            $pelanggaan->no_telp = $request->no_telp;
+            $pelanggaan->foto_profil = 'dummy.png';
+            $pelanggaan->save();
+            $pemasangan = new Pemasangan;
+            $pemasangan->user_id = $pelanggaan->id;
+            $pemasangan->alamat = $request->alamat;
+            $pemasangan->save();
             return response()->json([
                 'status' => 200,
-                'message' => 'Teknisi baru telah ditambahkan',
+                'message' => 'Pelanggan baru telah ditambahkan',
             ]);
         }
     }
@@ -88,7 +94,7 @@ class TeknisiController extends Controller
      */
     public function show($id)
     {
-        return response()->json(User::with('kota','tims')->findOrFail($id));
+        return response()->json(User::with('kota','pemasangan')->findOrFail($id));
     }
 
     /**

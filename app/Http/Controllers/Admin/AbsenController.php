@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Absen;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class AbsenController extends Controller
 {
@@ -15,38 +17,21 @@ class AbsenController extends Controller
      */
     public function index(Request $request)
     {
-        $userData = User::with('absens','absen_details')->where('role',2);
-        if ($request->has('kota') && !empty($kota)) {
-            $userData->where('kota',$request->kota);
+        $users = User::select('absens.id', 'nama', 'foto_profil', 'waktu1', 'waktu2', 'waktu3', 'waktu4', 'tanggal')
+            ->leftJoin('absens', 'users.id', '=', 'absens.user_id')
+            ->where('role', 2);
+
+        if ($request->has('kota') && !empty($request->kota)) {
+            $users->where('kota_id', $request->kota);
         }
-        $users = $userData->get();
-        $data = [];
-        foreach ($users as $i => $user) {
-            $absens = [];
-            foreach ($user->absens as $j => $absen) {
-                $absen_details = [];
-                foreach ($user->absen_details as $key => $value) {
-                    if ($value->absen_id == $absen->id) {
-                        $absen_details[$key] = [
-                            "waktu" => $value->waktu,
-                            "foto" => $value->foto,
-                            "ket" => $value->ket,
-                        ];
-                    }
-                   
-                }
-                $absens[$j] = [
-                    "id" => $absen->id,
-                    "tanggal" => $absen->tanggal,
-                    "absen_details" => $absen_details
-                ];
-            }
-            $data[$i] = [
-                "id" => $user->id,
-                "nama" => $user->nama,
-                "absens" => $absens,
-            ];
-        }
+
+        $tanggal = $request->tanggal;
+        $users->where(function ($query) use ($tanggal) {
+            $query->where('tanggal', $tanggal)
+                ->orWhereNull('tanggal');
+        });
+
+        $data = $users->orderBy('absens.updated_at', 'desc')->get();
         return response()->json($data);
     }
 
@@ -78,7 +63,10 @@ class AbsenController extends Controller
      */
     public function show($id)
     {
-        //
+        Carbon::setLocale('id');
+        $absen = Absen::with('user')->find($id);
+        $absen->tanggal = Carbon::parse($absen->tanggal)->translatedFormat("l, d F Y");
+        return response()->json($absen);
     }
 
     /**

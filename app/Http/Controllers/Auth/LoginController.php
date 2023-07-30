@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
@@ -21,20 +22,15 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        $credentials = $request->only('email', 'password');
 
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            $request->session()->regenerate();
-
-            return redirect()->intended('dashboard');
+        if (Auth::attempt($credentials)) {
+            return redirect()->intended(route('home'));
+        } else {
+            return back()->withErrors([
+                'email' => 'Email atau password salah.',
+            ]);
         }
-
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ]);
     }
 
     public function logout(Request $request)

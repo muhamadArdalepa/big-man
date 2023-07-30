@@ -104,14 +104,7 @@
 					<option></option>
 				</select>
 				<div id="ketuaFeedback" class="invalid-feedback text-xs ps-2"></div>
-
 				<div id="teknisi-container" class=" m-0 p-0"></div>
-
-				<button id="btn-tambah-anggota" class="btn btn-icon btn-outline-secondary opacity-7 w-100 mt-3"
-					type="button">
-					<span class="btn-inner--icon"><i class="fas fa-plus"></i></span>
-					<span class="btn-inner--text">Tambah Anggota</span>
-				</button>
 
 			</div>
 			<div class="modal-footer">
@@ -135,6 +128,7 @@
 	let kotaValue = kota.value;
 	const baseUrl = `api/tim?`
 	let url = `${baseUrl}kota=${kota}`;
+	let timer;
 
 	// functions
 	function loadTims(url) {
@@ -228,6 +222,10 @@
 		url = `${baseUrl}search=${searchQuery}&kota=${selectedCity}&tanggal=${selectedDate}`;
 		loadTims(url);
 	}
+	function debounceSearchAndLoadData() {
+		clearTimeout(timer);
+		timer = setTimeout(searchAndLoadData, 500);
+	}
 	function templateResult(teknisi) {
 		if (!teknisi.id) {
 			return teknisi.text;
@@ -285,6 +283,8 @@
 
 		if (teknisiIdArray.length == 1 || !teknisiIdArray.includes(ketuaId)) {
 			teknisiCard.previousElementSibling.remove()
+			ketuaId = null
+
 		} else if (teknisiIdArray.length == 2) {
 			teknisiCard.previousElementSibling.remove()
 		}
@@ -295,10 +295,9 @@
 	}
 	// event listeners
 	document.addEventListener('DOMContentLoaded', function () {
-		$('#btn-tambah-anggota').hide();
 		searchAndLoadData();
 
-		document.getElementById('search').addEventListener('keyup', searchAndLoadData);
+		document.getElementById('search').addEventListener('keyup', debounceSearchAndLoadData);
 		document.getElementById('kota').addEventListener('change', searchAndLoadData);
 		document.getElementById('tanggal').addEventListener('change', searchAndLoadData);
 
@@ -334,8 +333,6 @@
 						</div>
 					</div>
 					`
-					console.log('array = ' + teknisiIdArray);
-					console.log('ketua = ' + ketuaId);
 
 					if (teknisiIdArray.length == 1 || !teknisiIdArray.includes(ketuaId)) {
 						document.getElementById('teknisi-container').insertAdjacentHTML('afterbegin', `<p class="ps-2 text-xxs font-weight-bolder opacity-7 mb-2 mt-3" id="ketua-label">KETUA</p>`)
@@ -347,6 +344,8 @@
 					} else {
 						document.getElementById('teknisi-container').insertAdjacentHTML('beforeend', teknisiCard)
 					}
+
+
 				})
 		});
 		$('#btn-simpan').on('click', e => {
@@ -366,13 +365,13 @@
 					},
 					success: function (response) {
 						Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: response.message,
-                            timer: 1500,
-                            showConfirmButton: false,
-                        });
-                        $('#Modal').modal('hide');
+							icon: 'success',
+							title: 'Success',
+							text: response.message,
+							timer: 1500,
+							showConfirmButton: false,
+						});
+						$('#Modal').modal('hide');
 						kota.value = kotaModal.value
 						searchAndLoadData();
 					}
@@ -383,18 +382,18 @@
 			}
 
 		})
-		$('#Modal').on('shown.bs.modal',e=>{
+		$('#Modal').on('shown.bs.modal', e => {
 			$('#kota_id').val(kota.value).trigger('change');
 		})
-		$('#Modal').on('hide.bs.modal',e=>{
-			setTimeout(()=>{
+		$('#Modal').on('hide.bs.modal', e => {
+			setTimeout(() => {
 				ketuaId = null
 				teknisiIdArray = []
 				document.getElementById('teknisi-container').innerHTML = '';
 				$('#teknisi-select').select2('destroy');
 				$('#teknisi-select').val(null).trigger('change');
 				initSelect2(kotaModal.value, teknisiIdArray)
-			},250)
+			}, 250)
 		})
 	});
 </script>

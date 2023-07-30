@@ -75,9 +75,5 @@ class User extends Authenticatable
     {
         return $this->hasMany(Absen::class);
     }
-    public function absen_details()
-    {
-        return $this->hasManyThrough(AbsenDetail::class,Absen::class);
-    }
 
 }

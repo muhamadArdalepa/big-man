@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
@@ -17,21 +18,19 @@ class UserFactory extends Factory
      */
     public function definition()
     {
+        $firstName = fake()->firstName();
+        $lastName = fake()->lastName();
         return [
-            'nama' => fake()->firstName() . ' ' . fake()->lastName(),
-            'role' => fake()->randomElement([1, 2, 3]),
-            'email' => fake()->unique()->safeEmail,
-            'email_verified_at' => now(),
-            'password' => bcrypt('password'), // Mengenkripsi password dengan bcrypt
+            'nama' => $firstName . ' ' . $lastName,
+            'role' => fake()->randomElement([2, 3]),
+            'email' => strtolower($firstName.$lastName).'@big.com',
+            'password' => bcrypt('password'),
             'kota_id' => function () {
-                return \App\Models\Kota::inRandomOrder()->first()->id; // Mengambil ID kota secara acak dari model Kota
+                return \App\Models\Kota::inRandomOrder()->first()->id;
             },
             'no_telp' => fake()->numerify('628##########'),
             'foto_profil' => 'dummy.png',
-            'nik' => fake()->numerify('################'),
             'poin' => fake()->numberBetween(25, 1000),
-            'created_at' => now(),
-            'updated_at' => now(),
         ];
     }
 
