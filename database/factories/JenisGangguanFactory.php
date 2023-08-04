@@ -17,7 +17,7 @@ class JenisGangguanFactory extends Factory
     public function definition()
     {
         return [
-            'jenis_gangguan' => $this->faker->sentence($nbWords = 3, $variableNbWords = true),
+            'nama_gangguan' => $this->faker->sentence($nbWords = 3, $variableNbWords = true),
             'ket' => $this->faker->sentence,
         ];
     }

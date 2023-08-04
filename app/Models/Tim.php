@@ -19,4 +19,8 @@ class Tim extends Model
     {
         return $this->hasMany(TimAnggota::class);
     }
+    public function pekerjaan()
+    {
+        return $this->hasMany(Pekerjaan::class);
+    }
 }

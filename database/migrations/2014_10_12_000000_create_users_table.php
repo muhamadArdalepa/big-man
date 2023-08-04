@@ -16,11 +16,12 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
+            $table->string('speciality')->nullable();
             $table->tinyInteger('role')->length(1);
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->foreignId('kota_id')
+            $table->foreignId('wilayah_id')
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('restrict');

@@ -17,10 +17,10 @@ class PelangganController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->has('kota') && $request->kota != '') {
-            return response()->json(User::with('kota', 'pemasangan')->where('role', 3)->where('kota_id', $request->kota)->get());
+        if ($request->has('wilayah') && $request->wilayah != '') {
+            return response()->json(User::with('wilayah', 'pemasangan')->where('role', 3)->where('wilayah_id', $request->wilayah)->get());
         } else {
-            return response()->json(User::with('kota', 'pemasangan')->where('role', 3)->get());
+            return response()->json(User::with('wilayah', 'pemasangan')->where('role', 3)->get());
         }
     }
 
@@ -46,7 +46,7 @@ class PelangganController extends Controller
             'nama' => 'required|min:3',
             'email' => 'required|email',
             'password' => 'required|min:6',
-            'kota_id' => 'required',
+            'wilayah_id' => 'required',
             'no_telp' => 'required|numeric|digits_between:11,15'
         ], [
             'nama.required' => 'Nama harus diisi.',
@@ -55,7 +55,7 @@ class PelangganController extends Controller
             'email.email' => 'Format email tidak valid.',
             'password.required' => 'Password harus diisi.',
             'password.min' => 'Password harus memiliki minimal 6 karakter.',
-            'kota_id.required' => 'Kota harus dipilih.',
+            'wilayah_id.required' => 'wilayah harus dipilih.',
             'no_telp.required' => 'Nomor telepon harus diisi.',
             'no_telp.numeric' => 'Nomor telepon harus berupa angka.',
             'no_telp.digits_between' => 'Nomor telepon memiliki minimal 11 karakter.',
@@ -70,8 +70,8 @@ class PelangganController extends Controller
             $pelanggaan->nama = ucwords(trim($request->nama));
             $pelanggaan->role = 3;
             $pelanggaan->email = $request->email;
-            $pelanggaan->password = bcrypt($request->password);
-            $pelanggaan->kota_id = $request->kota_id;
+            $pelanggaan->password = $request->password;
+            $pelanggaan->wilayah_id = $request->wilayah_id;
             $pelanggaan->no_telp = $request->no_telp;
             $pelanggaan->foto_profil = 'dummy.png';
             $pelanggaan->save();
@@ -94,7 +94,7 @@ class PelangganController extends Controller
      */
     public function show($id)
     {
-        return response()->json(User::with('kota','pemasangan')->findOrFail($id));
+        return response()->json(User::with('wilayah','pemasangan')->findOrFail($id));
     }
 
     /**

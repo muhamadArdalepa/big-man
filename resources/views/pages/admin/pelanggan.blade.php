@@ -13,12 +13,12 @@
         <div class="card-header pb-0">
             <div class="d-flex gap-3">
                 <div class="d-flex align-items-center">
-                    <label for="kota" class="m-0">Kota</label>
-                    <select class="form-control ms-2" id="kota" onchange="(gantiKota())">
-                        <option value="">Semua Kota</option>
-                        @foreach ($kotas as $kota)
-                        <option value="{{$kota->id}}" {{auth()->
-                            user()->kota_id==$kota->id?'selected':''}}>{{$kota->kota}}
+                    <label for="wilayah" class="m-0">wilayah</label>
+                    <select class="form-control ms-2" id="wilayah" onchange="(gantiwilayah())">
+                        <option value="">Semua wilayah</option>
+                        @foreach ($wilayahs as $wilayah)
+                        <option value="{{$wilayah->id}}" {{auth()->
+                            user()->wilayah_id==$wilayah->id?'selected':''}}>{{$wilayah->nama_wilayah}}
                         </option>
                         @endforeach
                     </select>
@@ -107,14 +107,14 @@
                     </div>
                     <div class="col-4">
                         <div class="form-group">
-                            <label for="no_telp" class="form-control-label">Kota</label>
-                            <select class="form-control" id="kota_id" tabindex="5">
-                                <option selected disabled>--Pilih Kota--</option>
-                                @foreach($kotas as $kota)
-                                <option value="{{$kota->id}}">{{$kota->kota}}</option>
+                            <label for="no_telp" class="form-control-label">wilayah</label>
+                            <select class="form-control" id="wilayah_id" tabindex="5">
+                                <option selected disabled>--Pilih wilayah--</option>
+                                @foreach($wilayahs as $wilayah)
+                                <option value="{{$wilayah->id}}">{{$wilayah->nama_wilayah}}</option>
                                 @endforeach
                             </select>
-                            <div id="kota_idFeedback" class="invalid-feedback text-xs"></div>
+                            <div id="wilayah_idFeedback" class="invalid-feedback text-xs"></div>
                         </div>
                     </div>
                 </div>
@@ -152,7 +152,7 @@
 
 
     const baseUrl = 'api/pelanggan'
-    let url = baseUrl + '?kota=' + $('#kota').val()
+    let url = baseUrl + '?wilayah=' + $('#wilayah').val()
 
     let table = $('#table').DataTable({
         ajax: {
@@ -244,8 +244,8 @@
 
 
 
-    function gantiKota() {
-        url = baseUrl + '?kota=' + $('#kota').val()
+    function gantiwilayah() {
+        url = baseUrl + '?wilayah=' + $('#wilayah').val()
         console.log(url);
         table.ajax.url(url).load()
     }
@@ -333,7 +333,7 @@
                 email: $('#email').val(),
                 password: $('#password').val(),
                 no_telp: $('#no_telp').val(),
-                kota_id: $('#kota_id').val(),
+                wilayah_id: $('#wilayah_id').val(),
                 alamat: $('#alamat').val(),
             },
             success: function (response) {
@@ -371,13 +371,13 @@
                         $('#no_telp').addClass('is-invalid');
                         $('#no_telpFeedback').show();
                     }
-                    if (response.errors['kota_id'] == undefined) {
-                        $('#kota_id').removeClass('is-invalid');
-                        $('#kota_idFeedback').hide();
+                    if (response.errors['wilayah_id'] == undefined) {
+                        $('#wilayah_id').removeClass('is-invalid');
+                        $('#wilayah_idFeedback').hide();
                     } else {
-                        $('#kota_idFeedback').text(response.errors['kota_id']);
-                        $('#kota_id').addClass('is-invalid');
-                        $('#kota_idFeedback').show();
+                        $('#wilayah_idFeedback').text(response.errors['wilayah_id']);
+                        $('#wilayah_id').addClass('is-invalid');
+                        $('#wilayah_idFeedback').show();
                     }
                     if (response.errors['alamat'] == undefined) {
                         $('#alamat').removeClass('is-invalid');

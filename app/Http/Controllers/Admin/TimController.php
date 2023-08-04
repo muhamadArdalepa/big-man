@@ -29,10 +29,10 @@ class TimController extends Controller
             $tanggal = $request->tanggal;
             $tims->where('updated_at', 'LIKE', '%' . $tanggal . '%');
         }
-        if ($request->has('kota') && $request->kota != '') {
-            $kota = $request->kota;
-            $tims->whereHas('user', function ($query) use ($kota) {
-                $query->where('kota_id', $kota);
+        if ($request->has('wilayah') && $request->wilayah != '') {
+            $wilayah = $request->wilayah;
+            $tims->whereHas('user', function ($query) use ($wilayah) {
+                $query->where('wilayah_id', $wilayah);
             });
         }
         $data = [];
@@ -55,7 +55,7 @@ class TimController extends Controller
                 "ketua_id" => $tim->user->id,
                 "ketua" => $tim->user->nama,
                 "status" => $tim->status,
-                "kota" => $tim->user->kota->kota,
+                "wilayah" => $tim->user->wilayah->wilayah,
                 "foto_profil" => $tim->user->foto_profil,
                 "timestamp" => Carbon::parse($tim->user->created_at)->format('H:i | d/m/y'),
                 "anggota" => $data2
@@ -69,9 +69,9 @@ class TimController extends Controller
         $results = [];
 
 
-        $teknisis = User::with('kota', 'tims')->where('role', 2);
-        if ($request->has('kota') && !empty($request->kota)) {
-            $teknisis->where('kota_id', $request->kota);
+        $teknisis = User::with('wilayah', 'tims')->where('role', 2);
+        if ($request->has('wilayah') && !empty($request->wilayah)) {
+            $teknisis->where('wilayah_id', $request->wilayah);
         }
 
         if ($request->has('nama') && !empty($request->nama)) {

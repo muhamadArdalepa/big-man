@@ -20,12 +20,12 @@
                 </h6>
                 <div class="d-flex ms-sm-auto w-100 w-sm-auto gap-3">
                     <div class="d-flex align-items-center flex-grow-1 flex-sm-grow-0">
-                        <label for="kota" class="m-0 d-none d-sm-inline-block">Kota</label>
-                        <select class="form-control m-0 ms-sm-2" id="kota">
-                            <option value="">Semua Kota</option>
-                            @foreach ($kotas as $kota)
-                            <option value="{{$kota->id}}" {{auth()->
-                                user()->kota_id==$kota->id?'selected':''}}>{{$kota->kota}}
+                        <label for="wilayah" class="m-0 d-none d-sm-inline-block">wilayah</label>
+                        <select class="form-control m-0 ms-sm-2" id="wilayah">
+                            <option value="">Semua wilayah</option>
+                            @foreach ($wilayahs as $wilayah)
+                            <option value="{{$wilayah->id}}" {{auth()->
+                                user()->wilayah_id==$wilayah->id?'selected':''}}>{{$wilayah->nama_wilayah}}
                             </option>
                             @endforeach
                         </select>
@@ -70,7 +70,7 @@
 
 @push('modal')
 <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header gap-2">
                 <img src="/storage/private/profile/" alt="foto profil" height="50" class="rounded-3" id="ModalImg">
@@ -81,70 +81,7 @@
                 <p class="m-0 ms-auto" id="ModalDate"></p>
             </div>
             <div class="modal-body">
-                <div class="card mb-3">
-                    <div class="card-body p-3">
-                        <div class="d-flex flex-sm-row flex-column gap-3">
-                            <img src="/storage/private/absen/" style="max-width: 50%;" class="rounded-3">
-                            <div class="">
-                                <div class="form-check p-0 m-0 d-flex gap-2">
-                                    <input class="form-check-input m-0 " type="checkbox" checked
-                                        onclick="return false;">
-                                    <label class="custom-control-label m-0">12:00</label>
-                                </div>
-                                <p class="card-text">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolorum
-                                    culpa excepturi ab facilis? Est, tempore.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card mb-3">
-                    <div class="card-body p-3">
-                        <div class="d-flex flex-sm-row flex-column gap-3">
-                            <img src="/storage/private/absen/" style="max-width: 50%;" class="rounded-3">
-                            <div class="">
-                                <div class="form-check p-0 m-0 d-flex gap-2">
-                                    <input class="form-check-input m-0 " type="checkbox" checked
-                                        onclick="return false;">
-                                    <label class="custom-control-label m-0">12:00</label>
-                                </div>
-                                <p class="card-text">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolorum
-                                    culpa excepturi ab facilis? Est, tempore.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card mb-3">
-                    <div class="card-body p-3">
-                        <div class="d-flex flex-sm-row flex-column gap-3">
-                            <img src="/storage/private/absen/" style="max-width: 50%;" class="rounded-3">
-                            <div class="">
-                                <div class="form-check p-0 m-0 d-flex gap-2">
-                                    <input class="form-check-input m-0 " type="checkbox" checked
-                                        onclick="return false;">
-                                    <label class="custom-control-label m-0">12:00</label>
-                                </div>
-                                <p class="card-text">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolorum
-                                    culpa excepturi ab facilis? Est, tempore.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card mb-3">
-                    <div class="card-body p-3">
-                        <div class="d-flex flex-sm-row flex-column gap-3">
-                            <img src="/storage/private/absen/dummy.jpg" style="max-width: 50%;" class="rounded-3">
-                            <div class="">
-                                <div class="form-check p-0 m-0 d-flex gap-2">
-                                    <input class="form-check-input m-0 " type="checkbox" checked
-                                        onclick="return false;">
-                                    <label class="custom-control-label m-0">12:00</label>
-                                </div>
-                                <p class="card-text">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolorum
-                                    culpa excepturi ab facilis? Est, tempore.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">Close</button>
@@ -168,28 +105,16 @@
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 <script>
     // inits
-    const kota = document.getElementById('kota');
+    const wilayah = document.getElementById('wilayah');
     const tanggal = document.getElementById('tanggal');
-    const baseUrl = 'api/absen'
-    let url = `${baseUrl}?kota=${kota.value}&tanggal=${tanggal.value}`
+    const appUrl = `{{env('APP_URL')}}`
+    const baseUrl = appUrl + '/api/absen'
+    let url = `${baseUrl}?wilayah=${wilayah.value}&tanggal=${tanggal.value}`
 
     // functions
-    function toHM(time) {
-        if (time === undefined || time === null) {
-            return null;
-        }
-        return time.slice(0, -3)
-    }
 
     // event listeners
     $(document).ready(() => {
-
-        const modalBody = document.querySelector('.modal-body');
-        const cards = modalBody.querySelectorAll('.card');
-        cards.forEach((card) => {
-            card.setAttribute('hidden', true)
-        });
-
         let table = $('#table').DataTable({
             ajax: {
                 url: url,
@@ -222,7 +147,7 @@
                     }
                 },
                 {
-                    data: 'waktu1',
+                    data: 'absens.0',
                     className: 'text-center',
                     render: function (data, type, row) {
                         if (data !== null) {
@@ -230,7 +155,7 @@
                                 return `
                                 <div class="form-check p-0 justify-content-center m-0 d-flex gap-2">
                                     <input class="form-check-input m-0 " type="checkbox" id="absen-0-${row.id}" checked onclick="return false;">
-                                    <label class="custom-control-label m-0" for="absen-0-${row.id}">${toHM(data)}</label>
+                                    <label class="custom-control-label m-0" for="absen-0-${row.id}">${data}</label>
                                 </div>
                                 `
                             }
@@ -241,15 +166,15 @@
                     }
                 },
                 {
-                    data: 'waktu2',
+                    data: 'absens.1',
                     className: 'text-center',
                     render: function (data, type, row) {
                         if (data !== null) {
                             if (type === 'display') {
                                 return `
                                 <div class="form-check p-0 justify-content-center m-0 d-flex gap-2">
-                                    <input class="form-check-input m-0 " type="checkbox" id="absen-0-${row.id}" checked onclick="return false;">
-                                    <label class="custom-control-label m-0" for="absen-0-${row.id}">${toHM(data)}</label>
+                                    <input class="form-check-input m-0 " type="checkbox" id="absen-1-${row.id}" checked onclick="return false;">
+                                    <label class="custom-control-label m-0" for="absen-1-${row.id}">${data}</label>
                                 </div>
                                 `
                             }
@@ -260,15 +185,15 @@
                     }
                 },
                 {
-                    data: 'waktu3',
+                    data: 'absens.2',
                     className: 'text-center',
                     render: function (data, type, row) {
                         if (data !== null) {
                             if (type === 'display') {
                                 return `
                                 <div class="form-check p-0 justify-content-center m-0 d-flex gap-2">
-                                    <input class="form-check-input m-0 " type="checkbox" id="absen-0-${row.id}" checked onclick="return false;">
-                                    <label class="custom-control-label m-0" for="absen-0-${row.id}">${toHM(data)}</label>
+                                    <input class="form-check-input m-0 " type="checkbox" id="absen-2-${row.id}" checked onclick="return false;">
+                                    <label class="custom-control-label m-0" for="absen-2-${row.id}">${data}</label>
                                 </div>
                                 `
                             }
@@ -279,15 +204,15 @@
                     }
                 },
                 {
-                    data: 'waktu4',
+                    data: 'absens.3',
                     className: 'text-center',
                     render: function (data, type, row) {
                         if (data !== null) {
                             if (type === 'display') {
                                 return `
                                 <div class="form-check p-0 justify-content-center m-0 d-flex gap-2">
-                                    <input class="form-check-input m-0 " type="checkbox" id="absen-0-${row.id}" checked onclick="return false;">
-                                    <label class="custom-control-label m-0" for="absen-0-${row.id}">${toHM(data)}</label>
+                                    <input class="form-check-input m-0 " type="checkbox" id="absen-3-${row.id}" checked onclick="return false;">
+                                    <label class="custom-control-label m-0" for="absen-3-${row.id}">${data}</label>
                                 </div>
                                 `
                             }
@@ -298,17 +223,17 @@
                     }
                 },
                 {
-                    data: 'id',
+                    data: 'absen_id',
                     orderable: false,
                     searchable: false,
                     className: 'text-center',
-                    render: function (data, type) {
+                    render: function (data, type, row) {
                         if (data === null) {
                             return ''
                         }
                         if (type === 'display') {
                             return `
-                            <button data-teknisi="${data}" data-bs-toggle="modal" data-bs-target="#Modal" class="btn-detail-absen btn btn-link text-secondary font-weight-normal">
+                            <button data-absen="${data}" data-bs-toggle="modal" data-bs-target="#Modal" class="btn-detail-absen btn btn-link text-secondary font-weight-normal">
                                 Detail
                             </button>
                             `
@@ -324,61 +249,66 @@
                     sFirst: '<i class="fa fa-step-backward"></i>',
                     sLast: '<i class="fa fa-step-forward"></i>'
                 }
-            }
+            },
+            order: [
+                [1, 'desc'],
+                [2, 'desc'],
+                [3, 'desc'],
+                [4, 'desc'],
+                [0, 'asc']
+            ]
         });
 
         table.on('draw', () => {
             $('.btn-detail-absen').on('click', (e) => {
-                fetch('api/absen/' + e.target.dataset.teknisi)
+                let card;
+                fetch(`${baseUrl}/${e.target.dataset.absen}`)
                     .then(response => response.json())
                     .then(data => {
-                        $('#ModalImg').attr('src', `/storage/private/profile/${data.user.foto_profil}`)
+                        $('#ModalImg').attr('src', appUrl+'/storage/private/profile/' + data.user.foto_profil)
+                        $('#ModalDate').text(data.tanggalFormat)
                         $('#ModalLabel').text(data.user.nama)
-                        $('#ModalDate').text(data.tanggal)
-                        let waktu = [
-                            data.waktu1,
-                            data.waktu2,
-                            data.waktu3,
-                            data.waktu4,
-                        ];
-                        let foto = [
-                            data.foto1,
-                            data.foto2,
-                            data.foto3,
-                            data.foto4,
-                        ];
-                        let ket = [
-                            data.ket1,
-                            data.ket2,
-                            data.ket3,
-                            data.ket4,
-                        ];
-                        cards.forEach((card, i) => {
-                            if (waktu[i] === null) {
-                                return
-                            }
-                            card.removeAttribute('hidden')
-                            card.getElementsByTagName('img')[0].src = `/storage/private/absen/${foto[i]}`
-                            card.getElementsByTagName('label')[0].innerHTML = waktu[i]
-                            card.getElementsByTagName('p')[0].innerHTML = ket[i]
-                        });
+                        let aktivitass = data.aktivitass
+                        for (const aktivitas of aktivitass) {
+                            card = `
+                            <div class="card mb-3">
+                                <div class="card-body p-3">
+                                    <div class="d-flex flex-sm-row flex-column gap-3">
+                                        <img src="${appUrl}/storage/private/absen/${aktivitas.foto}" style="max-width: ${window.innerWidth > 576 ? '50%' : '100%'}" class="rounded-3">
+                                        <div class="w-100">
+                                            <div class="d-flex align-items-center justify-content-between w-100">
+                                                <div class="form-check p-0 m-0 d-flex gap-2">
+                                                    <input class="form-check-input m-0 " type="checkbox" checked
+                                                    onclick="return false;">
+                                                    <label class="custom-control-label m-0">${(aktivitas.created_at).slice(11, -3)}</label>
+                                                </div>
+                                                <small class="ms-auto fs-xxs opacity-7">${aktivitas.koordinat}</small>
+                                            </div>
+                                            <p class="fs-xxs opacity-7 lh-sm">${aktivitas.alamat}</p>
+                                            <p class=">${aktivitas.aktivitas}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+                            document.querySelector('#Modal .modal-body').insertAdjacentHTML('beforeend', card);
+                        }
                     })
             });
         });
+
         $('#Modal').on('hide.bs.modal', function () {
-            cards.forEach((card) => {
-                card.setAttribute('hidden', true)
-            });
+            $('#Modal .modal-body').text('')
         });
 
 
-        $('#kota').on('change', function () {
-            url = `${baseUrl}?kota=${kota.value}&tanggal=${tanggal.value}`
+        $('#wilayah').on('change', function () {
+            url = `${baseUrl}?wilayah=${wilayah.value}&tanggal=${tanggal.value}`
             table.ajax.url(url).load()
         });
 
         $('#tanggal').on('change', function () {
-            url = `${baseUrl}?kota=${kota.value}&tanggal=${tanggal.value}`
+            url = `${baseUrl}?wilayah=${wilayah.value}&tanggal=${tanggal.value}`
             table.ajax.url(url).load()
         });
     })

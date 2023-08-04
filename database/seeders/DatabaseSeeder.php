@@ -15,17 +15,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('kotas')->insert([
-            'kota' => 'Pontianak'
+        DB::table('wilayahs')->insert([
+            'nama_wilayah' => 'Pontianak'
         ]);
-        DB::table('kotas')->insert([
-            'kota' => 'Sintang'
+        DB::table('wilayahs')->insert([
+            'nama_wilayah' => 'Sintang'
         ]);
-        DB::table('kotas')->insert([
-            'kota' => 'Ngabang'
+        DB::table('wilayahs')->insert([
+            'nama_wilayah' => 'Ngabang'
         ]);
-        DB::table('kotas')->insert([
-            'kota' => 'Bogor'
+        DB::table('wilayahs')->insert([
+            'nama_wilayah' => 'Bogor'
         ]);
         DB::table('users')->insert([
             'nama' => 'Admin',
@@ -33,30 +33,22 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@big.com',
             'password' => bcrypt('123'),
             'foto_profil' => 'kamisato.webp',
-            'kota_id' => 1,
+            'wilayah_id' => 1,
             'no_telp' => "6281521544674",
         ]);
         DB::table('users')->insert([
             'nama' => 'Nilou',
-            'role' => 1,
+            'role' => 2,
             'email' => 'niloucantik@big.com',
             'password' => bcrypt('sumeru'),
             'foto_profil' => 'Nilou.webp',
-            'kota_id' => 1,
+            'wilayah_id' => 1,
             'no_telp' => "6281521544674",
         ]);
         \App\Models\User::factory()->count(50)->create();
-        \App\Models\Tim::factory()->count(10)->create();
-        \App\Models\TimAnggota::factory()->count(25)->create();
+        // \App\Models\Tim::factory()->count(10)->create();
+        // \App\Models\TimAnggota::factory()->count(25)->create();
         \App\Models\JenisGangguan::factory()->count(5)->create();
         \App\Models\Laporan::factory()->count(30)->create();
-
-        $pelanggan = \App\Models\User::where('role',3)->get();
-        foreach ($pelanggan as $key => $value) {
-            DB::table('pemasangans')->insert([
-                'user_id' => $value->id,
-                'alamat' => fake()->address()
-            ]);
-        }
     }
 }

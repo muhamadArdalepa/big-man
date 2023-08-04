@@ -44,6 +44,7 @@ class User extends Authenticatable
      * @param $value
     * @return string
     */
+    
     public function setPasswordAttribute($value)
     {
         $this->attributes['password'] = bcrypt($value);
@@ -51,8 +52,8 @@ class User extends Authenticatable
 
 
    
-    public function kota(){
-        return $this->belongsTo(Kota::class);
+    public function wilayah(){
+        return $this->belongsTo(Wilayah::class);
     }
     public function tims()
     {

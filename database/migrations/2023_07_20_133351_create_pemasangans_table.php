@@ -14,11 +14,25 @@ return new class extends Migration
     public function up()
     {
         Schema::create('pemasangans', function (Blueprint $table) {
+            $table->id();
             $table->foreignId('user_id')
                 ->constrained()
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
             $table->text('alamat');
+            $table->string('koordinat_rumah');
+            $table->string('koordinat_odp');
+            $table->string('serial_number');
+            $table->string('SSID');
+            $table->string('password');
+            $table->foreignId('paket_id')
+                ->constrained()
+                ->onDelete('restrict')
+                ->onUpdate('cascade');
+            $table->integer('hasil_opm_user');
+            $table->integer('hasil_opm_odp');
+            $table->integer('kabel_terpakai');
+            $table->string('port_odp');
             $table->timestamps();
         });
     }

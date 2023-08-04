@@ -62,6 +62,7 @@
 @endsection
 
 @push('modal')
+@if($action)
 <div class="modal fade" id="absenModal" tabindex="-1" role="dialog" aria-labelledby="absenModalLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -79,11 +80,15 @@
             </div>
             <div class="modal-body">
                 <input type="hidden" name="image" id="image-tag">
-                <div class="mb-3" id="location"></div>
-                <div id="myCamera" class="d-block rounded-3 overflow-hidden">
+                <div class="mb text-xs opacity-7" id="koordinat"></div>
+                <div class="text-xs opacity-7" id="location"></div>
+                <div id="koordinatFeedback" class="invalid-feedback text-xs"></div>
+                <div id="myCamera" class="mt-3 d-block rounded-3 overflow-hidden">
                 </div>
-                <textarea id="ket" class="form-control my-3" rows="3" placeholder="Keterangan pekerjaan"></textarea>
-                <div class="d-flex justify-content-between gap-3">
+                <div id="fotoFeedback" class="invalid-feedback text-xs"></div>
+                <textarea id="aktivitas" class="form-control mt-3" rows="3" placeholder="Aktivitas"></textarea>
+                <div id="aktivitasFeedback" class="invalid-feedback text-xs"></div>
+                <div class="d-flex justify-content-between gap-3 mt-3">
                     <button id="cameraButton" class="btn bg-gradient-primary btn-lg flex-grow-1">Ambil Foto</button>
                     <button id="absenButton" class="btn bg-gradient-suuccess btn-lg flex-grow-1">Absen</button>
                 </div>
@@ -94,7 +99,7 @@
         </div>
     </div>
 </div>
-
+@endif
 
 <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
@@ -104,27 +109,7 @@
                 <p class="m-0 ms-auto" id="ModalDate"></p>
             </div>
             <div class="modal-body">
-                @for($i=1;$i<=4;$i++)
-                <div class="card mb-3">
-                    <div class="card-body p-3">
-                        <div class="d-flex flex-sm-row flex-column gap-3">
-                            <img src="/storage/private/absen/" style="max-width: 50%;" class="rounded-3">
-                            <div class="w-100">
-                                <div class="d-flex align-items-center justify-content-between w-100">
-                                    <div class="form-check p-0 m-0 d-flex gap-2">
-                                        <input class="form-check-input m-0 " type="checkbox" checked
-                                        onclick="return false;">
-                                        <label class="custom-control-label m-0">12:00</label>
-                                    </div>
-                                    <small class="modal-koordinat ms-auto fs-xxs opacity-7"></small>
-                                </div>
-                                <p class="modal-alamat fs-xxs opacity-7 lh-sm"></p>
-                                <p class="modal-ket"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endfor
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">Close</button>
@@ -150,22 +135,17 @@
 
 <script>
     // inits
-    const kota = document.getElementById('kota');
+    const wilayah = document.getElementById('wilayah');
     const tanggal = document.getElementById('tanggal');
     const authId = `{{ auth()->user()->id}}`
-    const baseUrl = `{{env('APP_URL')}}/api/teknisi-absen`
+    const appUrl = `{{env('APP_URL')}}`
+    const baseUrl = `${appUrl}/api/teknisi-absen`
     let koordinat;
     let alamat;
     let url = baseUrl;
 
     // functions
-    function toHM(time) {
-        if (time === undefined || time === null) {
-            return null;
-        }
-        return time.slice(0, -3)
-    }
-
+    `@if($action)`
     function startCamera(btn) {
         const cameraWidth = document.getElementById('myCamera').offsetWidth
         Webcam.set({
@@ -207,13 +187,14 @@
     function getAddressFromCoordinates(position) {
         var latitude = position.coords.latitude;
         var longitude = position.coords.longitude;
-        koordinat = latitude+', '+longitude
+        koordinat = latitude + ', ' + longitude
         // Buat permintaan ke API Nominatim
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
             .then(response => response.json())
             .then(data => {
                 var address = data.display_name;
                 alamat = address
+                document.getElementById('koordinat').textContent = koordinat;
                 document.getElementById('location').textContent = address;
             })
             .catch(error => {
@@ -238,24 +219,12 @@
                 break;
         }
     }
-
-    function getAddress(koordinat) {
-        var latlong = koordinat.split(', ');
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlong[0]}&lon=${latlong[1]}`)
-            .then(response => response.json())
-            .then(data => {
-                return data.display_name;
-            })
-            .catch(error => {
-                return 'Gagal mendapatkan alamat';
-            });
-    }
-
-
-
+    `@endif`
     // event listeners
     $(document).ready(() => {
-
+        $('#aktivitasFeedback').hide();
+        $('#koordinatFeedback').hide();
+        $('#fotoFeedback').hide();
         $('#absenButton').hide()
         let modalJamInterval;
         let table = $('#table').DataTable({
@@ -273,16 +242,16 @@
             ],
             columns: [
                 {
-                    data: 'tanggal',
+                    data: 'created_at',
                     render: function (data, type, row) {
                         if (type === 'display') {
-                            return row.tanggalParsed
+                            return row.tanggalFormat
                         }
-                        return data;
+                        return row.tanggalFormat;
                     }
                 },
                 {
-                    data: 'waktu1',
+                    data: 'absens.0',
                     className: 'text-center',
                     render: function (data, type, row) {
                         if (data !== null) {
@@ -290,7 +259,7 @@
                                 return `
                                 <div class="form-check p-0 justify-content-center m-0 d-flex gap-2">
                                     <input class="form-check-input m-0 " type="checkbox" id="absen-0-${row.id}" checked onclick="return false;">
-                                    <label class="custom-control-label m-0" for="absen-0-${row.id}">${toHM(data)}</label>
+                                    <label class="custom-control-label m-0" for="absen-0-${row.id}">${data}</label>
                                 </div>
                                 `
                             }
@@ -301,15 +270,15 @@
                     }
                 },
                 {
-                    data: 'waktu2',
+                    data: 'absens.1',
                     className: 'text-center',
                     render: function (data, type, row) {
                         if (data !== null) {
                             if (type === 'display') {
                                 return `
                                 <div class="form-check p-0 justify-content-center m-0 d-flex gap-2">
-                                    <input class="form-check-input m-0 " type="checkbox" id="absen-0-${row.id}" checked onclick="return false;">
-                                    <label class="custom-control-label m-0" for="absen-0-${row.id}">${toHM(data)}</label>
+                                    <input class="form-check-input m-0 " type="checkbox" id="absen-1-${row.id}" checked onclick="return false;">
+                                    <label class="custom-control-label m-0" for="absen-1-${row.id}">${data}</label>
                                 </div>
                                 `
                             }
@@ -320,15 +289,15 @@
                     }
                 },
                 {
-                    data: 'waktu3',
+                    data: 'absens.2',
                     className: 'text-center',
                     render: function (data, type, row) {
                         if (data !== null) {
                             if (type === 'display') {
                                 return `
                                 <div class="form-check p-0 justify-content-center m-0 d-flex gap-2">
-                                    <input class="form-check-input m-0 " type="checkbox" id="absen-0-${row.id}" checked onclick="return false;">
-                                    <label class="custom-control-label m-0" for="absen-0-${row.id}">${toHM(data)}</label>
+                                    <input class="form-check-input m-0 " type="checkbox" id="absen-2-${row.id}" checked onclick="return false;">
+                                    <label class="custom-control-label m-0" for="absen-2-${row.id}">${data}</label>
                                 </div>
                                 `
                             }
@@ -339,15 +308,15 @@
                     }
                 },
                 {
-                    data: 'waktu4',
+                    data: 'absens.3',
                     className: 'text-center',
                     render: function (data, type, row) {
                         if (data !== null) {
                             if (type === 'display') {
                                 return `
                                 <div class="form-check p-0 justify-content-center m-0 d-flex gap-2">
-                                    <input class="form-check-input m-0 " type="checkbox" id="absen-0-${row.id}" checked onclick="return false;">
-                                    <label class="custom-control-label m-0" for="absen-0-${row.id}">${toHM(data)}</label>
+                                    <input class="form-check-input m-0 " type="checkbox" id="absen-3-${row.id}" checked onclick="return false;">
+                                    <label class="custom-control-label m-0" for="absen-3-${row.id}">${data}</label>
                                 </div>
                                 `
                             }
@@ -385,72 +354,49 @@
                     sLast: '<i class="fa fa-step-forward"></i>'
                 }
             },
-            order: [[0, 'desc']]
-        });
-        const modalBody = document.querySelector('#Modal .modal-body');
-        const cards = modalBody.querySelectorAll('#Modal .card');
-        cards.forEach((card) => {
-            card.setAttribute('hidden', true)
+            order: [
+                [0, 'desc']
+            ]
         });
 
         table.on('draw', () => {
             $('.btn-detail-absen').on('click', (e) => {
-                fetch('api/teknisi-absen/' + e.target.dataset.absen)
+                let card = '';
+                fetch(appUrl+'/api/teknisi-absen/' + e.target.dataset.absen)
                     .then(response => response.json())
                     .then(data => {
                         $('#ModalDate').text(data.tanggalFormat)
-                        $('#ModalDate').text(data.tanggalFormat)
-                        let waktu = [
-                            data.waktu1,
-                            data.waktu2,
-                            data.waktu3,
-                            data.waktu4,
-                        ];
-                        let koordinat = [
-                            data.koordinat1,
-                            data.koordinat2,
-                            data.koordinat3,
-                            data.koordinat4,
-                        ];
-                        let alamat = [
-                            data.alamat1,
-                            data.alamat2,
-                            data.alamat3,
-                            data.alamat4,
-                        ];
-                        let lokasi = [
-                            data.lokasi1,
-                            data.lokasi2,
-                            data.lokasi3,
-                            data.lokasi4,
-                        ];
-                        let foto = [
-                            data.foto1,
-                            data.foto2,
-                            data.foto3,
-                            data.foto4,
-                        ];
-                        let ket = [
-                            data.ket1,
-                            data.ket2,
-                            data.ket3,
-                            data.ket4,
-                        ];
-                        cards.forEach((card, i) => {
-                            if (waktu[i] === null) {
-                                return
-                            }
-                            card.removeAttribute('hidden')
-                            card.getElementsByClassName('modal-koordinat')[0].innerHTML = koordinat[i];
-                            card.getElementsByClassName('modal-alamat')[0].innerHTML = alamat[i];
-                            card.getElementsByTagName('img')[0].src = `/storage/private/absen/${foto[i]}`
-                            card.getElementsByTagName('label')[0].innerHTML = waktu[i]
-                            card.getElementsByClassName('modal-ket')[0].innerHTML = ket[i]
-                        });
+                        let aktivitass = data.aktivitass
+                        for (const absen of aktivitass) {
+                            let time = new Date(absen.updated_at) 
+                            card = `
+                            <div class="card mb-3">
+                                <div class="card-body p-3">
+                                    <div class="d-flex flex-sm-row flex-column gap-3">
+                                        <img src="${appUrl}/storage/private/absen/${absen.foto}" style="max-width: ${window.innerWidth > 576 ? '50%' : '100%'}" class="rounded-3">
+                                        <div class="w-100">
+                                            <div class="d-flex align-items-center justify-content-between w-100">
+                                                <div class="form-check p-0 m-0 d-flex gap-2">
+                                                    <input class="form-check-input m-0 " type="checkbox" checked
+                                                    onclick="return false;">
+                                                    <label class="custom-control-label m-0">${time.toTimeString().slice(0,8)}</label>
+                                                </div>
+                                                <small class="ms-auto fs-xxs opacity-7">${absen.koordinat}</small>
+                                            </div>
+                                            <p class="fs-xxs opacity-7 lh-sm">${absen.alamat}</p>
+                                            <p>${absen.aktivitas}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+                            document.querySelector('#Modal .modal-body').insertAdjacentHTML('beforeend', card);
+                        }
                     })
             });
         });
 
+        `@if($action)`
         $('#absenModal').on('shown.bs.modal', function () {
             startCamera(document.getElementById('cameraButton'))
             $('#absenModalDate').text(updateClock())
@@ -475,22 +421,50 @@
                 url: `${baseUrl}`,
                 type: 'POST',
                 data: {
-                    image: $('#image-tag').val(),
+                    foto: $('#image-tag').val(),
                     koordinat: koordinat,
                     alamat: alamat,
-                    ket: $('#ket').val(),
+                    aktivitas: $('#aktivitas').val(),
                 },
                 success: function (response) {
                     if (response.status == 400) {
                         $('#Modal').find('.invalidFeedback').show();
-                        if (response.errors['nama'] == undefined) {
-                            $('#nama').removeClass('is-invalid');
-                            $('#namaFeedback').hide();
+                        if (response.errors['aktivitas'] == undefined) {
+                            $('#aktivitas').removeClass('is-invalid');
+                            $('#aktivitasFeedback').hide();
                         } else {
-                            $('#namaFeedback').text(response.errors['nama']);
-                            $('#nama').addClass('is-invalid');
-                            $('#namaFeedback').show();
+                            $('#aktivitasFeedback').text(response.errors['aktivitas']);
+                            $('#aktivitas').addClass('is-invalid');
+                            $('#aktivitasFeedback').show();
                         }
+                        if (response.errors['koordinat'] == undefined) {
+                            $('#koordinatFeedback').hide();
+                        } else {
+                            $('#koordinatFeedback').text(response.errors['koordinat']);
+                            $('#koordinatFeedback').show();
+                        }
+                        if (response.errors['foto'] == undefined) {
+                            $('#fotoFeedback').hide();
+                        } else {
+                            $('#fotoFeedback').text(response.errors['foto']);
+                            $('#fotoFeedback').show();
+                        }
+                    } else if (response.status == 401) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'error',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false,
+                        });
+                        $('#absenAction').remove()
+                        $('#absenModal').modal('hide');
+                        $('#aktivitas').val('')
+                        Webcam.reset()
+                        table.ajax.reload()
+                        $('#absenModal').find('.form-control').val('');
+                        $('#absenModal').find('.form-control').removeClass('is-invalid');
+                        $('#absenModal').find('.invalidFeedback').hide();
                     }
                     else {
                         Swal.fire({
@@ -500,15 +474,25 @@
                             timer: 1500,
                             showConfirmButton: false,
                         });
-                        $('#absenAction').hide()
+                        $('#absenAction').remove()
                         $('#absenModal').modal('hide');
-                        $('#ket').val('')
+                        $('#aktivitas').val('')
                         Webcam.reset()
                         table.ajax.reload()
+                        $('#absenModal').find('.form-control').val('');
+                        $('#absenModal').find('.form-control').removeClass('is-invalid');
+                        $('#absenModal').find('.invalidFeedback').hide();
                     }
                 }
             });
         })
+        `@endif`
+
+        $('#Modal').on('hide.bs.modal', function () {
+            $('#Modal .modal-body').text('')
+        });
+
+
     })
 
 

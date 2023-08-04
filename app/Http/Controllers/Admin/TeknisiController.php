@@ -15,12 +15,12 @@ class TeknisiController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
-    {
-        if ($request->has('kota') && $request->kota != '') {
-            return response()->json(User::with('kota')->where('role',2)->where('kota_id',$request->kota)->get());
-        }else{
-            return response()->json(User::with('kota')->where('role',2)->get());
+{
+        $query = User::with('wilayah:id,nama_wilayah')->select('users.id','users.nama','foto_profil','users.no_telp','users.poin','wilayah_id')->where('role',2);
+        if ($request->has('wilayah') && $request->wilayah != '') {
+            $query->where('wilayah_id',$request->wilayah);
         }
+        return response()->json($query->get());
     }
 
     /**
@@ -45,7 +45,7 @@ class TeknisiController extends Controller
             'nama' => 'required|min:3',
             'email' => 'required|email',
             'password' => 'required|min:6',
-            'kota_id' => 'required',
+            'wilayah_id' => 'required',
             'no_telp' => 'required|numeric'
         ], [
             'nama.required' => 'Nama harus diisi.',
@@ -54,7 +54,7 @@ class TeknisiController extends Controller
             'email.email' => 'Format email tidak valid.',
             'password.required' => 'Password harus diisi.',
             'password.min' => 'Password harus memiliki minimal 6 karakter.',
-            'kota_id.required' => 'Kota harus dipilih.',
+            'wilayah_id.required' => 'wilayah harus dipilih.',
             'no_telp.required' => 'Nomor telepon harus diisi.',
             'no_telp.numeric' => 'Nomor telepon harus berupa angka.',
         ]);
@@ -69,7 +69,7 @@ class TeknisiController extends Controller
                 'role' => 2,
                 'email' => $request->email,
                 'password' => bcrypt($request->password),
-                'kota_id' => $request->kota_id,
+                'wilayah_id' => $request->wilayah_id,
                 'no_telp' => $request->no_telp,
                 'foto_profil' => 'dummy.png',
             ];
@@ -89,7 +89,7 @@ class TeknisiController extends Controller
      */
     public function show($id)
     {
-        return response()->json(User::with('kota','tims')->findOrFail($id));
+        return response()->json(User::with('wilayah','tims')->findOrFail($id));
     }
 
     /**

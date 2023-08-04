@@ -15,9 +15,9 @@ use App\Http\Controllers\Admin\AbsenController as AdminAbsen;
 use App\Http\Controllers\Admin\LaporanController as AdminLaporan;
 use App\Http\Controllers\Admin\TeknisiController as AdminTeknisi;
 use App\Http\Controllers\Admin\PelangganController as AdminPelanggan;
+use App\Http\Controllers\Admin\PekerjaanController as AdminPekerjaan;
 
 // teknisi
-use App\Http\Controllers\Teknisi\PagenController as TeknisiPage;
 use App\Http\Controllers\Teknisi\AbsenController as TeknisiAbsen;
 
 // pages
@@ -60,12 +60,10 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::get('/absen', 						[Page::class, 'absen'])->name('absen');
 	Route::get('/pekerjaan', 					[Page::class, 'pekerjaan'])->name('pekerjaan');
 	Route::get('/teknisi', 						[Page::class, 'teknisi'])->name('teknisi');
-	Route::get('/pelanggan', 					[Page::class, 'pelanggan'])->name('pelanggan');
 	Route::get('/teknisi/{id}', 				[Page::class, 'teknisi_show'])->name('teknisi.show');
+	Route::get('/pelanggan', 					[Page::class, 'pelanggan'])->name('pelanggan');
+	Route::get('/profile', 						[page::class, 'auth_profile'])->name('auth.profile');
 
-	// profile
-	Route::get('/profile', 						[Profile::class, 'index'])->name('profile');
-	Route::get('/profile', 						[Profile::class, 'show'])->name('profile');
 
 	//post
 	Route::post('/profile', 					[UserProfile::class, 'update'])->name('profile.update');
@@ -81,6 +79,7 @@ Route::middleware('auth.api')->group(function () {
 	Route::resource('api/teknisi',				AdminTeknisi::class);
 	Route::resource('api/pelanggan',			AdminPelanggan::class);
 	Route::resource('api/absen',				AdminAbsen::class);
+	Route::resource('api/pekerjaan',			AdminPekerjaan::class);
 	
 	// teknisi
 	Route::resource('api/teknisi-absen',		TeknisiAbsen::class);

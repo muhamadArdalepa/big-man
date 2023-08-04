@@ -12,8 +12,8 @@ class RegisterController extends Controller
 {
     public function create()
     {
-        $kotas = \App\Models\Kota::all();
-        return view('auth.register',compact('kotas'));
+        $wilayahs = \App\Models\wilayah::all();
+        return view('auth.register',compact('wilayahs'));
     }
 
     public function store(Request $request)
@@ -22,7 +22,7 @@ class RegisterController extends Controller
             'nama' => 'required|min:3',
             'email' => 'required|email',
             'password' => 'required|min:6|confirmed',
-            'kota_id' => 'required',
+            'wilayah_id' => 'required',
             'no_telp' => 'required|numeric|digits_between:11,15',
             'terms' => 'required'
         ], [
@@ -33,7 +33,7 @@ class RegisterController extends Controller
             'password.required' => 'Password harus diisi.',
             'password.min' => 'Password harus memiliki minimal 6 karakter.',
             'password.confirmed' => 'Password dan konfirmasi password harus sesuai.',
-            'kota_id.required' => 'Kota harus dipilih.',
+            'wilayah_id.required' => 'wilayah harus dipilih.',
             'no_telp.required' => 'Nomor telepon harus diisi.',
             'no_telp.numeric' => 'Nomor telepon harus berupa angka.',
             'no_telp.digits_between' => 'Nomor telepon memiliki minimal 11 karakter.',
@@ -46,8 +46,8 @@ class RegisterController extends Controller
             $user->nama = ucwords(trim($request->nama));
             $user->role = 3;
             $user->email = $request->email;
-            $user->password = bcrypt($request->password);
-            $user->kota_id = $request->kota_id;
+            $user->password = $request->password;
+            $user->wilayah_id = $request->wilayah_id;
             $user->no_telp = $request->no_telp;
             $user->foto_profil = 'dummy.png';
             $user->save();

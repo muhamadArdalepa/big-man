@@ -42,13 +42,13 @@
                                     @error('password') <p class='text-danger text-xs pt-1'> {{ $message }} </p> @enderror
                                 </div>
                                 <div class="flex flex-col mb-3">
-                                    <select id="kota_id" name="kota_id" class="form-control @error('kota_id') is-invalid @enderror " style="color: #adb5bd;">
-                                        <option selected disabled>Kota</option>
-                                        @foreach($kotas as $kota)
-                                        <option value="{{$kota->id}}" {{old('kota_id') == $kota->id ? 'selected' : ''}}>{{$kota->kota}}</option>
+                                    <select id="wilayah_id" name="wilayah_id" class="form-control @error('wilayah_id') is-invalid @enderror " style="color: #adb5bd;">
+                                        <option selected disabled>wilayah</option>
+                                        @foreach($wilayahs as $wilayah)
+                                        <option value="{{$wilayah->id}}" {{old('wilayah_id') == $wilayah->id ? 'selected' : ''}}>{{$wilayah->nama_wilayah}}</option>
                                         @endforeach
                                     </select>
-                                    @error('kota_id') <p class='text-danger text-xs pt-1'> {{ $message }} </p> @enderror
+                                    @error('wilayah_id') <p class='text-danger text-xs pt-1'> {{ $message }} </p> @enderror
                                 </div>
                                 <div class="form-check form-check-info text-start">
                                     <input class="form-check-input @error('terms') is-invalid @enderror" type="checkbox" name="terms" id="flexCheckDefault" >
@@ -74,7 +74,7 @@
 @endsection
 @push('js')
 <script>
-    document.getElementById('kota_id').addEventListener('click',function (e) {
+    document.getElementById('wilayah_id').addEventListener('click',function (e) {
         e.target.style.color = '#495057'
     })
 </script>

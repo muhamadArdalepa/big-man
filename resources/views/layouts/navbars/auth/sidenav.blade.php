@@ -66,7 +66,7 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteName() == 'teknisi' ? 'active' : '' }}" href="{{ route('teknisi') }}">
+                <a class="nav-link {{in_array(request()->route()->getName(), ['teknisi','teknisi.show']) ? 'active' : '' }}" href="{{ route('teknisi') }}">
                     <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
                     </div>
@@ -82,7 +82,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteName() == 'profile' ? 'active' : '' }}" href="{{ route('profile') }}">
+                <a class="nav-link " href="">
                     <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
                     </div>

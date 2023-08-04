@@ -40,12 +40,12 @@
 				<div class="card-body">
 					<div class="d-flex gap-3 flex-column flex-sm-row">
 						<div class="d-flex align-items-center">
-							<label for="kota" class="m-0 d-none d-sm-inline-block">Kota</label>
-							<select class="form-control m-0 ms-sm-2" id="kota">
-								<option value="">Semua Kota</option>
-								@foreach ($kotas as $kota)
-								<option value="{{$kota->id}}" {{auth()->
-									user()->kota_id==$kota->id?'selected':''}}>{{$kota->kota}}
+							<label for="wilayah" class="m-0 d-none d-sm-inline-block">wilayah</label>
+							<select class="form-control m-0 ms-sm-2" id="wilayah">
+								<option value="">Semua wilayah</option>
+								@foreach ($wilayahs as $wilayah)
+								<option value="{{$wilayah->id}}" {{auth()->
+									user()->wilayah_id==$wilayah->id?'selected':''}}>{{$wilayah->nama_wilayah}}
 								</option>
 								@endforeach
 							</select>
@@ -89,11 +89,11 @@
 				<div class="d-flex align-items-center w-100">
 					<h5 class="modal-title" id="ModalLabel">Tambah Tim</h5>
 					<div class="form-group d-flex align-items-center gap-2 mb-0 ms-auto">
-						<label for="kota_id" class="m-0">Kota</label>
-						<select class="form-control" id="kota_id" tabindex="5">
-							@foreach($kotas as $kota)
-							<option value="{{$kota->id}}" {{auth()->user()->kota_id==$kota->id?'selected':''}}
-								>{{$kota->kota}}</option>
+						<label for="wilayah_id" class="m-0">wilayah</label>
+						<select class="form-control" id="wilayah_id" tabindex="5">
+							@foreach($wilayahs as $wilayah)
+							<option value="{{$wilayah->id}}" {{auth()->user()->wilayah_id==$wilayah->id?'selected':''}}
+								>{{$wilayah->nama_wilayah}}</option>
 							@endforeach
 						</select>
 					</div>
@@ -121,13 +121,13 @@
 
 <script>
 	// init
-	const kota = document.getElementById('kota');
-	const kotaModal = document.getElementById('kota_id');
+	const wilayah = document.getElementById('wilayah');
+	const wilayahModal = document.getElementById('wilayah_id');
 	let teknisiIdArray = [];
 	let ketuaId = null
-	let kotaValue = kota.value;
-	const baseUrl = `api/tim?`
-	let url = `${baseUrl}kota=${kota}`;
+	let wilayahValue = wilayah.value;
+	const baseUrl = `{{env('APP_URL')}}/api/tim?`
+	let url = `${baseUrl}wilayah=${wilayah}`;
 	let timer;
 
 	// functions
@@ -201,7 +201,7 @@
 									Detail
 								</button>
 								<div class="ms-auto text-end">
-									<small class="text-muted d-block text-xxs font-weight-bolder opacity-7 m-0 text-uppercase">${item.kota}</small>
+									<small class="text-muted d-block text-xxs font-weight-bolder opacity-7 m-0 text-uppercase">${item.wilayah}</small>
 									<small class="text-muted">${item.timestamp}</small>
 								</div>
 							</div>
@@ -217,9 +217,9 @@
 	}
 	function searchAndLoadData() {
 		const searchQuery = document.getElementById('search').value;
-		const selectedCity = document.getElementById('kota').value;
+		const selectedCity = document.getElementById('wilayah').value;
 		const selectedDate = document.getElementById('tanggal').value;
-		url = `${baseUrl}search=${searchQuery}&kota=${selectedCity}&tanggal=${selectedDate}`;
+		url = `${baseUrl}search=${searchQuery}&wilayah=${selectedCity}&tanggal=${selectedDate}`;
 		loadTims(url);
 	}
 	function debounceSearchAndLoadData() {
@@ -244,8 +244,8 @@
 	function templateSelection(teknisi) {
 		return $(`<span class="text-muted">Cari Teknisi . . . </span>`);
 	};
-	function initSelect2(kotaId, e) {
-		url2 = `api/select2-tim-teknisi?kota=${kotaId}`
+	function initSelect2(wilayahId, e) {
+		url2 = `api/select2-tim-teknisi?wilayah=${wilayahId}`
 		if (e.length > 0) {
 			excepted = encodeURIComponent(JSON.stringify(e));
 			url2 += `&teknisis=${excepted}`
@@ -291,25 +291,25 @@
 
 		teknisiCard.remove()
 		$('#teknisi-select').select2('destroy')
-		initSelect2(kotaModal.value, teknisiIdArray);
+		initSelect2(wilayahModal.value, teknisiIdArray);
 	}
 	// event listeners
 	document.addEventListener('DOMContentLoaded', function () {
 		searchAndLoadData();
 
 		document.getElementById('search').addEventListener('keyup', debounceSearchAndLoadData);
-		document.getElementById('kota').addEventListener('change', searchAndLoadData);
+		document.getElementById('wilayah').addEventListener('change', searchAndLoadData);
 		document.getElementById('tanggal').addEventListener('change', searchAndLoadData);
 
-		initSelect2(kotaModal.value, teknisiIdArray);
+		initSelect2(wilayahModal.value, teknisiIdArray);
 
-		kotaModal.addEventListener('change', () => {
+		wilayahModal.addEventListener('change', () => {
 			ketuaId = null
 			teknisiIdArray = []
 			document.getElementById('teknisi-container').innerHTML = '';
 			$('#teknisi-select').select2('destroy');
 			$('#teknisi-select').val(null).trigger('change');
-			initSelect2(kotaModal.value, teknisiIdArray)
+			initSelect2(wilayahModal.value, teknisiIdArray)
 		});
 
 		$('#teknisi-select').on('select2:select', e => {
@@ -317,7 +317,7 @@
 			teknisiIdArray.push(teknisiId)
 			$('#teknisi-select').select2('destroy')
 			$('#teknisi-select').val(null).trigger('change')
-			initSelect2(kotaModal.value, teknisiIdArray);
+			initSelect2(wilayahModal.value, teknisiIdArray);
 			url = 'api/teknisi/' + teknisiId
 			fetch(url)
 				.then(response => response.json())
@@ -372,7 +372,7 @@
 							showConfirmButton: false,
 						});
 						$('#Modal').modal('hide');
-						kota.value = kotaModal.value
+						wilayah.value = wilayahModal.value
 						searchAndLoadData();
 					}
 				})
@@ -383,7 +383,7 @@
 
 		})
 		$('#Modal').on('shown.bs.modal', e => {
-			$('#kota_id').val(kota.value).trigger('change');
+			$('#wilayah_id').val(wilayah.value).trigger('change');
 		})
 		$('#Modal').on('hide.bs.modal', e => {
 			setTimeout(() => {
@@ -392,7 +392,7 @@
 				document.getElementById('teknisi-container').innerHTML = '';
 				$('#teknisi-select').select2('destroy');
 				$('#teknisi-select').val(null).trigger('change');
-				initSelect2(kotaModal.value, teknisiIdArray)
+				initSelect2(wilayahModal.value, teknisiIdArray)
 			}, 250)
 		})
 	});

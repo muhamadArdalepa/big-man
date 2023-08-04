@@ -18,7 +18,7 @@ class TimAnggotaFactory extends Factory
     {
         return [
             'tim_id' => function () {
-                return \App\Models\Tim::inRandomOrder()->first()->id; // Mengambil ID kota secara acak dari model Kota
+                return \App\Models\Tim::inRandomOrder()->first()->id; // Mengambil ID wilayah secara acak dari model wilayah
             },
             'user_id' => function () {
                 $penerima = \App\Models\User::factory()->create(['role' => 2]);

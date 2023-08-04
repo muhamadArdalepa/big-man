@@ -13,4 +13,9 @@ class Pemasangan extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function pekerjaan()
+    {
+        return $this->hasOne(Pekerjaan::class);
+    }
 }

@@ -1,5 +1,10 @@
 import PerfectScrollbar from 'perfect-scrollbar';
 
+import Swal from 'sweetalert2';
+window.Swal = Swal;
+
+import bootstrap from 'bootstrap' ;
+window.bootstrap = bootstrap;
 
 "use strict";
 (function () {

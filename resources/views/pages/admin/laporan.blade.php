@@ -16,12 +16,12 @@
         <div class="card-header pb-0">
             <div class="d-flex gap-3">
                 <div class="d-flex align-items-center">
-                    <label for="kota" class="m-0 d-none d-sm-inline-block">Kota</label>
-                    <select class="form-control m-0 ms-sm-2" id="kota">
-                        <option value="">Semua Kota</option>
-                        @foreach ($kotas as $kota)
-                        <option value="{{$kota->id}}" {{auth()->
-                            user()->kota_id==$kota->id?'selected':''}}>{{$kota->kota}}
+                    <label for="wilayah" class="m-0 d-none d-sm-inline-block">wilayah</label>
+                    <select class="form-control m-0 ms-sm-2" id="wilayah">
+                        <option value="">Semua Wilayah</option>
+                        @foreach ($wilayahs as $wilayah)
+                        <option value="{{$wilayah->id}}" {{auth()->
+                            user()->wilayah_id==$wilayah->id?'selected':''}}>{{$wilayah->nama_wilayah}}
                         </option>
                         @endforeach
                     </select>
@@ -55,6 +55,8 @@
                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                 Status</th>
                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                Waktu Lapor</th>
+                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                             </th>
                         </tr>
                     </thead>
@@ -84,14 +86,14 @@
                     <div class="col-4">
                         <div class="form-group">
                             <div class="d-flex align-items-center">
-                                <label for="no_telp" class="form-control-label">Kota</label>
+                                <label for="no_telp" class="form-control-label">wilayah</label>
                             </div>
-                            <select class="form-control" id="kota_id" tabindex="5">
-                                @foreach($kotas as $kota)
-                                <option value="{{$kota->id}}">{{$kota->kota}}</option>
+                            <select class="form-control" id="wilayah_id" tabindex="5">
+                                @foreach($wilayahs as $wilayah)
+                                <option value="{{$wilayah->id}}">{{$wilayah->nama_wilayah}}</option>
                                 @endforeach
                             </select>
-                            <div id="kota_idFeedback" class="invalid-feedback text-xs"></div>
+                            <div id="wilayah_idFeedback" class="invalid-feedback text-xs"></div>
                         </div>
                     </div>
                     <div class="col-8">
@@ -144,7 +146,7 @@
                             <label for="jenis_gangguan_id">Jenis Gangguan</label>
                             <select id="jenis_gangguan_id" class="form-control">
                                 @foreach($jenis_gangguans as $jg)
-                                <option value="{{$jg->id}}">{{$jg->jenis_gangguan}}</option>
+                                <option value="{{$jg->id}}">{{$jg->nama_gangguan}}</option>
                                 @endforeach
                             </select>
                             <div id="jenis_gangguan_idFeedback" class="invalid-feedback text-xs"></div>
@@ -185,19 +187,19 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     // init
-    let kota = $('#kota').val();
-    let kotaModal = $('#kota_id').val();
+    let wilayah = $('#wilayah').val();
+    let wilayahModal = $('#wilayah_id').val();
     let tanggal = $('#tanggal').val();
     const baseUrl = 'api/laporan'
-    let url = `${baseUrl}?kota=${kota}&tanggal=${tanggal}`
+    let url = `${baseUrl}?wilayah=${wilayah}&tanggal=${tanggal}`
 
     let isNewPelanggan = false;
 
     // functions
-    function initSelect2(kotaModal) {
+    function initSelect2(wilayahModal) {
         $('#pelanggan').select2({
             ajax: {
-                url: `api/select2-laporan-pelanggan?kota=${kotaModal}`,
+                url: `api/select2-laporan-pelanggan?wilayah=${wilayahModal}`,
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
@@ -218,41 +220,6 @@
         });
     }
 
-
-    function deleteTeknisi(id) {
-        Swal.fire({
-            title: 'Konfirmasi',
-            text: 'Apakah Anda yakin ingin menghapus data teknisi ini?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, Hapus',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: `/api/teknisi/delete/${id}`,
-                    type: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    success: function (response) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: response.message,
-                            timer: 1500,
-                            showConfirmButton: false,
-                        });
-                        table.ajax.reload()
-                    },
-                    error: function (response) {
-                        Swal.fire('Error', response.message, 'error');
-                    }
-                });
-            }
-        });
-    }
-
     // end functions
 
     // event listeners
@@ -264,7 +231,7 @@
                 serverside: true,
                 dataSrc: '',
             },
-            dom:"<'d-flex flex-column flex-md-row gap-3 align-items-center '<'d-flex align-items-center w-100 w-sm-auto'<'whitespace-nowrap'B><'ms-sm-3 ms-auto'l>><'ms-0 ms-md-auto'f>>" +
+            dom: "<'d-flex flex-column flex-md-row gap-3 align-items-center '<'d-flex align-items-center w-100 w-sm-auto'<'whitespace-nowrap'B><'ms-sm-3 ms-auto'l>><'ms-0 ms-md-auto'f>>" +
                 "<'row'<'col-sm-12't>>" +
                 "<'row'<'col-sm-5'i><'col-sm-7'p>>",
             buttons: [
@@ -280,13 +247,13 @@
                     className: 'text-center',
                 },
                 {
-                    data: 'pelapor.nama',
+                    data: 'pelapor',
                 },
                 {
-                    data: 'penerima.nama',
+                    data: 'penerima',
                 },
                 {
-                    data: 'jenis_gangguan.jenis_gangguan',
+                    data: 'nama_gangguan',
                 },
                 {
                     data: 'status',
@@ -322,6 +289,16 @@
                     }
                 },
                 {
+                    data: 'waktu',
+                    className: 'text-center',
+                    render: function (data, type) {
+                        if (type === 'display') {
+                            return data.slice(11,-3)
+                        }
+                        return data;
+                    }
+                },
+                {
                     data: 'id',
                     orderable: false,
                     searchable: false,
@@ -340,10 +317,10 @@
             ],
             language: {
                 oPaginate: {
-                    sNext:      '<i class="fa fa-forward"></i>',
-                    sPrevious:  '<i class="fa fa-backward"></i>',
-                    sFirst:     '<i class="fa fa-step-backward"></i>',
-                    sLast:      '<i class="fa fa-step-forward"></i>'
+                    sNext: '<i class="fa fa-forward"></i>',
+                    sPrevious: '<i class="fa fa-backward"></i>',
+                    sFirst: '<i class="fa fa-step-backward"></i>',
+                    sLast: '<i class="fa fa-step-forward"></i>'
                 }
             },
             createdRow: function (row) {
@@ -351,33 +328,33 @@
                 cell.addClass('force-wrap-space');
             },
         });
-        initSelect2(kotaModal);
+        initSelect2(wilayahModal);
         const pBaru = document.getElementById('nama');
         pBaru.style.display = 'none';
 
-        $('#kota').on('change', function () {
-            kota = $('#kota').val()
+        $('#wilayah').on('change', function () {
+            wilayah = $('#wilayah').val()
             tanggal = $('#tanggal').val()
-            url = `${baseUrl}?kota=${kota}&tanggal=${tanggal}`
+            url = `${baseUrl}?wilayah=${wilayah}&tanggal=${tanggal}`
             table.ajax.url(url).load()
-            kotaModal = kota
+            wilayahModal = wilayah
         });
 
         $('#tanggal').on('change', function () {
-            kota = $('#kota').val()
+            wilayah = $('#wilayah').val()
             tanggal = $('#tanggal').val()
-            url = `${baseUrl}?kota=${kota}&tanggal=${tanggal}`
+            url = `${baseUrl}?wilayah=${wilayah}&tanggal=${tanggal}`
             table.ajax.url(url).load()
-            kotaModal = kota
+            wilayahModal = wilayah
         });
 
 
-        $('#kota_id').on('change', function () {
-            kotaModal = $('#kota_id').val();
+        $('#wilayah_id').on('change', function () {
+            wilayahModal = $('#wilayah_id').val();
             if (!isNewPelanggan) {
                 $('#pelanggan').select2('destroy');
                 $('#pelanggan').val(null).trigger('change');
-                initSelect2(kotaModal)
+                initSelect2(wilayahModal)
             }
         });
 
@@ -390,7 +367,7 @@
                 pLama.style.display = 'none';
             } else {
                 pBaru.style.display = 'none';
-                initSelect2(kotaModal)
+                initSelect2(wilayahModal)
                 pLama.style.display = 'inline-block';
             }
             $('#nama').val('');
@@ -420,8 +397,8 @@
                         $('#no_telpFeedback').hide();
                         $('#alamat').removeClass('is-invalid');
                         $('#alamatFeedback').hide();
-                        $('#kota_id').removeClass('is-invalid');
-                        $('#kota_idFeedback').hide();
+                        $('#wilayah_id').removeClass('is-invalid');
+                        $('#wilayah_idFeedback').hide();
                     }
                 })
             }
@@ -461,7 +438,7 @@
                     email: $('#email').val(),
                     password: $('#password').val(),
                     no_telp: $('#no_telp').val(),
-                    kota_id: $('#kota_id').val(),
+                    wilayah_id: $('#wilayah_id').val(),
                     alamat: $('#alamat').val(),
                     jenis_gangguan_id: $('#jenis_gangguan_id').val(),
                     ket: $('#ket').val(),
@@ -498,12 +475,12 @@
                             $('#alamatFeedback').text(response.errors['alamat']);
                             $('#alamat').addClass('is-invalid');
                         }
-                        if (response.errors['kota_id'] == undefined) {
-                            $('#kota_id').removeClass('is-invalid');
-                            $('#kota_idFeedback').hide();
+                        if (response.errors['wilayah_id'] == undefined) {
+                            $('#wilayah_id').removeClass('is-invalid');
+                            $('#wilayah_idFeedback').hide();
                         } else {
-                            $('#kota_idFeedback').text(response.errors['kota_id']);
-                            $('#kota_id').addClass('is-invalid');
+                            $('#wilayah_idFeedback').text(response.errors['wilayah_id']);
+                            $('#wilayah_id').addClass('is-invalid');
                         }
                         if (response.errors['jenis_gangguan_id'] == undefined) {
                             $('#jenis_gangguan_id').removeClass('is-invalid');

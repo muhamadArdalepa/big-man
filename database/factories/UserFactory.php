@@ -22,11 +22,12 @@ class UserFactory extends Factory
         $lastName = fake()->lastName();
         return [
             'nama' => $firstName . ' ' . $lastName,
+            'speciality' => fake()->word().' '.fake()->word(),
             'role' => fake()->randomElement([2, 3]),
             'email' => strtolower($firstName.$lastName).'@big.com',
-            'password' => bcrypt('password'),
-            'kota_id' => function () {
-                return \App\Models\Kota::inRandomOrder()->first()->id;
+            'password' => 'password',
+            'wilayah_id' => function () {
+                return \App\Models\Wilayah::inRandomOrder()->first()->id;
             },
             'no_telp' => fake()->numerify('628##########'),
             'foto_profil' => 'dummy.png',

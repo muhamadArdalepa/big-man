@@ -19,16 +19,26 @@ class LaporanController extends Controller
      */
     public function index(Request $request)
     {
-        $laporans = Laporan::with('pelapor', 'penerima', 'jenis_gangguan');
-        $kota = $request->input('kota');
+        $laporans = Laporan::select(
+            'laporans.id',
+            'pelapor.nama as pelapor',
+            'penerima.nama as penerima',
+            'nama_gangguan',
+            'status',
+            'laporans.created_at as waktu'
+        )
+            ->join('users as pelapor', 'pelapor', '=', 'pelapor.id')
+            ->join('users as penerima', 'penerima', '=', 'penerima.id')
+            ->join('jenis_gangguans', 'jenis_gangguan_id', '=', 'jenis_gangguans.id');
+
+
+        $wilayah = $request->input('wilayah');
         $tanggal = '%' . $request->input('tanggal') . '%';
-        if ($request->has('kota') && !empty($kota)) {
-            $laporans->whereHas('pelapor', function ($query) use ($kota) {
-                $query->where('kota_id', $kota);
-            });
+        if ($request->has('wilayah') && !empty($wilayah)) {
+            $laporans->where('pelapor.wilayah_id',$wilayah);
         }
         if ($request->has('tanggal') && !empty($tanggal)) {
-            $laporans->where('created_at', 'LIKE', $tanggal);
+            $laporans->where('laporans.created_at', 'LIKE', $tanggal);
         }
 
         return response()->json($laporans->get());
@@ -37,10 +47,10 @@ class LaporanController extends Controller
     public function select2_pelanggan(Request $request)
     {
         $results = [];
-        $pelanggans = User::with('kota')->where('role', 3);
+        $pelanggans = User::with('wilayah')->where('role', 3);
 
-        if ($request->has('kota') && !empty($request->kota)) {
-            $pelanggans->where('kota_id', $request->kota);
+        if ($request->has('wilayah') && !empty($request->wilayah)) {
+            $pelanggans->where('wilayah_id', $request->wilayah);
         }
 
         if ($request->has('terms') && !empty($request->terms)) {
@@ -88,7 +98,7 @@ class LaporanController extends Controller
         $validator = Validator::make($request->all(), [
             'nama' => 'required|min:3',
             'email' => 'required|email',
-            'kota_id' => 'required',
+            'wilayah_id' => 'required',
             'no_telp' => 'required|numeric|digits_between:11,15',
             'alamat' => 'required',
             'jenis_gangguan_id' => 'required',
@@ -97,7 +107,7 @@ class LaporanController extends Controller
             'nama.min' => 'Nama harus memiliki minimal 3 karakter.',
             'email.required' => 'Email harus diisi.',
             'email.email' => 'Format email tidak valid.',
-            'kota_id.required' => 'Kota harus dipilih.',
+            'wilayah_id.required' => 'wilayah harus dipilih.',
             'no_telp.required' => 'Nomor telepon harus diisi.',
             'no_telp.numeric' => 'Nomor telepon harus berupa angka.',
             'no_telp.digits_between' => 'Nomor telepon memiliki minimal 11 karakter.',
@@ -112,7 +122,7 @@ class LaporanController extends Controller
             $pemasangan = null;
             if ($request->is_new == 'true') {
                 $pelanggan = new User;
-                $pelanggan->password = bcrypt(Str::random(6));
+                $pelanggan->password = Str::random(6);
                 $pelanggan->role = 3;
                 $pemasangan = new Pemasangan;
                 $pemasangan->user_id = $pelanggan->id;

@@ -13,4 +13,8 @@ class Absen extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function aktivitass()
+    {
+        return $this->hasMany(Aktivitas::class);
+    }
 }
