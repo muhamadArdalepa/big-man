@@ -15,24 +15,37 @@ return new class extends Migration
     {
         Schema::create('pemasangans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')
-                ->constrained()
+            $table->foreignId('pelanggan')
+                ->constrained('users')
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
+            $table->foreignId('marketer')
+                ->constrained('users')
+                ->onDelete('restrict')
+                ->onUpdate('cascade');
+            $table->char('nik');
+            $table->string('foto_ktp');
+            $table->string('foto_rumah');
+            $table->string('foto_modem')->nullable();
+            $table->string('foto_letak_modem')->nullable();
+            $table->string('foto_opm_user')->nullable();
+            $table->string('foto_opm_odp')->nullable();
             $table->text('alamat');
             $table->string('koordinat_rumah');
-            $table->string('koordinat_odp');
-            $table->string('serial_number');
-            $table->string('SSID');
-            $table->string('password');
+            $table->string('koordinat_odp')->nullable();
+            $table->string('serial_number')->nullable();
+            $table->string('SSID')->nullable();
+            $table->string('password')->nullable();
             $table->foreignId('paket_id')
                 ->constrained()
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
-            $table->integer('hasil_opm_user');
-            $table->integer('hasil_opm_odp');
-            $table->integer('kabel_terpakai');
-            $table->string('port_odp');
+            $table->integer('hasil_opm_user')->nullable();
+            $table->integer('hasil_opm_odp')->nullable();
+            $table->integer('kabel_terpakai')->nullable();
+            $table->enum('status',['menunggu konfirmasi','ditolak','sedang diproses','ditunda','aktif','isolir','tidak aktif']);
+            $table->string('port_odp')->nullable();
+            $table->text('ket')->nullable();
             $table->timestamps();
         });
     }

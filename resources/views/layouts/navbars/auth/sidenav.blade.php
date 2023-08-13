@@ -20,23 +20,64 @@
                     <span class="nav-link-text ms-1">Dashboard</span>
                 </a>
             </li>
+
+            @if(auth()->user()->role !== 3)
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteName() == 'pekerjaan' ? 'active' : '' }}" href="{{ route('pekerjaan') }}">
+                        <div
+                        class="icon icon-shape icon-sm text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-briefcase-24 text-primary text-sm opacity-10 "></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Pekerjaan</span>
+                </a>
+            </li>
+            @endif
+
+
+            @if(auth()->user()->role === 3)
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteName() == 'laporan.create' ? 'active' : '' }}" href="{{ route('pemasangan') }}">
+                        <div
+                        class="icon icon-shape icon-sm text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-app text-success text-sm opacity-10 "></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Pemasangan Jaringan</span>
+                </a>
+            </li>
+            @endif
+            @if(auth()->user()->role !== 2)
             <li class="nav-item">
                 <a class="nav-link {{ Route::currentRouteName() == 'laporan' ? 'active' : '' }}" href="{{ route('laporan') }}">
                         <div
                         class="icon icon-shape icon-sm text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="ni ni-single-copy-04 text-warning text-sm opacity-10 "></i>
+                        <i class="ni ni-single-copy-04 text-{{auth()->user()->role === 3 ? 'secondary' : 'danger'}} text-sm opacity-10 "></i>
                     </div>
-                    <span class="nav-link-text ms-1">Laporan</span>
+                    <span class="nav-link-text ms-1">{{auth()->user()->role === 3 ? 'Riwayat Laporan' : 'Laporan'}}</span>
                 </a>
             </li>
+            @endif
+
+            @if(auth()->user()->role === 1)
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteName() == 'pemasangan' ? 'active' : '' }}" href="{{ route('pemasangan') }}">
+                        <div
+                        class="icon icon-shape icon-sm text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-single-copy-04 text-success text-sm opacity-10 "></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Pemasangan</span>
+                </a>
+            </li>
+            @endif
+
+            @if(auth()->user()->role !== 3)
 
             <li class="nav-item">
                 <a class="nav-link {{ Route::currentRouteName() == 'tim' ? 'active' : '' }}" href="{{ route('tim') }}">
                         <div
                         class="icon icon-shape icon-sm text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="ni ni-ungroup text-success text-sm opacity-10 "></i>
+                        <i class="ni ni-ungroup text-secondary text-sm opacity-10 "></i>
                     </div>
-                    <span class="nav-link-text ms-1">Kelola Tim</span>
+                    <span class="nav-link-text ms-1">Tim</span>
                 </a>
             </li>
 
@@ -49,46 +90,63 @@
                     <span class="nav-link-text ms-1">Absensi</span>
                 </a>
             </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteName() == 'pekerjaan' ? 'active' : '' }}" href="{{ route('pekerjaan') }}">
-                        <div
-                        class="icon icon-shape icon-sm text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="ni ni-briefcase-24 text-danger text-sm opacity-10 "></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Pekerjaan</span>
-                </a>
-            </li>
+            @endif
+            
 
             @if (auth()->user()->role === 1)    
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Kelola pengguna</h6>
             </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{in_array(request()->route()->getName(), ['teknisi','teknisi.show']) ? 'active' : '' }}" href="{{ route('teknisi') }}">
-                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Teknisi</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteName() == 'pelanggan' ? 'active' : '' }}" href="{{ route('pelanggan') }}">
-                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Pelanggan</span>
-                </a>
-            </li>
+            
             <li class="nav-item">
                 <a class="nav-link " href="">
                     <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
+                        <i class="ni ni-single-02 text-danger text-sm opacity-10"></i>
                     </div>
                     <span class="nav-link-text ms-1">Admin</span>
                 </a>
             </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{in_array(request()->route()->getName(), ['teknisi','teknisi.show']) ? 'active' : '' }}" href="{{ route('teknisi') }}">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-single-02 text-warning text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Teknisi</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteName() == 'pelanggan' ? 'active' : '' }}" href="{{ route('pelanggan') }}">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-single-02 text-success text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Pelanggan</span>
+                </a>
+            </li>
+
+            <li class="nav-item mt-3">
+                <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Pengaturan</h6>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link " href="#!">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-pin-3 text-dark text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Wilayah</span>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link " href="#!">
+                    <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="ni ni-badge text-dark text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Absen</span>
+                </a>
+            </li>
+
             @endif
 
         

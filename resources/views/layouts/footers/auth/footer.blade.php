@@ -1,6 +1,6 @@
 <footer class="footer pt-3  ">
     <div class="container-fluid">
-        <div class="d-flex align-items-center justify-content-lg-between">
+        <div class="d-flex align-items-center justify-content-md-between">
             <div class="">
                 <div class="copyright text-center text-sm text-muted text-lg-start">
                     ©

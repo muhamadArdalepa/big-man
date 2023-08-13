@@ -29,7 +29,7 @@ return new class extends Migration
                 ->constrained()
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
-            $table->tinyInteger('status')->length(1);
+            $table->enum('status',['menunggu konfirmasi','sedang diproses','ditunda','selesai']);
             $table->string('ket')->nullable();
             $table->timestamps();
         });

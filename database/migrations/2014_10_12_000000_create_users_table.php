@@ -27,7 +27,6 @@ return new class extends Migration
                 ->onDelete('restrict');
             $table->string('no_telp');
             $table->string('foto_profil')->nullable();
-            $table->char('nik')->nullable()->length(16);
             $table->integer('poin')->default(0);
             $table->timestamps();
         });

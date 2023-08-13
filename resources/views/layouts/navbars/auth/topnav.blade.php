@@ -22,13 +22,13 @@
                         data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa fa-bell cursor-pointer"></i>
                     </a>
-                    <ul class="dropdown-menu  dropdown-menu-end  px-2 py-3 me-sm-n4"
+                    <ul class="dropdown-menu  dropdown-menu-end  p-2 me-sm-n4"
                         aria-labelledby="dropdownMenuButton">
-                        <li class="mb-2">
+                        <li class="">
                             <a class="dropdown-item border-radius-md" href="javascript:;">
                                 <div class="d-flex py-1">
                                     <div class="my-auto">
-                                        <img src="#!" class="avatar avatar-sm  me-3 ">
+                                        <img src="{{route('storage.private','/profile/Nilou.webp')}}" class="avatar avatar-sm  me-3 ">
                                     </div>
                                     <div class="d-flex flex-column justify-content-center">
                                         <h6 class="text-sm font-weight-normal mb-1">
@@ -55,7 +55,7 @@
                         <img src="{{route('storage.private','profile/'.auth()->user()->foto_profil)}}" class="avatar avatar-sm"
                             alt="foto profil">
                     </a>
-                    <ul class="dropdown-menu  dropdown-menu-end  px-2 py-3 me-sm-n4" aria-labelledby="dropdownProfile">
+                    <ul class="dropdown-menu  dropdown-menu-end  p-2 me-sm-n4" aria-labelledby="dropdownProfile">
                         <li>
                             <a class="dropdown-item border-radius-md" href="{{route('auth.profile')}}">
                                 <div class="d-flex py-1">

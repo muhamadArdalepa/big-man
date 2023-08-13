@@ -105,11 +105,13 @@
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 <script>
     // inits
+    const appUrl = `{{env('APP_URL')}}`;
     const wilayah = document.getElementById('wilayah');
     const tanggal = document.getElementById('tanggal');
-    const appUrl = `{{env('APP_URL')}}`
-    const baseUrl = appUrl + '/api/absen'
+    const baseUrl = `${appUrl}/api/absen`;
+
     let url = `${baseUrl}?wilayah=${wilayah.value}&tanggal=${tanggal.value}`
+    // end inits
 
     // functions
 
@@ -139,7 +141,7 @@
                             <div class="ms-3" style="white-space: nowrap;">
                                 <div>`+ data + `</div>
                             </div>
-                            <img class="rounded-3" src="{{env('APP_URL')}}/storage/private/profile/${row.foto_profil}" alt="foto profil" height="35">
+                            <img class="rounded-3" src="${appUrl}/storage/private/profile/${row.foto_profil}" alt="foto profil" height="35">
                         </div>
                          `
                         }
@@ -312,8 +314,6 @@
             table.ajax.url(url).load()
         });
     })
-
-
 
 </script>
 

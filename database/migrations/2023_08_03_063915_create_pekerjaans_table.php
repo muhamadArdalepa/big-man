@@ -19,6 +19,14 @@ return new class extends Migration
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('restrict');
+            $table->foreignId('wilayah_id')
+                ->constrained()
+                ->onUpdate('cascade')
+                ->onDelete('restrict');
+            $table->foreignId('jenis_pekerjaan_id')
+                ->constrained()
+                ->onUpdate('cascade')
+                ->onDelete('restrict');
             $table->foreignId('laporan_id')
                 ->nullable()
                 ->constrained()
@@ -29,7 +37,9 @@ return new class extends Migration
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('restrict');
-            $table->tinyInteger('status')->length(1);
+            $table->integer('poin');
+            $table->string('detail')->nullable();
+            $table->enum('status',['sedang diproses','ditunda','selesai','dibatalkan']);
             $table->timestamps();
         });
     }

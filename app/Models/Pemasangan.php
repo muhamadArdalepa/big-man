@@ -8,12 +8,20 @@ use Illuminate\Database\Eloquent\Model;
 class Pemasangan extends Model
 {
     use HasFactory;
-
-    public function user()
+    protected $guarded = [];
+    public function pelanggan()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class,'pelanggan','id');
     }
-
+    
+    public function marketer()
+    {
+        return $this->belongsTo(User::class,'marketer','id');
+    }
+    public function paket()
+    {
+        return $this->belongsTo(Paket::class);
+    }
     public function pekerjaan()
     {
         return $this->hasOne(Pekerjaan::class);

@@ -1,14 +1,5 @@
 @extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
 
-@push('css')
-<link href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
-<link href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" rel="stylesheet" />
-<link href="{{asset('assets/css/custom-datatables.css')}}" rel="stylesheet" />
-<link href="{{asset('assets/css/custom-select2.css')}}" rel="stylesheet" />
-
-
-@endpush
-
 @section('content')
 @include('layouts.navbars.auth.topnav', ['title' => 'Teknisi'])
 <div class="container-fluid px-0 px-sm-4 py-4">
@@ -86,12 +77,12 @@
                 <div id="myCamera" class="mt-3 d-block rounded-3 overflow-hidden">
                 </div>
                 <div id="fotoFeedback" class="invalid-feedback text-xs"></div>
-                <textarea id="aktivitas" class="form-control mt-3" rows="3" placeholder="Aktivitas"></textarea>
-                <div id="aktivitasFeedback" class="invalid-feedback text-xs"></div>
                 <div class="d-flex justify-content-between gap-3 mt-3">
                     <button id="cameraButton" class="btn bg-gradient-primary btn-lg flex-grow-1">Ambil Foto</button>
-                    <button id="absenButton" class="btn bg-gradient-suuccess btn-lg flex-grow-1">Absen</button>
+                    <button id="absenButton" class="btn bg-gradient-success btn-lg flex-grow-1">Absen</button>
                 </div>
+                <textarea id="aktivitas" class="form-control mt-3" rows="3" placeholder="Aktivitas"></textarea>
+                <div id="aktivitasFeedback" class="invalid-feedback text-xs"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">Close</button>
@@ -119,18 +110,9 @@
 </div>
 
 @endpush
+@include('components.dataTables')
 @push('js')
 
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.25/webcam.min.js"></script>
 
 <script>
@@ -145,7 +127,8 @@
     let url = baseUrl;
 
     // functions
-    `@if($action)`
+    // @if($action)
+
     function startCamera(btn) {
         const cameraWidth = document.getElementById('myCamera').offsetWidth
         Webcam.set({
@@ -170,7 +153,7 @@
             document.getElementById('myCamera').innerHTML = '<img src="' + data_uri + '" />';
         });
         btn.setAttribute('onclick', 'startCamera(this)');
-        btn.classList.replace('bg-gradient-primary', 'bg-gradient-warning');
+        btn.classList.replace('bg-gradient-primary', 'btn-link');
         btn.innerHTML = 'Ulangi'
         $('#absenButton').show()
 
@@ -187,7 +170,7 @@
     function getAddressFromCoordinates(position) {
         var latitude = position.coords.latitude;
         var longitude = position.coords.longitude;
-        koordinat = latitude + ', ' + longitude
+        koordinat = latitude + ',' + longitude
         // Buat permintaan ke API Nominatim
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
             .then(response => response.json())
@@ -219,7 +202,8 @@
                 break;
         }
     }
-    `@endif`
+    // @endif
+
     // event listeners
     $(document).ready(() => {
         $('#aktivitasFeedback').hide();
@@ -355,7 +339,7 @@
                 }
             },
             order: [
-                [0, 'desc']
+                [0, 'asc']
             ]
         });
 
@@ -396,7 +380,8 @@
             });
         });
 
-        `@if($action)`
+        // @if($action)
+        
         $('#absenModal').on('shown.bs.modal', function () {
             startCamera(document.getElementById('cameraButton'))
             $('#absenModalDate').text(updateClock())
@@ -486,7 +471,7 @@
                 }
             });
         })
-        `@endif`
+        // @endif
 
         $('#Modal').on('hide.bs.modal', function () {
             $('#Modal .modal-body').text('')

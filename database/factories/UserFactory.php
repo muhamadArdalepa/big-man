@@ -24,7 +24,7 @@ class UserFactory extends Factory
             'nama' => $firstName . ' ' . $lastName,
             'speciality' => fake()->word().' '.fake()->word(),
             'role' => fake()->randomElement([2, 3]),
-            'email' => strtolower($firstName.$lastName).'@big.com',
+            'email' => strtolower($firstName.$lastName).fake()->numberBetween(1-100).'@big.com',
             'password' => 'password',
             'wilayah_id' => function () {
                 return \App\Models\Wilayah::inRandomOrder()->first()->id;

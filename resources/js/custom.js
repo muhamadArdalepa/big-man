@@ -1,11 +1,5 @@
 import PerfectScrollbar from 'perfect-scrollbar';
 
-import Swal from 'sweetalert2';
-window.Swal = Swal;
-
-import bootstrap from 'bootstrap' ;
-window.bootstrap = bootstrap;
-
 "use strict";
 (function () {
   var isWindows = navigator.platform.indexOf('Win') > -1 ? true : false;
@@ -472,10 +466,7 @@ btnLogout.addEventListener('click',()=>{
     confirmButtonText: 'Ya, Keluar!',
     cancelButtonText: 'Batal',
   }).then((result) => {
-    // Jika pengguna mengklik tombol "Ya, Logout!"
     if (result.isConfirmed) {
-      // Lakukan submit form atau tindakan logout lainnya
-      // Gantikan "formID" dengan ID formulir Anda
       document.getElementById('logout-form').submit();
     }
   });

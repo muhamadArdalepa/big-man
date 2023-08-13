@@ -1,12 +1,7 @@
 @extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
 
 @push('css')
-<link href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
-<link href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" rel="stylesheet" />
-<link href="{{asset('assets/css/custom-datatables.css')}}" rel="stylesheet" />
 <link href="{{asset('assets/css/custom-select2.css')}}" rel="stylesheet" />
-
-
 @endpush
 
 @section('content')
@@ -137,19 +132,8 @@
     </div>
 </div>
 @endpush
+@include('components.dataTables')
 @push('js')
-
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 <script>
     const baseUrl = 'api/teknisi'
     let url = baseUrl + '?wilayah=' + $('#wilayah').val()
@@ -185,6 +169,7 @@
                         <div class="d-flex flex-row-reverse justify-content-end align-items-center">
                             <div class="ms-3" style="white-space: nowrap;">
                                 <div>`+ data + `</div>
+                                <p class="text-xs text-secondary mb-0">${row.speciality}</p>
                             </div>
                             <img class="rounded-3" src="{{env('APP_URL')}}/storage/private/profile/${row.foto_profil}" alt="foto profil" height="35">
                         </div>

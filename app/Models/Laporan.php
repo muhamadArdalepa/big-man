@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Laporan extends Model
 {
     use HasFactory;
-
+    protected $guarded = [];
     public function pelapor()
     {
         return $this->belongsTo(User::class, 'pelapor');

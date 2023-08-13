@@ -1,0 +1,32 @@
+#Modal>div>div>div.modal-body span>span.selection>span {
+    border-radius: .5rem !important;
+    box-shadow: none !important;
+    border-color: #d2d6da !important;
+}
+
+#Modal>div>div>div.modal-body span>span.selection>span[aria-expanded=true] {
+    border-color: #5e72e4 !important;
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+#Modal>span>span>span.select2-search.select2-search--dropdown>input {
+    border-radius: 0.5rem !important;
+    box-shadow: none !important;
+    border-color: #5e72e4 !important;
+}
+
+
+#Modal>span>span.select2-dropdown {
+    border-radius: 0 0 .5rem .5rem !important;
+    border-color: #5e72e4 !important;
+}
+
+#Modal>div>div>div.modal-body.ps>div:nth-child(1)>div.col-8>div>span>span.selection>span {
+    padding: 0.5rem 0.75rem;
+}
+
+#Modal>div>div>div.modal-body.ps>div:nth-child(1)>div.col-8>div>span>span.selection>span>#select2-pelanggan-container {
+    font-size: 0.875rem !important;
+    font-weight: 400 !important;
+    line-height: 1.4rem !important;
+}

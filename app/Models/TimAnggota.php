@@ -14,6 +14,11 @@ class TimAnggota extends Model
         return $this->belongsTo(Tim::class);
     }
 
+    public function pekerjaans()
+    {
+        return $this->hasMany(Pekerjaan::class,'tim_id');
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

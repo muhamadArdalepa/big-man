@@ -1,9 +1,6 @@
 @extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
 
 @push('css')
-<link href="https://cdn.datatables.net/1.13.5/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
-<link href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" rel="stylesheet" />
-<link href="{{asset('assets/css/custom-datatables.css')}}" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
@@ -30,7 +27,7 @@
                     <label for="tanggal" class="m-0 d-none d-sm-inline-block">Tanggal</label>
                     <input type="date" id="tanggal" class="form-control ms-2" value="{{$date}}">
                 </div>
-                <button class="btn btn-icon btn-3 btn-primary m-0 ms-auto" type="button" data-bs-toggle="modal"
+                <button class="btn btn-icon btn-3 bg-gradient-danger m-0 ms-auto" type="button" data-bs-toggle="modal"
                     data-bs-target="#Modal" data-bs-title="Tambah Laporan">
                     <span class="btn-inner--icon"><i class="fas fa-plus"></i></span>
                     <span class="btn-inner--text d-none d-sm-inline-block">Tambah Pekerjaan</span>
@@ -43,17 +40,17 @@
             <div class="table-responsive">
                 <table class="table table-hover" id="table" width="100%" cellspacing="0">
                     <thead>
-                        <tr>
+                        <tr class="align-middle">
                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ">
-                                #</th>
+                            </th>
                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
                                 TIM</th>
                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                Jenis Pekerjaan</th>
+                                Pekerjaan</th>
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                Detail</th>
                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                Pelanggan</th>
-                            <th class="text-ceter text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                Waktu Penugasan</th>
+                                Waktu</th>
                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                 Status</th>
                             <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
@@ -73,21 +70,19 @@
 @push('modal')
 <!-- modal -->
 <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="ModalLabel">Tambah Laporan</h5>
+                <h5 class="modal-title" id="ModalLabel">Tambah Pekerjaan</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="row">
-                    <div class="col-4">
+                    <div class="col-sm-6">
                         <div class="form-group">
-                            <div class="d-flex align-items-center">
-                                <label for="no_telp" class="form-control-label">wilayah</label>
-                            </div>
+                            <label for="no_telp" class="form-control-label">Wilayah</label>
                             <select class="form-control" id="wilayah_id" tabindex="5">
                                 @foreach($wilayahs as $wilayah)
                                 <option value="{{$wilayah->id}}">{{$wilayah->nama_wilayah}}</option>
@@ -96,64 +91,45 @@
                             <div id="wilayah_idFeedback" class="invalid-feedback text-xs"></div>
                         </div>
                     </div>
-                    <div class="col-8">
+                    <div class="col-sm-6">
                         <div class="form-group">
-                            <div class="d-flex align-items-center">
-                                <label for="nama" class="form-control-label">Nama Pelanggan</label>
-                                <div class="form-check form-switch ms-auto">
-                                    <input class="form-check-input" type="checkbox" id="pelanggan-baru">
-                                    <label class="form-check-label" for="pelanggan-baru">Pelanggan baru</label>
-                                </div>
-                            </div>
-                            <input type="nama" id="nama" class="form-control" placeholder="Nama Pelanggan" autofocus
-                                tabindex="1">
-                            <select id="pelanggan" class="form-control w-100"></select>
-                            <div id="namaFeedback" class="invalid-feedback text-xs"></div>
+                            <label for="no_telp" class="form-control-label">Jenis Pekerjaan</label>
+                            <select class="form-control" id="wilayah_id" tabindex="5">
+                                @foreach($jenis_pekerjaans as $jenis_pekerjaan)
+                                <option value="{{$jenis_pekerjaan->id}}">{{$jenis_pekerjaan->nama_pekerjaan}}</option>
+                                @endforeach
+                            </select>
+                            <div id="jenis_pekerjaan_idFeedback" class="invalid-feedback text-xs"></div>
                         </div>
                     </div>
-
                 </div>
                 <div class="row">
+                    <div class="col-sm-6">
 
-                    <div class="col-4">
                         <div class="form-group">
-                            <label for="no_telp" class="form-control-label">No Telepon</label>
-                            <input type="number" class="form-control" id="no_telp" placeholder="No Telepon"
-                                tabindex="4">
-                            <div id="no_telpFeedback" class="invalid-feedback text-xs"></div>
+                            <label for="laporan" class="form-control-label">Nama Pelanggan</label>
+                            <select id="laporan" class="form-control">
+                                <option value=""></option>
+                            </select>
                         </div>
                     </div>
-                    <div class="col-8">
+                    <div class="col-sm-6">
                         <div class="form-group">
-                            <label for="example-text-input" class="form-control-label">Email</label>
-                            <input type="email" id="email" class="form-control" placeholder="Alamat email" tabindex="2">
-                            <div id="emailFeedback" class="invalid-feedback text-xs"></div>
+                            <label for="koordinat_rumah" class="form-control-label">Koordinat Rumah</label>
+                            <input type="text" id="koordinat_rumah" class="form-control">
                         </div>
-
                     </div>
                 </div>
-
                 <div class="form-group">
-                    <label for="alamat">Alamat</label>
-                    <textarea class="form-control" id="alamat" rows="3" placeholder="Alamat"></textarea>
-                    <div id="alamatFeedback" class="invalid-feedback text-xs"></div>
+                    <label for="tim" class="form-control-label">Alamat</label>
+                    <textarea id="alamat" rows="2" class="form-control"></textarea>
                 </div>
-
-                <div class="row">
-
-                    <div class="col-6">
-                        
-                    </div>
-                    <div class="col-6">
-                        <div class="form-group">
-                            <label for="ket">Keterangan</label>
-                            <textarea class="form-control" id="ket" rows="3" placeholder="Keterangan"></textarea>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label for="tim" class="form-control-label">Tim Teknisi</label>
+                    <select id="tim" class="form-control">
+                        <option value=""></option>
+                    </select>
                 </div>
-
-
-
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn bg-gradient-secondary me-2" data-bs-dismiss="modal">Close</button>
@@ -163,30 +139,20 @@
     </div>
 </div>
 @endpush
+@include('components.dataTables')
 @push('js')
-
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.5/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
     // init
+    const appUrl = `{{env('APP_URL')}}`
+    const baseUrl = `${appUrl}/api/pekerjaan`
+
     let wilayah = $('#wilayah').val();
     let wilayahModal = $('#wilayah_id').val();
     let tanggal = $('#tanggal').val();
-    const appUrl = `{{env('APP_URL')}}`
-    const baseUrl = `${appUrl}/api/pekerjaan`
-    let url = `${baseUrl}?wilayah=${wilayah}&tanggal=${tanggal}`
 
-    let isNewPelanggan = false;
+    let url = `${baseUrl}?wilayah=${wilayah}&tanggal=${tanggal}`
 
     // functions
     function initSelect2(wilayahModal) {
@@ -212,42 +178,6 @@
             theme: 'bootstrap-5',
         });
     }
-
-
-    function deleteTeknisi(id) {
-        Swal.fire({
-            title: 'Konfirmasi',
-            text: 'Apakah Anda yakin ingin menghapus data teknisi ini?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, Hapus',
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: `/api/teknisi/delete/${id}`,
-                    type: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    success: function (response) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: response.message,
-                            timer: 1500,
-                            showConfirmButton: false,
-                        });
-                        table.ajax.reload()
-                    },
-                    error: function (response) {
-                        Swal.fire('Error', response.message, 'error');
-                    }
-                });
-            }
-        });
-    }
-
     // end functions
 
     // event listeners
@@ -272,69 +202,82 @@
 
                 {
                     data: 'id',
-                    className: 'text-center',
+                    className: 'text-center p-0 pe-3 w-0',
                 },
                 {
-                    data: 'pelapor',
+                    data: 'anggota',
+                    render: function (data, type, row) {
+                        if (type === 'display') {
+                            return `
+                        <div class="d-flex flex-row-reverse justify-content-end align-items-center">
+                            <div class="ms-3" style="white-space: nowrap;">
+                                <p class="text-xs text-secondary mb-0">TIM ${row.tim_id}</p>
+                                <div>`+ data + `</div>
+                            </div>
+                            <img class="rounded-3" src="{{env('APP_URL')}}/storage/private/profile/${row.foto_profil}" alt="foto profil" height="35">
+                        </div>
+                         `
+                        }
+                        return data;
+                    }
                 },
                 {
-                    data: 'penerima',
+                    data: 'nama_pekerjaan',
+                    className: 'w-0'
                 },
                 {
-                    data: 'jenis_gangguan',
+                    data: 'detail',
+                },
+                {
+                    data: 'created_atFormat',
+                    className: 'text-center w-0'
                 },
                 {
                     data: 'status',
-                    className: 'text-center',
-                    render: function (data, type) {
+                    className: 'text-center w-0',
+                    render: function (data, type, row) {
                         if (type === 'display') {
                             let badge = []
                             switch (data) {
                                 case 1:
                                     badge[0] = 'warning'
                                     badge[1] = 'Pending'
+                                    badge[2] = ''
                                     break;
                                 case 2:
                                     badge[0] = 'secondary'
                                     badge[1] = 'Diterima'
+                                    badge[2] = ''
                                     break;
                                 case 3:
                                     badge[0] = 'secondary'
                                     badge[1] = 'Diproses'
+                                    badge[2] = ''
                                     break;
                                 case 4:
                                     badge[0] = 'success'
                                     badge[1] = 'Selesai'
+                                    badge[2] = 'pada ' + row.updated_atFormat
                                     break;
                                 default:
                                     break;
                             }
                             return `
-                        <span class="badge badge-sm text-xxs bg-gradient-${badge[0]}">${badge[1]}</span>
+                        <span class="badge badge-sm text-xxs bg-gradient-${badge[0]}">${badge[1]} ${badge[2]}</span>
                         `
                         }
                         return data
                     }
                 },
                 {
-                    data: 'waktu',
-                    className: 'text-center',
-                    render: function (data, type) {
-                        if (type === 'display') {
-                            return data.slice(11,-3)
-                        }
-                        return data;
-                    }
-                },
-                {
                     data: 'id',
                     orderable: false,
                     searchable: false,
-                    className: 'text-center',
+                    className: 'text-center p-0',
                     render: function (data, type) {
                         if (type === 'display') {
                             return `
-                        <a href="/teknisi/${data}" class="btn btn-link text-secondary font-weight-normal">
+                        <a href="${appUrl}/pekerjaan/${data}" class="btn btn-link text-secondary font-weight-normal">
                             Detail
                         </a>
                         `
@@ -357,8 +300,6 @@
             },
         });
         initSelect2(wilayahModal);
-        const pBaru = document.getElementById('nama');
-        pBaru.style.display = 'none';
 
         $('#wilayah').on('change', function () {
             wilayah = $('#wilayah').val()
@@ -385,52 +326,6 @@
                 initSelect2(wilayahModal)
             }
         });
-
-
-        $('#pelanggan-baru').on('click', function () {
-            const pLama = document.getElementById('pelanggan').nextElementSibling;
-            isNewPelanggan = (!isNewPelanggan);
-            if (isNewPelanggan) {
-                pBaru.style.display = 'inline-block';
-                pLama.style.display = 'none';
-            } else {
-                pBaru.style.display = 'none';
-                initSelect2(wilayahModal)
-                pLama.style.display = 'inline-block';
-            }
-            $('#nama').val('');
-            $('#pelanggan').val(null).trigger('change');
-        })
-
-        $('#pelanggan').on('change', function () {
-            let pelangganId = $('#pelanggan').val();
-
-            if (pelangganId != null) {
-                $.ajax({
-                    url: 'api/pelanggan/' + pelangganId,
-                    type: 'GET',
-                    data: {
-                        id: pelangganId,
-                    },
-                    success: function (response) {
-                        $('#nama').val(response.nama)
-                        $('#no_telp').val(response.no_telp)
-                        $('#email').val(response.email)
-                        $('#alamat').val(response.pemasangan.alamat)
-                        $('#nama').removeClass('is-invalid');
-                        $('#namaFeedback').hide();
-                        $('#email').removeClass('is-invalid');
-                        $('#emailFeedback').hide();
-                        $('#no_telp').removeClass('is-invalid');
-                        $('#no_telpFeedback').hide();
-                        $('#alamat').removeClass('is-invalid');
-                        $('#alamatFeedback').hide();
-                        $('#wilayah_id').removeClass('is-invalid');
-                        $('#wilayah_idFeedback').hide();
-                    }
-                })
-            }
-        })
 
         $('#Modal').on('shown.bs.modal', function () {
             $(this).find('[autofocus]').focus();

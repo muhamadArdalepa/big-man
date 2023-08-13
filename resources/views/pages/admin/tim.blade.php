@@ -1,35 +1,6 @@
 @extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
 @push('css')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link rel="stylesheet"
-	href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
-<style>
-	.card-sm {
-		box-shadow: 0 0 .5rem 0 #eee !important;
-	}
-
-	#Modal>div>div>div.modal-body span>span.selection>span {
-		border-radius: .5rem;
-		box-shadow: none;
-		border-color: #d2d6da;
-	}
-
-	#Modal>div>div>div.modal-body span>span.selection>span[aria-expanded=true] {
-		border-color: #5e72e4;
-		border-radius: 0.5rem 0.5rem 0 0;
-	}
-
-	#Modal>span>span>span.select2-search.select2-search--dropdown>input {
-		border-radius: 0.5rem;
-		box-shadow: none;
-		border-color: #5e72e4;
-	}
-
-	#Modal>span>span.select2-dropdown {
-		border-radius: 0 0 .5rem .5rem;
-		border-color: #5e72e4;
-	}
-</style>
+@include('components.select2css')
 @endpush
 @section('content')
 @include('layouts.navbars.auth.topnav', ['title' => 'Tim'])
@@ -40,7 +11,7 @@
 				<div class="card-body">
 					<div class="d-flex gap-3 flex-column flex-sm-row">
 						<div class="d-flex align-items-center">
-							<label for="wilayah" class="m-0 d-none d-sm-inline-block">wilayah</label>
+							<label for="wilayah" class="m-0 d-none d-sm-inline-block">Wilayah</label>
 							<select class="form-control m-0 ms-sm-2" id="wilayah">
 								<option value="">Semua wilayah</option>
 								@foreach ($wilayahs as $wilayah)
@@ -83,7 +54,7 @@
 @endsection
 @push('modal')
 <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered" role="document">
+	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<div class="d-flex align-items-center w-100">
@@ -115,8 +86,8 @@
 	</div>
 </div>
 @endpush
+@include('components.dataTables')
 @push('js')
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
@@ -159,8 +130,11 @@
                         <div class="card card-sm mb-2">
 							<div class="card-body p-2">
 								<div class="d-flex align-items-center gap-3">
-									<img src="/storage/private/profile/${anggota.anggota_foto_profil}" class="avatar">
-									<p class="m-0">${anggota.anggota_nama}</p>
+									<img src="/storage/private/profile/${anggota.foto_profil}" class="avatar">
+									<div>
+										<div class="m-0">${anggota.nama}</div>
+										<small class="text-sm opacity-7 m-0">${anggota.speciality}</small>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -178,7 +152,7 @@
 					<div class="card mb-3">
 						<div class="card-header d-flex align-items-center">
 							<h6 class="p-0 m-0">TIM ${item.id}</h6>
-							<span class="badge bg-gradient-warning text-xxs ms-auto">Penarikan</span>
+							<span class="badge bg-gradient-warning text-xxs ms-auto">${item.nama_pekerjaan}</span>
 							<span class="badge bg-gradient-success text-xxs ms-2">${item.status}</span>
 						</div>
 						<hr class="horizontal dark mt-0">
@@ -188,7 +162,10 @@
 								<div class="card-body p-2">
 									<div class="d-flex align-items-center gap-3">
 										<img src="/storage/private/profile/${item.foto_profil}" class="avatar">
-										<p class="m-0">${item.ketua}</p>
+										<div>
+											<div class="m-0">${item.nama}</div>
+											<small class="text-sm opacity-7 m-0">${item.speciality}</small>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -201,8 +178,8 @@
 									Detail
 								</button>
 								<div class="ms-auto text-end">
-									<small class="text-muted d-block text-xxs font-weight-bolder opacity-7 m-0 text-uppercase">${item.wilayah}</small>
-									<small class="text-muted">${item.timestamp}</small>
+									<small class="text-muted d-block text-xxs font-weight-bolder opacity-7 m-0 text-uppercase">${item.nama_wilayah}</small>
+									<small class="text-muted">${item.created_atFormat}</small>
 								</div>
 							</div>
 						</div>
@@ -224,7 +201,7 @@
 	}
 	function debounceSearchAndLoadData() {
 		clearTimeout(timer);
-		timer = setTimeout(searchAndLoadData, 500);
+		timer = setTimeout(searchAndLoadData, 250);
 	}
 	function templateResult(teknisi) {
 		if (!teknisi.id) {
@@ -235,8 +212,10 @@
 		var $teknisi = $(
 			`<span class="d-flex align-items-center">
 				<img src="/storage/private/profile/${teknisi.foto_profil}" class="avatar me-3">
-				${teknisi.text}
-				<span class="badge bg-gradient-danger text-xxs ms-auto">${tim}</span>
+				<div>
+					<div>${teknisi.text}</div>
+					<span class="badge bg-gradient-danger text-xxs ms-auto">${speciality}</span>
+				</div>
 			</span>`
 		);
 		return $teknisi;
