@@ -19,9 +19,9 @@
 
     <!-- CSS Files -->
 
-    <link href="{{ asset('build/assets/argon-dashboard-bef89ddb.css') }}" rel="stylesheet" />
+    {{-- <link href="{{ asset('build/assets/argon-dashboard-bef89ddb.css') }}" rel="stylesheet" /> --}}
 
-    {{-- @vite(['resources/scss/argon-dashboard.scss', 'resources/js/app.js']) --}}
+    @vite(['resources/scss/argon-dashboard.scss', 'resources/js/app.js'])
     @stack('css')
     <style>
         #btn-to-top {
@@ -50,7 +50,7 @@
 @endauth
 @stack('modal')
 
-<script src="{{ asset('build/assets/app-54d9a510.js') }}"></script>
+{{-- <script src="{{ asset('build/assets/app-54d9a510.js') }}"></script> --}}
 <script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {

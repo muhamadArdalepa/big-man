@@ -102,6 +102,19 @@ class PageController extends Controller
                     ->leftJoin('users as marketer', 'marketer', '=', 'marketer.id')
                     ->findOrFail($pekerjaan->pemasangan_id);
                 break;
+            case 2:
+                $detail = Laporan::select(
+                    'laporans.*',
+                    'users.nama',
+                    'users.no_telp',
+                    'users.email',
+                    'users.foto_profil',
+                    'penerima.nama as penerima'
+                )
+                    ->leftJoin('users', 'pelapor', '=', 'users.id')
+                    ->leftJoin('users as penerima', 'penerima', '=', 'penerima.id')
+                    ->findOrFail($pekerjaan->laporan_id);
+                break;
             default:
                 # code...
                 break;

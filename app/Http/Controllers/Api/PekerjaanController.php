@@ -25,7 +25,7 @@ class PekerjaanController extends Controller
      */
     public function index(Request $request)
     {
-        $pekerjaans = Pekerjaan::select(
+        $query = Pekerjaan::select(
             'pekerjaans.id',
             'tim_id',
             'users.foto_profil',
@@ -45,26 +45,36 @@ class PekerjaanController extends Controller
         $tanggal = '%' . $request->input('tanggal') . '%';
 
         if ($request->has('wilayah') && !empty($wilayah)) {
-            $pekerjaans->where('pekerjaans.wilayah_id', $wilayah);
+            $query->where('pekerjaans.wilayah_id', $wilayah);
         }
 
         if ($request->has('tanggal') && !empty($tanggal)) {
-            $pekerjaans->where('pekerjaans.created_at', 'LIKE', $tanggal);
+            $query->where('pekerjaans.created_at', 'LIKE', $tanggal);
         }
 
-        $data = [];
-        foreach ($pekerjaans->get() as $i => $pekerjaan) {
+        $pekerjaans = $query->get();
+        foreach ($pekerjaans as $i => $pekerjaan) {
             foreach (TimAnggota::select('users.nama')->leftJoin('users', 'users.id', '=', 'user_id')->where('tim_id', $pekerjaan->tim_id)->get() as $j => $a) {
                 $pekerjaan->anggota .= ($j > 0 ? '<br>' : '') . $a->nama;
             }
             switch ($pekerjaan->jenis_pekerjaan_id) {
                 case 1:
-                    $pemasangan = Pemasangan::select('users.nama', 'alamat')->join('users', 'user_id', '=', 'users.id')->find($pekerjaan->pemasangan_id);
+                    $pemasangan = Pemasangan::select(
+                        'users.nama',
+                        'alamat'
+                    )
+                        ->join('users', 'pelanggan', '=', 'users.id')
+                        ->find($pekerjaan->pemasangan_id);
                     $pekerjaan->detail = $pemasangan->nama . ' - ' . $pemasangan->alamat;
                     break;
                 case 2:
-                    $laporan = Laporan::select('users.nama', 'pemasangans.alamat')->join('users', 'pelapor', '=', 'users.id')
-                        ->join('pemasangans', 'user_id', '=', 'pemasangans.user_id')->find($pekerjaan->laporan_id);
+                    $laporan = Laporan::select(
+                        'users.nama',
+                        'pemasangans.alamat'
+                    )
+                        ->join('users', 'pelapor', '=', 'users.id')
+                        ->join('pemasangans', 'pelanggan', '=', 'pemasangans.pelanggan')
+                        ->find($pekerjaan->laporan_id);
                     $pekerjaan->detail = $laporan->nama . ' - ' . $laporan->alamat;
                     break;
                 default:
@@ -73,9 +83,8 @@ class PekerjaanController extends Controller
             };
             $pekerjaan->created_atFormat = Carbon::parse($pekerjaan->created_at)->format('H:i');
             $pekerjaan->updated_atFormat = Carbon::parse($pekerjaan->updated_at)->format('H:i');
-            $data[$i] = $pekerjaan;
         }
-        return response()->json($data);
+        return response()->json($pekerjaans);
     }
 
     /**
@@ -135,7 +144,44 @@ class PekerjaanController extends Controller
      */
     public function show($id)
     {
-        //
+        $query = Pekerjaan::select(
+            'pekerjaans.id',
+            'pekerjaans.tim_id',
+            'jenis_pekerjaan_id',
+            'jenis_pekerjaans.nama_pekerjaan',
+            'pemasangan_id',
+            'laporan_id',
+            'detail',
+            'pekerjaans.poin',
+            'pekerjaans.status',
+            'pekerjaans.created_at'
+        )
+            ->join('tims', 'pekerjaans.tim_id', '=', 'tims.id')
+            ->join('jenis_pekerjaans', 'jenis_pekerjaan_id', '=', 'jenis_pekerjaans.id')
+            ->join('tim_anggotas', 'tims.id', '=', 'tim_anggotas.tim_id')
+            ->where('tim_anggotas.user_id', auth()->user()->id);
+
+        $data = [];
+        foreach ($query->get() as $i => $pekerjaan) {
+            switch ($pekerjaan->jenis_pekerjaan_id) {
+                case 1:
+                    $pemasangan = Pemasangan::select('users.nama', 'alamat')->join('users', 'user_id', '=', 'users.id')->find($pekerjaan->pemasangan_id);
+                    $pekerjaan->detail = $pemasangan->nama . ' - ' . $pemasangan->alamat;
+                    break;
+                case 2:
+                    $laporan = Laporan::select('users.nama', 'pemasangans.alamat')->join('users', 'pelapor', '=', 'users.id')
+                        ->join('pemasangans', 'user_id', '=', 'pemasangans.user_id')->find($pekerjaan->laporan_id);
+                    $pekerjaan->detail = $laporan->nama . ' - ' . $laporan->alamat;
+                    break;
+                default:
+                    $pekerjaan->detail = $pekerjaan->detail;
+                    break;
+            };
+            $pekerjaan->created_atFormat = Carbon::parse($pekerjaan->created_at)->translatedFormat('d/m/Y');
+            $pekerjaan->updated_atFormat = Carbon::parse($pekerjaan->updated_at)->translatedFormat('H:i');
+            $data[$i] = $pekerjaan;
+        }
+        return response()->json($data);
     }
 
     /**

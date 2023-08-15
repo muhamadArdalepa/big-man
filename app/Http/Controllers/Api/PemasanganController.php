@@ -60,7 +60,53 @@ class PemasanganController extends Controller
      */
     public function store(Request $request)
     {
-        return response($request->foto_ktp);
+        $validatedData = $request->validate([
+            'nik' => 'required|numeric',
+            'paket_id' => 'required',
+            'alamat' => 'required',
+            'koordinat_rumah' => 'required',
+            'foto_ktp' =>  'required|image|mimes:jpeg,png,jpg',
+            'foto_rumah' =>  'required|image|mimes:jpeg,png,jpg'
+        ]);
+
+        $validatedData['pelanggan'] = auth()->user()->id;
+        $validatedData['status'] = 'menunggu konfirmasi';
+
+        if ($request->hasFile('foto_ktp')) {
+            $fotoName = uniqid() . '.' . $request->file('foto_ktp')->getClientOriginalExtension();
+            $compressedImage = Image::make($request->file('foto_ktp')->getRealPath());
+
+            $compressedImage->resize(800, null, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+
+            $folderPath = 'private/pemasangan/';
+            $compressedImagePath = $folderPath . $fotoName;
+            Storage::put($compressedImagePath, (string) $compressedImage->encode());
+            $validatedData['foto_ktp'] = $fotoName;
+        }
+
+        if ($request->hasFile('foto_rumah')) {
+            $fotoName = uniqid() . '.' . $request->file('foto_rumah')->getClientOriginalExtension();
+            $compressedImage = Image::make($request->file('foto_rumah')->getRealPath());
+
+            $compressedImage->resize(800, null, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+
+            $folderPath = 'private/pemasangan/';
+            $compressedImagePath = $folderPath . $fotoName;
+            Storage::put($compressedImagePath, (string) $compressedImage->encode());
+            $validatedData['foto_rumah'] = $fotoName;
+        }
+
+        if (Pemasangan::create($validatedData)) {
+            return response()->json(
+                ['message' => 'Pemasangan baru berhasil ditambahkan']
+            );
+        }
     }
 
     /**

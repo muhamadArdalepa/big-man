@@ -230,6 +230,7 @@
                     searchable: false,
                     className: 'text-center',
                     render: function (data, type, row) {
+
                         if (data === null) {
                             return ''
                         }
@@ -264,7 +265,7 @@
         table.on('draw', () => {
             $('.btn-detail-absen').on('click', (e) => {
                 let card;
-                fetch(`${baseUrl}/${e.target.dataset.absen}`)
+                fetch(`${baseUrl}/${e.currentTarget.dataset.absen}`)
                     .then(response => response.json())
                     .then(data => {
                         $('#ModalImg').attr('src', appUrl+'/storage/private/profile/' + data.user.foto_profil)

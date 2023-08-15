@@ -28,7 +28,7 @@ class LaporanController extends Controller
     {
         switch (auth()->user()->role) {
             case 1:
-                $laporans = Laporan::select(
+                $query = Laporan::select(
                     'laporans.id',
                     'pelapor.nama as pelapor',
                     'penerima.nama as penerima',
@@ -44,13 +44,13 @@ class LaporanController extends Controller
                 $wilayah = $request->input('wilayah');
                 $tanggal = '%' . $request->input('tanggal') . '%';
                 if ($request->has('wilayah') && !empty($wilayah)) {
-                    $laporans->where('pelapor.wilayah_id', $wilayah);
+                    $query->where('pelapor.wilayah_id', $wilayah);
                 }
                 if ($request->has('tanggal') && !empty($tanggal)) {
-                    $laporans->where('laporans.created_at', 'LIKE', $tanggal);
+                    $query->where('laporans.created_at', 'LIKE', $tanggal);
                 }
 
-                return response()->json($laporans->get());
+                return response()->json($query->get());
                 break;
             case 3:
                 $query = Laporan::select(
@@ -75,74 +75,79 @@ class LaporanController extends Controller
 
     public function select2_pelanggan(Request $request)
     {
-        $results = [];
-        $pelanggans = User::select('users.id', 'nama')->join('pemasangans', 'user_id', '=', 'users.id')->where('role', 3)->whereNotNull('pemasangans.id');
+        if (auth()->user()->role != 3) {
+            $results = [];
+            $pelanggans = User::select('users.id', 'nama')->join('pemasangans', 'user_id', '=', 'users.id')->where('role', 3)->whereNotNull('pemasangans.id');
 
-        if ($request->has('wilayah') && !empty($request->wilayah)) {
-            $pelanggans->where('wilayah_id', $request->wilayah);
-        }
+            if ($request->has('wilayah') && !empty($request->wilayah)) {
+                $pelanggans->where('wilayah_id', $request->wilayah);
+            }
 
-        if ($request->has('terms') && !empty($request->terms)) {
-            $pelanggans->where('nama', 'LIKE', '%' . $request->terms . '%');
-        }
+            if ($request->has('terms') && !empty($request->terms)) {
+                $pelanggans->where('nama', 'LIKE', '%' . $request->terms . '%');
+            }
 
-        foreach ($pelanggans->get() as $i => $pelanggan) {
-            $results[$i] = [
-                "id" => $pelanggan->id,
-                "text" => $pelanggan->nama,
+            foreach ($pelanggans->get() as $i => $pelanggan) {
+                $results[$i] = [
+                    "id" => $pelanggan->id,
+                    "text" => $pelanggan->nama,
+                ];
+            }
+
+            $data = [
+                "results" => $results,
+                "pagination" => [
+                    "more" => false // Ubah menjadi true jika ingin mengaktifkan fitur infinite scroll
+                ]
             ];
+
+            return response()->json($data);
         }
-
-        $data = [
-            "results" => $results,
-            "pagination" => [
-                "more" => false // Ubah menjadi true jika ingin mengaktifkan fitur infinite scroll
-            ]
-        ];
-
-        return response()->json($data);
     }
     public function select2_tim(Request $request)
     {
-        $results = [];
-        $tims = Tim::select(
-            'tims.id',
-            'users.foto_profil'
-        )
-            ->join('users', 'users.id', '=', 'user_id')
-            ->join('tim_anggotas', 'tims.id', '=', 'tim_id')
-            ->orderBy('tims.id', 'asc')
-            ->groupBy('tims.id');
+        if (auth()->user()->role != 3) {
 
-        if ($request->has('wilayah') && !empty($request->wilayah)) {
-            $tims->where('users.wilayah_id', $request->wilayah);
-        }
+            $results = [];
+            $tims = Tim::select(
+                'tims.id',
+                'users.foto_profil'
+            )
+                ->join('users', 'users.id', '=', 'user_id')
+                ->join('tim_anggotas', 'tims.id', '=', 'tim_id')
+                ->orderBy('tims.id', 'asc')
+                ->groupBy('tims.id');
 
-        if ($request->has('terms') && !empty($request->terms)) {
-            $tims->where('users.nama', 'LIKE', '%' . $request->terms . '%');
-        }
-
-        foreach ($tims->get() as $i => $tim) {
-            $anggota = '';
-            foreach (TimAnggota::select('users.nama')
-                ->where('tim_id', $tim->id)
-                ->join('users', 'user_id', '=', 'users.id')->get() as $j => $a) {
-                $anggota .= ($j > 0 ? ' / ' : ' - ') . $a->nama;
+            if ($request->has('wilayah') && !empty($request->wilayah)) {
+                $tims->where('users.wilayah_id', $request->wilayah);
             }
-            $results[$i] = [
-                "id" => $tim->id,
-                "text" => 'TIM ' . $tim->id . $anggota,
+
+            if ($request->has('terms') && !empty($request->terms)) {
+                $tims->where('users.nama', 'LIKE', '%' . $request->terms . '%');
+            }
+
+            foreach ($tims->get() as $i => $tim) {
+                $anggota = '';
+                foreach (TimAnggota::select('users.nama')
+                    ->where('tim_id', $tim->id)
+                    ->join('users', 'user_id', '=', 'users.id')->get() as $j => $a) {
+                    $anggota .= ($j > 0 ? ' / ' : ' - ') . $a->nama;
+                }
+                $results[$i] = [
+                    "id" => $tim->id,
+                    "text" => 'TIM ' . $tim->id . $anggota,
+                ];
+            }
+
+            $data = [
+                "results" => $results,
+                "pagination" => [
+                    "more" => false // Ubah menjadi true jika ingin mengaktifkan fitur infinite scroll
+                ]
             ];
+
+            return response()->json($data);
         }
-
-        $data = [
-            "results" => $results,
-            "pagination" => [
-                "more" => false // Ubah menjadi true jika ingin mengaktifkan fitur infinite scroll
-            ]
-        ];
-
-        return response()->json($data);
     }
 
     public function data_pelanggan($id)
@@ -243,24 +248,21 @@ class LaporanController extends Controller
     public function show($id)
     {
         $laporan = Laporan::select(
-            'laporans.id',
+            'laporans.*',
             'users.nama',
             'users.foto_profil',
             'users.wilayah_id',
-            'laporans.created_at',
             'pemasangans.serial_number',
             'pakets.nama_paket',
             'jenis_gangguan_id',
-            'laporans.ket',
             'pemasangans.alamat',
             'pemasangans.koordinat_rumah',
             'pemasangans.koordinat_odp',
             'pemasangans.port_odp',
             'pemasangans.port_odp',
-            'laporans.status'
         )
             ->join('users', 'pelapor', '=', 'users.id')
-            ->join('pemasangans', 'pelapor', '=', 'user_id')
+            ->join('pemasangans', 'pelapor', '=', 'pelanggan')
             ->join('pakets', 'pemasangans.paket_id', '=', 'pakets.id')
             ->join('jenis_gangguans', 'jenis_gangguan_id', '=', 'jenis_gangguans.id')
             ->find($id);
