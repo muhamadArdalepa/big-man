@@ -9,7 +9,7 @@ class Pemasangan extends Model
 {
     use HasFactory;
     protected $guarded = [];
-    public function pelanggan()
+    public function user()
     {
         return $this->belongsTo(User::class,'pelanggan','id');
     }

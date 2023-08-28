@@ -22,15 +22,19 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
 
         if (Auth::attempt($credentials)) {
-            return redirect()->intended(route('home'));
-        } else {
-            return back()->withErrors([
-                'email' => 'Email atau password salah.',
-            ]);
+            $request->session()->regenerate();
+            return redirect()->intended('dashboard')->with('success',true);
         }
+
+        return back()->withErrors([
+            'email' => __('auth.failed'),
+        ]);
     }
 
     public function logout(Request $request)
@@ -42,4 +46,5 @@ class LoginController extends Controller
 
         return redirect('/login');
     }
+    
 }

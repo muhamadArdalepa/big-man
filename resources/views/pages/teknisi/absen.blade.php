@@ -59,7 +59,7 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header gap-2">
-                <img src="{{route('storage.private','profile/'. auth()->user()->foto_profil)}}" alt="foto profil"
+                <img src="{{route('storage.private', auth()->user()->foto_profil)}}" alt="foto profil"
                     height="50" class="rounded-3" id="absenModalImg">
                 <div class="d-flex flex-column justify-content-end">
                     <h5 class="m-0 lh-1" id="absenModalLabel">Absen {{$whichAbsen}}</h5>
@@ -121,7 +121,7 @@
     const tanggal = document.getElementById('tanggal');
     const authId = `{{ auth()->user()->id}}`
     const appUrl = `{{env('APP_URL')}}`
-    const baseUrl = `${appUrl}/api/teknisi-absen`
+    const baseUrl = `${appUrl}/api/absen`
     let koordinat;
     let alamat;
     let url = baseUrl;
@@ -346,7 +346,7 @@
         table.on('draw', () => {
             $('.btn-detail-absen').on('click', (e) => {
                 let card = '';
-                fetch(appUrl+'/api/teknisi-absen/' + e.target.dataset.absen)
+                fetch(baseUrl+'/' + e.target.dataset.absen)
                     .then(response => response.json())
                     .then(data => {
                         $('#ModalDate').text(data.tanggalFormat)

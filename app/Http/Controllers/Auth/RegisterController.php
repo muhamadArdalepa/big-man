@@ -49,7 +49,7 @@ class RegisterController extends Controller
             $user->password = $request->password;
             $user->wilayah_id = $request->wilayah_id;
             $user->no_telp = $request->no_telp;
-            $user->foto_profil = 'dummy.png';
+            $user->foto_profil = 'profile/dummy.png';
             $user->save();
             auth()->login($user);
             return redirect('/dashboard')->with('success','Selamat bergabung di Big Net');

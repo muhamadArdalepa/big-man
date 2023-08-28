@@ -15,6 +15,10 @@ return new class extends Migration
     {
         Schema::create('aktivitas', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')
+                ->constrained()
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
             $table->foreignId('absen_id')
                 ->nullable()
                 ->constrained()

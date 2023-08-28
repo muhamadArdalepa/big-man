@@ -34,12 +34,11 @@ class LaporanController extends Controller
                     'penerima.nama as penerima',
                     'nama_gangguan',
                     'status',
-                    'laporans.created_at as waktu'
+                    'laporans.created_at'
                 )
                     ->join('users as pelapor', 'pelapor', '=', 'pelapor.id')
                     ->leftJoin('users as penerima', 'penerima', '=', 'penerima.id')
                     ->join('jenis_gangguans', 'jenis_gangguan_id', '=', 'jenis_gangguans.id');
-
 
                 $wilayah = $request->input('wilayah');
                 $tanggal = '%' . $request->input('tanggal') . '%';
@@ -49,8 +48,11 @@ class LaporanController extends Controller
                 if ($request->has('tanggal') && !empty($tanggal)) {
                     $query->where('laporans.created_at', 'LIKE', $tanggal);
                 }
-
-                return response()->json($query->get());
+                $laporans = $query->get();
+                foreach ($laporans as $laporan) {
+                    $laporan->timeFormat = Carbon::parse($laporan->created_at)->format('H:i');
+                }
+                return response()->json($laporans);
                 break;
             case 3:
                 $query = Laporan::select(
@@ -66,8 +68,8 @@ class LaporanController extends Controller
                 $laporans = $query->get();
                 foreach ($laporans as $laporan) {
                     $carbonDatetime = Carbon::parse($laporan->created_at);
-                    $laporan->tanggalFormat = $carbonDatetime->translatedFormat('l, d F Y');
-                    $laporan->waktuFormat = $carbonDatetime->translatedFormat('H:i');
+                    $laporan->dateFormat = $carbonDatetime->translatedFormat('l, d F Y');
+                    $laporan->timeFormat = $carbonDatetime->translatedFormat('H:i');
                 }
                 return response()->json($laporans);
         }
@@ -75,39 +77,26 @@ class LaporanController extends Controller
 
     public function select2_pelanggan(Request $request)
     {
-        if (auth()->user()->role != 3) {
-            $results = [];
-            $pelanggans = User::select('users.id', 'nama')->join('pemasangans', 'user_id', '=', 'users.id')->where('role', 3)->whereNotNull('pemasangans.id');
+        if (auth()->user()->role == 1) {
+            $query = User::select(
+                'users.id',
+                'nama as text'
+            )
+                ->join('pemasangans', 'pelanggan', '=', 'users.id')
+                ->where('role', 3)
+                ->whereNotNull('pemasangans.id');
 
             if ($request->has('wilayah') && !empty($request->wilayah)) {
-                $pelanggans->where('wilayah_id', $request->wilayah);
+                $query->where('wilayah_id', $request->wilayah);
             }
 
-            if ($request->has('terms') && !empty($request->terms)) {
-                $pelanggans->where('nama', 'LIKE', '%' . $request->terms . '%');
-            }
-
-            foreach ($pelanggans->get() as $i => $pelanggan) {
-                $results[$i] = [
-                    "id" => $pelanggan->id,
-                    "text" => $pelanggan->nama,
-                ];
-            }
-
-            $data = [
-                "results" => $results,
-                "pagination" => [
-                    "more" => false // Ubah menjadi true jika ingin mengaktifkan fitur infinite scroll
-                ]
-            ];
-
-            return response()->json($data);
+            return response()->json($query->get());
         }
     }
+
     public function select2_tim(Request $request)
     {
-        if (auth()->user()->role != 3) {
-
+        if (auth()->user()->role == 1) {
             $results = [];
             $tims = Tim::select(
                 'tims.id',
@@ -152,11 +141,17 @@ class LaporanController extends Controller
 
     public function data_pelanggan($id)
     {
-        return response()->json(
-            User::select('nama', 'no_telp', 'email', 'serial_number', 'alamat')
-                ->join('pemasangans', 'users.id', '=', 'users.id')
-                ->find($id)
-        );
+        if (auth()->user()->role == 1) {
+            $user =  User::select(
+                'serial_number',
+                'alamat',
+                'port_odp',
+                'koordinat_rumah'
+            )
+                ->join('pemasangans', 'pelanggan', '=', 'users.id')
+                ->find($id);
+            return response()->json($user);
+        }
     }
 
 
@@ -178,65 +173,25 @@ class LaporanController extends Controller
      */
     public function store(Request $request)
     {
-
-        $validator = Validator::make($request->all(), [
-            'nama' => 'required|min:3',
-            'email' => 'required|email',
-            'wilayah_id' => 'required',
-            'no_telp' => 'required|numeric|digits_between:11,15',
-            'alamat' => 'required',
-            'jenis_gangguan_id' => 'required',
-            'serial_number' => 'required',
-        ], [
-            'nama.required' => 'Nama harus diisi.',
-            'nama.min' => 'Nama harus memiliki minimal 3 karakter.',
-            'email.required' => 'Email harus diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'wilayah_id.required' => 'wilayah harus dipilih.',
-            'no_telp.required' => 'Nomor telepon harus diisi.',
-            'no_telp.numeric' => 'Nomor telepon harus berupa angka.',
-            'no_telp.digits_between' => 'Nomor telepon memiliki minimal 11 karakter.',
-            'alamat.required' => 'Alamat harus diisi.',
-            'jenis_gangguan_id.required' => 'Pilih jenis gangguan.',
-            'serial_number.required' => 'Serial number harus diisi.',
-        ]);
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 400,
-                'errors' => $validator->messages()
-            ]);
-        } else {
-            $pelanggan = null;
-            $pemasangan = null;
-            if ($request->is_new == 'true') {
-                $pelanggan = new User;
-                $pelanggan->password = Str::random(6);
-                $pelanggan->role = 3;
-                $pemasangan = new Pemasangan;
-                $pemasangan->user_id = $pelanggan->id;
-            } else {
-                $pelanggan = User::find($request->id);
-                $pemasangan = Pemasangan::where('user_id', $request->id)->first();
-            }
-            $pelanggan->email = $request->email;
-            $pelanggan->nama = ucwords(trim($request->nama));
-            $pelanggan->no_telp = $request->no_telp;
-            $pelanggan->save();
-            $pemasangan->alamat = $request->alamat;
-            $pemasangan->serial_number = $request->serial_number;
-            $pemasangan->save();
-            $laporan = new Laporan;
-            $laporan->pelapor = $pelanggan->id;
-            $laporan->penerima = auth()->user()->id;
-            $laporan->jenis_gangguan_id = $request->jenis_gangguan_id;
-            $laporan->status = 2;
-            $laporan->ket = $request->ket;
-            $laporan->save();
-            return response()->json([
-                'status' => 200,
-                'message' => 'Laporan baru telah ditambahkan',
-            ]);
+        if (auth()->user()->role == 3) {
+            $request['pelapor'] = auth()->user()->id;
         }
+        $validatedData = $request->validate([
+            'jenis_gangguan_id' => 'required',
+            'pelapor' => 'required',
+            'ket' => 'nullable|string'
+        ], [
+            'jenis_gangguan_id.required' => 'Jenis harus diisi',
+            'pelapor.required' => 'Data pelanggan harus diisi',
+            'ket.string' => 'Keterangan harus berupa string'
+        ]);
+        if (auth()->user()->role == 1) {
+            $validatedData['status'] = 'sedang diproses';
+            $validatedData['penerima'] = auth()->user()->id;
+            $validatedData['recieve_at'] = now();
+        }
+        Laporan::create($validatedData);
+        return response(['message' => 'Laporan gangguan berhasil ditambahkan']);
     }
 
     /**
@@ -247,28 +202,33 @@ class LaporanController extends Controller
      */
     public function show($id)
     {
-        $laporan = Laporan::select(
-            'laporans.*',
-            'users.nama',
-            'users.foto_profil',
-            'users.wilayah_id',
-            'pemasangans.serial_number',
-            'pakets.nama_paket',
-            'jenis_gangguan_id',
-            'pemasangans.alamat',
-            'pemasangans.koordinat_rumah',
-            'pemasangans.koordinat_odp',
-            'pemasangans.port_odp',
-            'pemasangans.port_odp',
-        )
-            ->join('users', 'pelapor', '=', 'users.id')
-            ->join('pemasangans', 'pelapor', '=', 'pelanggan')
-            ->join('pakets', 'pemasangans.paket_id', '=', 'pakets.id')
-            ->join('jenis_gangguans', 'jenis_gangguan_id', '=', 'jenis_gangguans.id')
-            ->find($id);
-        $laporan->tanggalFormat = Carbon::parse($laporan->created_at)->translatedFormat('l, d F Y');
-        $laporan->waktuFormat = Carbon::parse($laporan->created_at)->format('H:i');
-        return response()->json($laporan);
+        if (auth()->user()->role == 1) {
+            $laporan = Laporan::select(
+                'laporans.*',
+                'users.nama',
+                'users.wilayah_id',
+                'pemasangans.serial_number',
+                'jenis_gangguan_id',
+                'pemasangans.alamat',
+                'pemasangans.koordinat_rumah',
+                'pemasangans.port_odp',
+                'penerima.nama as penerima_nama',
+                'laporans.created_at',
+                'laporans.recieve_at',
+            )
+                ->join('users', 'pelapor', '=', 'users.id')
+                ->leftJoin('users as penerima', 'penerima', '=', 'penerima.id')
+                ->join('pemasangans', 'pelapor', '=', 'pelanggan')
+                ->join('jenis_gangguans', 'jenis_gangguan_id', '=', 'jenis_gangguans.id')
+                ->find($id);
+            if ($laporan->recieve_at != null) {
+                $carbonRecieve = Carbon::parse($laporan->recieve_atFormat);
+                $laporan->recieve_atFormat = $carbonRecieve->translatedFormat('l, d F Y | H:i');
+            }
+            $carbonCreate = Carbon::parse($laporan->created_at);
+            $laporan->created_atFormat = $carbonCreate->translatedFormat('l, d F Y | H:i');
+            return response()->json($laporan);
+        }
     }
 
     /**
@@ -289,9 +249,19 @@ class LaporanController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Laporan $laporan)
     {
-        //
+        $validatedData = $request->validate([
+            'jenis_gangguan_id' => 'required',
+            'pelapor' => 'required',
+            'ket' => 'nullable|string'
+        ], [
+            'jenis_gangguan_id.required' => 'Jenis harus diisi',
+            'pelapor.required' => 'Data pelanggan harus diisi',
+            'ket.string' => 'Keterangan harus berupa string'
+        ]);
+        $laporan->update($validatedData);
+        return response(['message' => 'Laporan gangguan berhasil diubah']);
     }
 
     /**
@@ -300,8 +270,9 @@ class LaporanController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Laporan $laporan)
     {
-        //
+        $laporan->delete();
+        return response(['message' => 'Laporan berhasil dihapus']);
     }
 }

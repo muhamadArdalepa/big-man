@@ -171,7 +171,7 @@
                                 <div>`+ data + `</div>
                                 <p class="text-xs text-secondary mb-0">${row.speciality}</p>
                             </div>
-                            <img class="rounded-3" src="{{env('APP_URL')}}/storage/private/profile/${row.foto_profil}" alt="foto profil" height="35">
+                            <img class="rounded-3" src="{{env('APP_URL')}}/storage/private/${row.foto_profil}" alt="foto profil" height="35">
                         </div>
                          `
                     }

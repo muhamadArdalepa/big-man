@@ -52,7 +52,7 @@
                 <li class="nav-item dropdown d-flex align-items-center">
                     <a href="javascript:;" class="nav-link text-white p-0" id="dropdownProfile"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="{{route('storage.private','profile/'.auth()->user()->foto_profil)}}" class="avatar avatar-sm"
+                        <img src="{{route('storage.private',auth()->user()->foto_profil)}}" class="avatar avatar-sm"
                             alt="foto profil">
                     </a>
                     <ul class="dropdown-menu  dropdown-menu-end  p-2 me-sm-n4" aria-labelledby="dropdownProfile">
@@ -60,7 +60,7 @@
                             <a class="dropdown-item border-radius-md" href="{{route('auth.profile')}}">
                                 <div class="d-flex py-1">
                                     <div class="my-auto">
-                                        <img src="{{route('storage.private','profile/'.auth()->user()->foto_profil)}}" class="avatar avatar-sm  me-3 ">
+                                    <img src="{{route('storage.private',auth()->user()->foto_profil)}}" class="avatar avatar-sm  me-3 ">
                                     </div>
                                     <h6 class="text-sm font-weight-normal align-self-center m-0">
                                         Lihat Profil

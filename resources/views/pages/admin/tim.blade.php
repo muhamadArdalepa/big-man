@@ -130,7 +130,7 @@
                         <div class="card card-sm mb-2">
 							<div class="card-body p-2">
 								<div class="d-flex align-items-center gap-3">
-									<img src="/storage/private/profile/${anggota.foto_profil}" class="avatar">
+									<img src="/storage/private/${anggota.foto_profil}" class="avatar">
 									<div>
 										<div class="m-0">${anggota.nama}</div>
 										<small class="text-sm opacity-7 m-0">${anggota.speciality}</small>
@@ -161,7 +161,7 @@
 							<div class="card card-sm">
 								<div class="card-body p-2">
 									<div class="d-flex align-items-center gap-3">
-										<img src="/storage/private/profile/${item.foto_profil}" class="avatar">
+										<img src="/storage/private/${item.foto_profil}" class="avatar">
 										<div>
 											<div class="m-0">${item.nama}</div>
 											<small class="text-sm opacity-7 m-0">${item.speciality}</small>
@@ -204,6 +204,7 @@
 		timer = setTimeout(searchAndLoadData, 250);
 	}
 	function templateResult(teknisi) {
+		console.log(teknisi);
 		if (!teknisi.id) {
 			return teknisi.text;
 		}
@@ -211,10 +212,10 @@
 		let tim = teknisi.tims == null ? '' : 'TIM ' + teknisi.tims.id;
 		var $teknisi = $(
 			`<span class="d-flex align-items-center">
-				<img src="/storage/private/profile/${teknisi.foto_profil}" class="avatar me-3">
+				<img src="/storage/private/${teknisi.foto_profil}" class="avatar me-3">
 				<div>
 					<div>${teknisi.text}</div>
-					<span class="badge bg-gradient-danger text-xxs ms-auto">${speciality}</span>
+					<span class="badge bg-gradient-danger text-xxs ms-auto">${teknisi.speciality}</span>
 				</div>
 			</span>`
 		);
@@ -305,7 +306,7 @@
 					<div class="card card-sm teknisi-card" id="teknisi-card-${data.id}">
 						<div class="card-body p-2">
 							<div class="d-flex align-items-center gap-3">
-								<img id="ketua-card-img" class="avatar" src="/storage/private/profile/${data.foto_profil}">
+								<img id="ketua-card-img" class="avatar" src="/storage/private/${data.foto_profil}">
 								<p id="ketua-card-name" class="m-0">${data.nama}</p>
 								<i class="ms-auto fas fa-times p-3 cursor-pointer text-secondary opacity-5" onclick="hapusTeknisi(${data.id})"></i>
 							</div>

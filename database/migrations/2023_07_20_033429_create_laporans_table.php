@@ -29,8 +29,10 @@ return new class extends Migration
                 ->constrained()
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
+
             $table->enum('status',['menunggu konfirmasi','sedang diproses','ditunda','selesai']);
             $table->string('ket')->nullable();
+            $table->timestamp('recieve_at');
             $table->timestamps();
         });
     }

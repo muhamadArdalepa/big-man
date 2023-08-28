@@ -4,8 +4,6 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <style>
         .card-body.flex-shrink-0 {
             transition: margin-left 300ms ease-in-out;
@@ -36,7 +34,7 @@
                     @if ($pekerjaan->jenis_pekerjaan_id != 3)
                         <div class="col-auto">
                             <div class="avatar avatar-xl position-relative">
-                                <img src="{{ route('storage.private', 'profile/' . $detail->foto_profil) }}"
+                                <img src="{{ route('storage.private',  $detail->foto_profil) }}"
                                     alt="profile_image" class="w-100 border-radius-lg shadow-sm">
                             </div>
                         </div>
@@ -214,6 +212,7 @@
                                 <input type="number" id="nik" class="form-control" value="{{ $detail->nik }}">
                                 <div id="nikFeedback" class="invalid-feedback text-xs"></div>
                             </div>
+                            
                             <div class="form-group">
                                 <div class="d-flex align-items-end">
                                     <label for="alamat" class="form-control-label">Alamat</label>
@@ -275,7 +274,7 @@
                                     <div class="form-group">
                                         <label for="ssid" class="form-control-label">SSID</label>
                                         <input type="text" id="ssid" class="form-control"
-                                            value="{{ $detail->ssid }}">
+                                            value="{{ $detail->SSID }}">
                                         <div id="ssidFeedback" class="invalid-feedback text-xs"></div>
                                     </div>
                                 </div>
@@ -790,7 +789,7 @@
                         aktivitasItems += `
                         <div class="aktivitas-item mb-3 border-bottom " loading="lazy">
                             <div class="d-flex gap-2 mb-2 align-items-${align}">
-                                <img class="rounded-3" src="${appUrl}/storage/private/profile/${e.foto_profil}"
+                                <img class="rounded-3" src="${appUrl}/storage/private/${e.foto_profil}"
                                     alt="foto profil" height="35">
                                 <div>
                                     <div class="mb-0">${e.nama} - <small class="text-xs">${formatDate(e.created_at)}</small></div>
@@ -821,7 +820,7 @@
                         <div class="card card-sm mb-2">
                             <div class="card-body p-2">
                                 <div class="d-flex align-items-center gap-3">
-                                    <img src="/storage/private/profile/${anggota.foto_profil}" class="avatar">
+                                    <img src="/storage/private/${anggota.foto_profil}" class="avatar">
                                     <div class="">
                                         <p class="m-0">${anggota.nama}</p>
                                         <small class="m-0 opacity-7">${anggota.speciality}</small>
@@ -849,7 +848,7 @@
                         <div class="card card-sm mb-2">
                             <div class="card-body p-2">
                                 <div class="d-flex align-items-center gap-3">
-                                    <img src="/storage/private/profile/${tim.foto_profil}" class="avatar">
+                                    <img src="/storage/private/${tim.foto_profil}" class="avatar">
                                     <div class="">
                                         <p class="m-0">${tim.nama}</p>
                                         <small class="m-0 opacity-7">${tim.speciality}</small>
@@ -937,7 +936,7 @@
                             let newAkt = `
                         <div class="aktivitas-item mb-3 border-bottom " loading="lazy">
                             <div class="d-flex gap-2 mb-2 align-items-start">
-                                <img class="rounded-3" src="${appUrl}/storage/private/profile/{{ auth()->user()->foto_profil }}"
+                                <img class="rounded-3" src="${appUrl}/storage/private/{{ auth()->user()->foto_profil }}"
                                     alt="foto profil" height="35">
                                 <div>
                                     <div class="mb-0">{{ auth()->user()->nama }} - <small class="text-xs">${formatDate()}</small></div>

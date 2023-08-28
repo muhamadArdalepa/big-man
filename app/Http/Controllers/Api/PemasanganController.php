@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use Carbon\Carbon;
+use App\Models\User;
+use App\Models\Aktivitas;
 use App\Models\Pemasangan;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\Aktivitas;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 
@@ -42,6 +43,23 @@ class PemasanganController extends Controller
         return response()->json($pemasangans);
     }
 
+    public function data_pelanggan(Request $request)
+    {
+        $pelanggan = User::select(
+            'nama',
+            'email',
+            'no_telp',
+            'alamat',
+            'koordinat_rumah'
+        )
+            ->join('pemasangans', 'users.id', '=', 'pelanggan')
+            ->where('wilayah_id', $request->wilayah)
+            ->where('role', 3)
+            ->where('nama', 'LIKE', $request->nama)
+            ->first();
+        return response()->json($pelanggan);
+    }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -60,52 +78,94 @@ class PemasanganController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'nik' => 'required|numeric',
-            'paket_id' => 'required',
-            'alamat' => 'required',
-            'koordinat_rumah' => 'required',
-            'foto_ktp' =>  'required|image|mimes:jpeg,png,jpg',
-            'foto_rumah' =>  'required|image|mimes:jpeg,png,jpg'
+        $pelangganData = $request->validate([
+            'wilayah_id' => 'required|integer',
+            'nama' => 'required|string|max:255',
+            'no_telp' => 'required|string|max:15',
+            'password' => 'required|string|min:6',
+        ], [
+            'wilayah_id.required' => 'Wilayah harus dipilih.',
+            'wilayah_id.integer' => 'Wilayah harus berupa angka.',
+            'nama.required' => 'Nama harus diisi.',
+            'no_telp.required' => 'Nomor telepon harus diisi.',
+            'no_telp.max' => 'Nomor telepon tidak boleh lebih dari 15 karakter.',
+            'password.required' => 'Password harus diisi.',
+            'password.min' => 'Password minimal 6 karakter.',
         ]);
 
-        $validatedData['pelanggan'] = auth()->user()->id;
-        $validatedData['status'] = 'menunggu konfirmasi';
+        $pemasanganData = $request->validate([
+            'nik' => 'required|numeric|digits:16',
+            'paket_id' => 'required|integer',
+            'alamat' => 'required|string',
+            'koordinat_rumah' => 'required|string',
+            'foto_ktp' => 'required|image|mimes:jpeg,png,jpg',
+            'foto_rumah' => 'required|image|mimes:jpeg,png,jpg',
+        ], [
+            'nik.required' => 'NIK harus diisi.',
+            'nik.numeric' => 'NIK harus berupa angka.',
+            'nik.digits' => 'NIK harus terdiri dari 16 digit.',
+            'paket_id.required' => 'Paket harus dipilih.',
+            'paket_id.integer' => 'Paket harus berupa angka.',
+            'alamat.required' => 'Alamat harus diisi.',
+            'koordinat_rumah.required' => 'Koordinat rumah harus diisi.',
+            'foto_ktp.required' => 'Foto KTP harus diunggah.',
+            'foto_ktp.image' => 'Foto KTP harus berupa gambar.',
+            'foto_ktp.mimes' => 'Format foto KTP harus jpeg, png, atau jpg.',
+            'foto_rumah.required' => 'Foto rumah harus diunggah.',
+            'foto_rumah.image' => 'Foto rumah harus berupa gambar.',
+            'foto_rumah.mimes' => 'Format foto rumah harus jpeg, png, atau jpg.',
+        ]);
 
-        if ($request->hasFile('foto_ktp')) {
-            $fotoName = uniqid() . '.' . $request->file('foto_ktp')->getClientOriginalExtension();
-            $compressedImage = Image::make($request->file('foto_ktp')->getRealPath());
+        $pelanggan = User::where([
+            'nama' => $pelangganData['nama'],
+            'role' => 3,
+            'no_telp' => $pelangganData['no_telp'],
+            'email' => $request->email,
+            'wilayah_id' => $pelangganData['wilayah_id'],
+        ])->first();
 
-            $compressedImage->resize(800, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
+        if (!$pelanggan) {
+            $request->validate([
+                'email' => 'required|email|unique:users,email|max:255',
+            ], [
+                'email.required' => 'Email harus diisi.',
+                'email.email' => 'Format email tidak valid.',
+                'email.unique' => 'Email sudah digunakan.',
+            ]);
 
-            $folderPath = 'private/pemasangan/';
-            $compressedImagePath = $folderPath . $fotoName;
-            Storage::put($compressedImagePath, (string) $compressedImage->encode());
-            $validatedData['foto_ktp'] = $fotoName;
+            $pelanggan = User::create([
+                'nama' => $pelangganData['nama'],
+                'role' => 3,
+                'no_telp' => $pelangganData['no_telp'],
+                'email' => $request->email,
+                'password' => $pelangganData['password'],
+                'wilayah_id' => $pelangganData['wilayah_id'],
+                'foto_profil' => 'dummy.png',
+            ]);
         }
 
-        if ($request->hasFile('foto_rumah')) {
-            $fotoName = uniqid() . '.' . $request->file('foto_rumah')->getClientOriginalExtension();
-            $compressedImage = Image::make($request->file('foto_rumah')->getRealPath());
+        $pemasanganData['pelanggan'] = $pelanggan->id;
+        $pemasanganData['status'] = 'menunggu konfirmasi';
+        $pemasanganData['marketer'] = auth()->user()->id;
 
-            $compressedImage->resize(800, null, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
 
-            $folderPath = 'private/pemasangan/';
-            $compressedImagePath = $folderPath . $fotoName;
-            Storage::put($compressedImagePath, (string) $compressedImage->encode());
-            $validatedData['foto_rumah'] = $fotoName;
+        foreach (['foto_ktp', 'foto_rumah'] as $field) {
+            if ($request->hasFile($field)) {
+                $fotoName = uniqid() . '.' . $request->file($field)->getClientOriginalExtension();
+                $compressedImage = Image::make($request->file($field)->getRealPath());
+                $compressedImage->resize(800, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+
+                $folderPath = 'pemasangan/' . $fotoName;
+                Storage::put('private/' . $folderPath, (string) $compressedImage->encode());
+                $pemasanganData[$field] = $folderPath;
+            }
         }
 
-        if (Pemasangan::create($validatedData)) {
-            return response()->json(
-                ['message' => 'Pemasangan baru berhasil ditambahkan']
-            );
+        if (Pemasangan::create($pemasanganData)) {
+            return response()->json(['message' => 'Pemasangan baru berhasil ditambahkan']);
         }
     }
 
@@ -118,9 +178,10 @@ class PemasanganController extends Controller
     public function show($id)
     {
         $pemasangan = Pemasangan::with('pelanggan', 'marketer')->find($id);
-        $carbonDateTime = Carbon::parse($pemasangan->created_at);
-        $pemasangan->waktuFormat = $carbonDateTime->translatedFormat('l, d F Y');
-        $pemasangan->tanggalFormat = $carbonDateTime->format('H:i');
+        $createDateTime = Carbon::parse($pemasangan->created_at);
+        $updateDateTime = Carbon::parse($pemasangan->updated_at);
+        $pemasangan->created_atFormat = $createDateTime->translatedFormat('l, d F Y | H:i');
+        $pemasangan->updated_atFormat = $updateDateTime->translatedFormat('l, d F Y | H:i');
         return response()->json($pemasangan);
     }
 
@@ -223,8 +284,9 @@ class PemasanganController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Pemasangan $pemasangan)
     {
-        //
+        $pemasangan->delete();
+        return response(['message' => 'Pemasangan berhasil dihapus']);
     }
 }

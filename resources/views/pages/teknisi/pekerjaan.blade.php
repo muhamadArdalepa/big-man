@@ -45,7 +45,7 @@
                         <tr class="align-middle">
                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ">
                                 Tanggal</th>
-                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                 TIM</th>
                             <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                 Jenis Pekerjaan</th>
@@ -151,6 +151,7 @@
                 },
                 {
                     data: 'detail',
+                    className:'extend-min-width'
                 },
 
                 {

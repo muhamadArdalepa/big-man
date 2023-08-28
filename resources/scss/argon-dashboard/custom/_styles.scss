@@ -11,3 +11,21 @@ textarea {
     transition-duration: 300ms;
     transition-timing-function: ease-in-out;
  }
+ .btn-circle {
+    width: 2rem !important;
+    height: 2rem !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+.text-gold{
+    color: #FFD700 !important; 
+}
+.text-silver{
+    color: #C0C0C0 !important; 
+}
+.text-bronze{
+    color: #CD7F32 !important; 
+}

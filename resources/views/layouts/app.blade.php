@@ -19,15 +19,12 @@
 
     <!-- CSS Files -->
 
-    {{-- <link href="{{ asset('build/assets/argon-dashboard-bef89ddb.css') }}" rel="stylesheet" /> --}}
+    {{-- <link href="{{ asset('build/assets/argon-dashboard-6eef2d09.css') }}" rel="stylesheet" /> --}}
 
     @vite(['resources/scss/argon-dashboard.scss', 'resources/js/app.js'])
     @stack('css')
     <style>
-        #btn-to-top {
-           transition-duration: 300ms;
-           transition-timing-function: ease-in-out;
-        }
+
     </style>
 </head>
 
@@ -58,7 +55,7 @@
             damping: '0.5'
         }
         Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-
+        
 
     }
     window.addEventListener("scroll", function() {

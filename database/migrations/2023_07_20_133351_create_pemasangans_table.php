@@ -20,6 +20,7 @@ return new class extends Migration
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
             $table->foreignId('marketer')
+                ->nullable()
                 ->constrained('users')
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
@@ -43,7 +44,7 @@ return new class extends Migration
             $table->integer('hasil_opm_user')->nullable();
             $table->integer('hasil_opm_odp')->nullable();
             $table->integer('kabel_terpakai')->nullable();
-            $table->enum('status',['menunggu konfirmasi','ditolak','sedang diproses','ditunda','aktif','isolir','tidak aktif']);
+            $table->enum('status', ['menunggu konfirmasi', 'ditolak', 'sedang diproses', 'ditunda', 'aktif', 'isolir', 'tidak aktif']);
             $table->string('port_odp')->nullable();
             $table->text('ket')->nullable();
             $table->timestamps();

@@ -30,8 +30,8 @@ class UserFactory extends Factory
                 return \App\Models\Wilayah::inRandomOrder()->first()->id;
             },
             'no_telp' => fake()->numerify('628##########'),
-            'foto_profil' => 'dummy.png',
-            'poin' => fake()->numberBetween(25, 1000),
+            'foto_profil' => 'profile/dummy.png',
+            'poin' => 0,
         ];
     }
 

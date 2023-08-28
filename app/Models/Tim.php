@@ -10,11 +10,11 @@ class Tim extends Model
     use HasFactory;
 
     protected $guarded = [];
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-
     public function tim_anggotas()
     {
         return $this->hasMany(TimAnggota::class);

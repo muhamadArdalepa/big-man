@@ -7,7 +7,7 @@
         <div class="row gx-4">
             <div class="col-auto">
                 <div class="avatar avatar-xl position-relative">
-                    <img src="{{route('storage.private','profile/'.auth()->user()->foto_profil)}}" alt="profile_image"
+                    <img src="{{route('storage.private',auth()->user()->foto_profil)}}" alt="profile_image"
                         class="w-100 border-radius-lg shadow-sm">
                 </div>
             </div>
@@ -174,7 +174,7 @@
                                     <div class="card card-sm mb-2">
                                         <div class="card-body p-2">
                                             <div class="d-flex align-items-center gap-3">
-                                                <img src="/storage/private/profile/{{$tim->foto_profil}}"
+                                                <img src="/storage/private/{{$tim->foto_profil}}"
                                                     class="avatar">
                                                 <p class="m-0">{{$tim->ketua}}</p>
                                             </div>
@@ -188,7 +188,7 @@
                                     <div class="card card-sm mb-2">
                                         <div class="card-body p-2">
                                             <div class="d-flex align-items-center gap-3">
-                                                <img src="/storage/private/profile/{{$anggota->foto_profil}}"
+                                                <img src="/storage/private/{{$anggota->foto_profil}}"
                                                     class="avatar">
                                                 <p class="m-0">{{$anggota->nama}}</p>
                                             </div>

@@ -47,7 +47,7 @@ class TeknisiPekerjaanController extends Controller
         foreach ($pekerjaans->get() as $i => $pekerjaan) {
             switch ($pekerjaan->jenis_pekerjaan_id) {
                 case 1:
-                    $pemasangan = Pemasangan::select('users.nama', 'alamat')->join('users', 'user_id', '=', 'users.id')->find($pekerjaan->pemasangan_id);
+                    $pemasangan = Pemasangan::select('users.nama', 'alamat')->join('users', 'pelanggan', '=', 'users.id')->find($pekerjaan->pemasangan_id);
                     $pekerjaan->detail = $pemasangan->nama . ' - ' . $pemasangan->alamat;
                     break;
                 case 2:
@@ -145,6 +145,7 @@ class TeknisiPekerjaanController extends Controller
             'aktivitas.koordinat',
             'aktivitas.aktivitas',
         )
+            ->join('aktivitas_id', 'user_id', '=', 'users.id')
             ->join('users', 'user_id', '=', 'users.id')
             ->where('pekerjaan_id', $id)->orderBy('created_at', 'desc')->get();
         return response()->json($aktivitass);

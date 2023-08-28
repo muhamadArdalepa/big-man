@@ -9,7 +9,7 @@ class Laporan extends Model
 {
     use HasFactory;
     protected $guarded = [];
-    public function pelapor()
+    public function pelapors()
     {
         return $this->belongsTo(User::class, 'pelapor');
     }
@@ -18,9 +18,15 @@ class Laporan extends Model
     {
         return $this->belongsTo(User::class, 'penerima');
     }
+
     public function jenis_gangguan()
     {
         return $this->belongsTo(JenisGangguan::class);
+    }
+    
+    public function pemasangan()
+    {
+        return $this->belongsTo(Pemasangan::class,'pelapor','pelanggan');
     }
     
 }

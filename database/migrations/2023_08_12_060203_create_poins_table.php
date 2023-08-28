@@ -15,6 +15,8 @@ return new class extends Migration
     {
         Schema::create('poins', function (Blueprint $table) {
             $table->id();
+            $table->string('kesulitan',32);
+            $table->integer('poin');
             $table->timestamps();
         });
     }

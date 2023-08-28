@@ -15,10 +15,10 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('nama');
-            $table->string('speciality')->nullable();
-            $table->tinyInteger('role')->length(1);
-            $table->string('email')->unique();
+            $table->string('nama',64);
+            $table->string('speciality',32)->nullable();
+            $table->tinyInteger('role');
+            $table->string('email',128)->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->foreignId('wilayah_id')
@@ -26,7 +26,7 @@ return new class extends Migration
                 ->onUpdate('cascade')
                 ->onDelete('restrict');
             $table->string('no_telp');
-            $table->string('foto_profil')->nullable();
+            $table->string('foto_profil')->default('profil/dummy.png');
             $table->integer('poin')->default(0);
             $table->timestamps();
         });

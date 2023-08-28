@@ -313,7 +313,7 @@
         //                 aktivitasItems += `
     //         <div class="aktivitas-item mb-3 border-bottom " loading="lazy">
     //             <div class="d-flex gap-2 mb-2 align-items-start">
-    //                 <img class="rounded-3" src="${appUrl}/storage/private/profile/${e.foto_profil}"
+    //                 <img class="rounded-3" src="${appUrl}/storage/private/${e.foto_profil}"
     //                     alt="foto profil" height="35">
     //                 <div>
     //                     <p class="mb-0">${e.nama} - <small class="text-xs">${formatDate(e.created_at)}</small></p>

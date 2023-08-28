@@ -1,13 +1,21 @@
 @extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
 @include('components.dataTables')
 @include('components.select2css')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+@include('components.select2css')
+
 <style>
-    textarea {
-        resize: none;
+    .img-container {
+        background-size: cover;
+        min-height: 150px;
+        max-height: 300px;
     }
 
-    .img-container {
-        min-height: 100;
+    #map>div.leaflet-pane.leaflet-map-pane>div.leaflet-pane.leaflet-popup-pane>div>div.leaflet-popup-content-wrapper>div {
+        width: 300px !important;
     }
 </style>
 @section('content')
@@ -32,8 +40,8 @@
                         <label for="tanggal" class="m-0 d-none d-sm-inline-block">Tanggal</label>
                         <input type="date" id="tanggal" class="form-control ms-2" value="{{ $date }}">
                     </div>
-                    <button class="btn btn-icon btn-3 btn-primary m-0 ms-auto" type="button" data-bs-toggle="modal"
-                        data-bs-target="#Modal" data-bs-title="Tambah Laporan">
+                    <button id="btn-add" class="btn btn-icon bg-gradient-danger m-0 ms-auto" type="button"
+                        data-bs-toggle="modal" data-bs-target="#Modal" data-bs-title="Tambah Laporan">
                         <span class="btn-inner--icon"><i class="fas fa-plus"></i></span>
                         <span class="btn-inner--text d-none d-sm-inline-block">Pemasangan Baru</span>
                     </button>
@@ -73,22 +81,57 @@
 @push('modal')
     <!-- modal -->
     <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered modal-dialog-scrollable" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="ModalLabel">Tambah Laporan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <div class="">
+                        <h5 class="modal-title" id="ModalLabel"></h5>
+                        <span id="ModalStatus" class="badge detail-item"></span>
+                    </div>
+                    <div class="dropdown detail-item">
+                        <button class="btn btn-link text-secondary mb-0" data-bs-toggle="dropdown" id="dropdownButton"
+                            aria-expanded="false">
+                            <i class="fa fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu  dropdown-menu-end  p-2 me-sm-n3" aria-labelledby="dropdownButton">
+
+                            {{-- <li>
+                                <a class="dropdown-item btn-selesai border-radius-md py-1 " href="javascript:;">
+                                    <i class="fa-solid fa-check me-2 text-success"></i>
+                                    Terima dan tugaskan perbaikan
+
+                                </a>
+                            </li> --}}
+                            <li>
+                                <a id="edit" class="dropdown-item btn-tunda border-radius-md py-1 "
+                                    href="javascript:;">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    Edit
+                                </a>
+                            </li>
+                            <li>
+                                <a id="hapus" class="dropdown-item border-radius-md py-1 " href="javascript:;">
+                                    <i class="fa-solid fa-xmark"></i>
+                                    Hapus
+                                </a>
+                            </li>
+
+
+                        </ul>
+                    </div>
+
                 </div>
                 <div class="modal-body">
+                    <div class="text-xs mb-1 detail-item">
+                        <i class="fa-solid me-2 fa-calendar-plus"></i>
+                        <span id="created_at"></span>
+                        <span id="marketer"></span>
+                    </div>
                     <div class="row">
-                        <div class="col-4">
+                        <div class="col-md-5">
                             <div class="form-group">
-                                <div class="d-flex align-items-center">
-                                    <label for="no_telp" class="form-control-label">Kota</label>
-                                </div>
-                                <select class="form-control" id="wilayah_id" tabindex="5">
+                                <label for="wilayah_id">Wilayah</label>
+                                <select class="form-select" id="wilayah_id" tabindex="1">
                                     @foreach ($wilayahs as $wilayah)
                                         <option value="{{ $wilayah->id }}">{{ $wilayah->nama_wilayah }}</option>
                                     @endforeach
@@ -96,27 +139,24 @@
                                 <div id="wilayah_idFeedback" class="invalid-feedback text-xs"></div>
                             </div>
                         </div>
-                        <div class="col-8">
+                        <div class="col-md-7">
                             <div class="form-group">
-                                <div class="d-flex align-items-center">
-                                    <label for="nama" class="form-control-label">Nama Pelanggan</label>
-                                    <div class="form-check form-switch ms-auto">
-                                        <input class="form-check-input" type="checkbox" id="pelanggan-baru">
-                                        <label class="form-check-label" for="pelanggan-baru">Pelanggan baru</label>
-                                    </div>
-                                </div>
-                                <input type="text" id="nama" class="form-control" placeholder="Nama Pelanggan"
-                                    autofocus tabindex="1">
-                                <select id="pelanggan" class="form-control w-100">
-                                    <option value=""></option>
-                                </select>
+                                <label for="nama">Nama Pelanggan</label>
+                                <input type="text" id="nama" class="form-control" placeholder="Nama Pelanggan">
                                 <div id="namaFeedback" class="invalid-feedback text-xs"></div>
                             </div>
                         </div>
-
                     </div>
                     <div class="row">
-                        <div class="col-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="nik" class="form-control-label">NIK</label>
+                                <input type="number" class="form-control" id="nik" placeholder="NIK"
+                                    tabindex="4">
+                                <div id="nikFeedback" class="invalid-feedback text-xs"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
                             <div class="form-group">
                                 <label for="no_telp" class="form-control-label">No Telepon</label>
                                 <input type="number" class="form-control" id="no_telp" placeholder="No Telepon"
@@ -124,735 +164,687 @@
                                 <div id="no_telpFeedback" class="invalid-feedback text-xs"></div>
                             </div>
                         </div>
-                        <div class="col-8">
-                            <div class="form-group">
-                                <label for="example-text-input" class="form-control-label">Email</label>
-                                <input type="email" id="email" class="form-control" placeholder="Alamat email"
-                                    tabindex="2">
-                                <div id="emailFeedback" class="invalid-feedback text-xs"></div>
-                            </div>
-
-                        </div>
                     </div>
 
-
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" class="form-control" placeholder="Email Pelanggan">
+                        <div id="emailFeedback" class="invalid-feedback text-xs"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="paket_id" class="form-control-label">Pilih Paket</label>
+                        <select class="form-select" id="paket_id">
+                            <option selected disabled value="">--Pilih Paket--</option>
+                            @foreach ($pakets as $paket)
+                                <option value="{{ $paket->id }}">
+                                    {{ $paket->nama_paket }} -- Rp.
+                                    {{ $paket->harga }}/{{ $paket->kecepatan }}Mbps
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="text-sm text-muted" id="paketKet"></div>
+                        <div id="paket_idFeedback" class="invalid-feedback text-xs"></div>
+                    </div>
 
                     <div class="form-group">
-                        <label for="alamat">Alamat</label>
-                        <textarea class="form-control" id="alamat" rows="3" placeholder="Alamat"></textarea>
+                        <div class="d-flex align-items-end">
+                            <label for="alamat" class="form-control-label">Alamat</label>
+                            <button id="btn-open-map" class="btn ms-auto p-2 btn-link text-secondary font-weight-normal"
+                                data-bs-toggle="modal" data-bs-target="#mapModal">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <span>Pilih Lewat Peta</span>
+                            </button>
+                        </div>
+                        <textarea class="form-control" id="alamat" rows="3" placeholder="Alamat Pelanggan"></textarea>
                         <div id="alamatFeedback" class="invalid-feedback text-xs"></div>
+
                     </div>
 
-                    <div class="row">
+                    <div class="form-group">
+                        <label for="koordinat_rumah" class="form-control-label">Koordinat Rumah</label>
+                        <input type="text" class="form-control" id="koordinat_rumah" placeholder="Koordinat Rumah"
+                            tabindex="4">
+                        <div id="koordinat_rumahFeedback" class="invalid-feedback text-xs"></div>
+                    </div>
 
-                        <div class="col-6">
+
+
+
+                    <div class="form-group">
+                        <label for="example-text-input" class="form-control-label">Password Akun Pelanggan</label>
+                        <div class="row">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="password" tabindex="3"
+                                    placeholder="Password Akun Pelanggan">
+                                <button type="button" id="copy-btn" class="btn m-0 btn-primary"
+                                    data-bs-toggle="tooltip">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button type="button" id="generate-btn" class="btn m-0 btn-warning">Generate</button>
+                            </div>
+                            <div id="passwordFeedback" class="invalid-feedback text-xs"></div>
+                        </div>
+                    </div>
+
+                    <div class="row ">
+                        <div class="col-md-6">
                             <div class="form-group">
-                                <label for="serial_number">Serial Number</label>
-                                <input type="text" id="serial_number" class="form-control"
-                                    placeholder="Serial Number" autofocus tabindex="1">
-                                <div id="serial_numberFeedback" class="invalid-feedback text-xs"></div>
+                                <label for="foto_ktp" class="form-control-label">Foto KTP</label>
+                                <input type="file" id="foto_ktp" class="d-none">
+                                <div class="rounded-3 border overflow-hidden position-relative img-container"
+                                    style="cursor: pointer;" onclick="document.getElementById('foto_ktp').click()">
+                                    <img src="" class="img-preview w-100 d-none">
+                                    <div class="text-center top-50 start-50 position-absolute img-placeholder"
+                                        style="transform: translate(-50%, -50%);">
+                                        <i class="fa-regular fa-image fa-2xl mt-3"></i>
+                                        <div class="text-sm opacity-7 mt-3">Upload Foto</div>
+                                    </div>
+                                </div>
+                                <div id="kfoto_ktpFeedback" class="invalid-feedback text-xs"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="foto_rumah" class="form-control-label">Foto KTP</label>
+                                <input type="file" id="foto_rumah" class="d-none">
+                                <div class="rounded-3 border overflow-hidden position-relative img-container"
+                                    style="cursor: pointer;" onclick="document.getElementById('foto_rumah').click()">
+                                    <img src="" class="img-preview w-100 d-none">
+                                    <div class="text-center top-50 start-50 position-absolute img-placeholder"
+                                        style="transform: translate(-50%, -50%);">
+                                        <i class="fa-regular fa-image fa-2xl mt-3"></i>
+                                        <div class="text-sm opacity-7 mt-3">Upload Foto</div>
+                                    </div>
+                                </div>
+                                <div id="foto_rumahFeedback" class="invalid-feedback text-xs"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="ket">Keterangan</label>
-                        <textarea class="form-control" id="ket" rows="3" placeholder="Keterangan"></textarea>
-                    </div>
+
 
 
 
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn bg-gradient-secondary me-2" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn bg-gradient-primary" id="simpan">Tambah</button>
+                    <button type="button" class="btn bg-gradient-primary" id="edit-perform">Simpan</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-fullscreen-lg-down modal-lg modal-dialog-centered" role="document">
+    <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
-                <div class="modal-header row">
-                    <div class="col-md-6 d-flex gap-2 mb-3 mb-md-0">
-                        <img src="/storage/private/profile/dummy.png" alt="foto profil" height="50" class="rounded-3"
-                            id="ModalImg">
-                        <div class="flex-grow-1">
-                            <div class="text-sm mb-1 d-flex align-items-center w-100">
-                                Detail Pemasangan &nbsp;
-                                <span id="detailIdPemasangan"></span>
-                                <span class="badge bg-gradient-success ms-auto ms-md-2" id="detailStatus"></span>
-                            </div>
-                            <h5 class="m-0 lh-1" id="detailModalLabel"></h5>
-                        </div>
-                    </div>
-                    <div class="col-md-6 justify-content-end d-flex gap-2">
-                        <div class="">
-                            <small class="m-0 d-block" id="detailModalTime"></small>
-                            <small class="m-0 d-block" id="detailModalDate"></small>
-                        </div>
-                        <button type="button" class="btn bg-gradient-danger ms-auto ms-md-0" data-bs-toggle="tooltip"
-                            data-bs-title="Hapus Pemasangan">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                        <button type="button" class="btn bg-gradient-warning" data-bs-toggle="tooltip"
-                            data-bs-title="Edit Pemasangan">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                    </div>
-
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-5 px-md-4">
-                            <p class="text-uppercase text-sm">Informasi Pemasangan</p>
-                            <div class="form-group">
-                                <label for="detailpaket_id" class="form-control-label">Paket Pilihan</label>
-                                <select class="form-select" id="detailpaket_id">
-                                    <option disabled value="0">--Pilih Paket--</option>
-                                    @foreach ($pakets as $paket)
-                                        <option value="{{ $paket->id }}">
-                                            {{ $paket->nama_paket }} -- Rp.
-                                            {{ $paket->harga }}/{{ $paket->kecepatan }}Mbps
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div class="text-sm text-muted" id="paketKet"></div>
-                                <div id="detailpaket_idFeedback" class="invalid-feedback text-xs"></div>
-                            </div>
-                            <div class="form-group">
-                                <label for="detailnik" class="form-control-label">NIK</label>
-                                <input type="number" id="detailnik" class="form-control">
-                                <div class="text-sm text-muted" id="paketKet"></div>
-                                <div id="detailnikFeedback" class="invalid-feedback text-xs"></div>
-                            </div>
-                            <div class="form-group">
-                                <label for="detailalamat" class="form-control-label">Alamat</label>
-                                <textarea id="detailalamat" rows="3" class="form-control"></textarea>
-                                <div class="text-sm text-muted" id="paketKet"></div>
-                                <div id="detailalamatFeedback" class="invalid-feedback text-xs"></div>
-                            </div>
-                            <div class="form-group">
-                                <label for="detailkoordinat_rumah" class="form-control-label">Koordinat Rumah</label>
-                                <input type="text" id="detailkoordinat_rumah" class="form-control">
-                                <div id="detailkoordinatFeedback_rumah" class="invalid-feedback text-xs"></div>
-                            </div>
-                        </div>
-                        <div class="col-md-7 border-start px-md-4">
-                            <p class="text-uppercase text-sm">Foto Pendukung</p>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="detailfoto_ktp" class="form-control-label">Foto KTP</label>
-                                        <input type="file" id="detailfoto_ktp" class="d-none">
-                                        <div class="rounded-3 border overflow-hidden position-relative img-container"
-                                            style="cursor: pointer;">
-                                            <img src="" class="img-preview w-100">
-                                            <div class="d-none text-center top-50 start-50 position-absolute img-placeholder"
-                                                style="transform: translate(-50%, -50%);">
-                                                <i class="fa-regular fa-image fa-2xl mt-3"></i>
-                                                <div class="text-sm opacity-7 mt-3">Upload Foto</div>
-                                            </div>
-                                        </div>
-                                        <div id="foto_ktpFeedback" class="invalid-feedback text-xs"></div>
-                                    </div>
-
-                                </div>
-                                <div class="col-md-6">
-
-                                    <div class="form-group">
-                                        <label for="detailfoto_rumah" class="form-control-label">Foto Rumah</label>
-                                        <input type="file" id="detailfoto_rumah" class="d-none">
-                                        <div class="rounded-3 border overflow-hidden position-relative img-container"
-                                            style="cursor: pointer;">
-                                            <img src="" class="img-preview w-100">
-                                            <div class="d-none text-center top-50 start-50 position-absolute img-placeholder"
-                                                style="transform: translate(-50%, -50%);">
-                                                <i class="fa-regular fa-image fa-2xl mt-3"></i>
-                                                <div class="text-sm opacity-7 mt-3">Upload Foto</div>
-                                            </div>
-                                        </div>
-                                        <div id="foto_rumahFeedback" class="invalid-feedback text-xs"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="detailpoin">Level Pekerjaan</label>
-                                        <select id="detailpoin" class="form-select">
-                                            @foreach (\App\Models\Poin::all() as $poin)
-                                                <option value="{{ $poin->poin }}">{{ $poin->kesulitan }}</option>
-                                            @endforeach
-                                        </select>
-                                        <div id="detailpoinFeedback" class="invalid-feedback text-xs"></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-9 align-self-end">
-                                    <div class="form-group w-100">
-                                        <button type="button" class="btn bg-gradient-primary w-100"
-                                            id="tugaskan">Tugaskan
-                                            Tim
-                                            Perbaikan</button>
-                                        <select id="tim" class="form-control" data-bs-toggle="tooltip">
-                                            <option value=""></option>
-                                        </select>
-                                        <div id="timFeedback" class="invalid-feedback text-xs"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
+                <div class="modal-body h-100">
+                    <div id="map-container" class="h-100">
+                        <div id="map"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn bg-gradient-secondary me-2" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn bg-gradient-primary" id="detailSimpan">Tugaskan</button>
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal"
+                        data-bs-target="#Modal">Close</button>
                 </div>
             </div>
         </div>
-    @endpush
-    @push('js')
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-        <script>
-            // init
-            const appUrl = "{{ env('APP_URL') }}";
-            const baseUrl = 'api/pemasangan'
+    </div>
+@endpush
+@push('js')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        // init
+        const appUrl = "{{ env('APP_URL') }}";
+        const baseUrl = 'api/pemasangan'
+        const pakets = @json($pakets);
 
-            let wilayah = $('#wilayah').val();
-            let wilayahModal = $('#wilayah_id').val();
+        let koordinat_rumah = null
+        let alamat = null
+        // functions
 
-            let wilayahSelected = null;
-            let pemasanganSelected = null;
-            let tanggal = $('#tanggal').val();
+        let wilayah = $('#wilayah').val();
+        let tanggal = $('#tanggal').val();
+        let table = $('#table');
 
-            let url = `${baseUrl}?wilayah=${wilayah}&tanggal=${tanggal}`
+        let url = `${baseUrl}?wilayah=${wilayah}&tanggal=${tanggal}`
+        let pemasanganId = null
+        isDetail = false;
+        $(document).ready(function() {
+            $('#pelanggan').val(null).trigger('change');
+            table = $('#table').DataTable({
+                ajax: {
+                    url: url,
+                    type: 'GET',
+                    dataSrc: '',
+                },
+                dom: "<'d-flex flex-column flex-md-row gap-3 align-items-center '<'d-flex align-items-center w-100 w-sm-auto'<'whitespace-nowrap'B><'ms-sm-3 ms-auto'l>><'ms-0 ms-md-auto'f>>" +
+                    "<'row'<'col-sm-12't>>" +
+                    "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+                buttons: [
+                    'excel', 'pdf'
+                ],
+                order: [
+                    [0, "desc"]
+                ],
+                columns: [
 
-            let table = null;
-
-            // functions
-            function readURL(input) {
-
-                if (input.files && input.files[0]) {
-                    var reader = new FileReader();
-
-                    reader.onload = function(e) {
-                        input.nextElementSibling.querySelector('.img-preview').src = e.target.result;
-                        input.nextElementSibling.querySelector('.img-preview').style.display = 'inline-block'
-                        input.nextElementSibling.querySelector('.img-placeholder').style.display = 'none'
-
-
-                    };
-
-                    reader.readAsDataURL(input.files[0]);
-
-                }
-            }
-
-            function templateSelection(data) {
-                if (data.id === '') { // adjust for custom placeholder values
-                    return $('<span style="color:#b3bbc2">Nama Pelanggan</span>');
-                }
-
-                return data.text;
-            }
-
-            function detailTemplateSelection(data) {
-                if (data.id === '') {
-                    return $('<span style="color:#b3bbc2">Pilih TIM</span>');
-                }
-
-                return data.text;
-            }
-
-            function initSelect2(wilayahModal) {
-                $('#pelanggan').select2({
-                    ajax: {
-                        url: `api/select2-laporan-pelanggan?wilayah=${wilayahModal}`,
-                        dataType: 'json',
-                        delay: 250,
-                        data: function(params) {
-                            return {
-                                terms: params.term,
-                            };
-                        },
-                        processResults: function(data) {
-                            return {
-                                results: data.results,
-                            };
-                        },
-                        cache: true,
+                    {
+                        data: 'id',
+                        className: 'text-center',
                     },
-                    cache: true,
-                    templateSelection: templateSelection,
-                    width: '100%',
-                    dropdownParent: $('#Modal'),
-                    theme: 'bootstrap-5',
-                });
-            }
-
-            function initDetailSelect2() {
-                $('#tim').select2({
-                    ajax: {
-                        url: `api/select2-laporan-tim?wilayah=${wilayahSelected}`,
-                        dataType: 'json',
-                        delay: 250,
-                        data: function(params) {
-                            return {
-                                terms: params.term,
-                            };
-                        },
-                        processResults: function(data) {
-                            return {
-                                results: data.results,
-                            };
-                        },
-                        cache: true,
+                    {
+                        data: 'pelanggan',
                     },
-                    cache: true,
-                    placeholder: 'Pilih Tim',
-                    allowClear: true,
-                    templateSelection: detailTemplateSelection,
-                    width: '100%',
-                    dropdownParent: $('#detailModal'),
-                    theme: 'bootstrap-5',
-                });
-            }
-            // end functions
-
-            // event listeners
-            $("input.d-none").on('change', function(e) {
-                e.preventDefault();
-                readURL(this);
-            });
-
-            $(document).ready(function() {
-                table = $('#table').DataTable({
-                    ajax: {
-                        url: url,
-                        type: 'GET',
-                        serverside: true,
-                        dataSrc: '',
+                    {
+                        data: 'marketer',
                     },
-                    dom: "<'d-flex flex-column flex-md-row gap-3 align-items-center '<'d-flex align-items-center w-100 w-sm-auto'<'whitespace-nowrap'B><'ms-sm-3 ms-auto'l>><'ms-0 ms-md-auto'f>>" +
-                        "<'row'<'col-sm-12't>>" +
-                        "<'row'<'col-sm-5'i><'col-sm-7'p>>",
-                    buttons: [
-                        'excel', 'pdf'
-                    ],
-                    order: [
-                        [0, "desc"]
-                    ],
-                    columns: [
-
-                        {
-                            data: 'id',
-                            className: 'text-center',
-                        },
-                        {
-                            data: 'pelanggan',
-                        },
-                        {
-                            data: 'marketer',
-                        },
-                        {
-                            data: 'alamat',
-                            className: 'extend-min-width',
-                        },
-                        {
-                            data: 'status',
-                            className: 'text-center',
-                            render: function(data, type) {
-                                if (type === 'display') {
-                                    let badge = null
-                                    switch (data) {
-                                        case 'menunggu konfirmasi':
-                                            badge = 'bg-secondary'
-                                            break;
-                                        case 'ditolak':
-                                            badge = 'bg-gradient-danger'
-                                            break;
-                                        case 'sedang diproses':
-                                            badge = 'bg-gradient-primary'
-                                            break;
-                                        case 'ditunda':
-                                            badge = 'bg-gradient-warning'
-                                            break;
-                                        case 'aktif':
-                                            badge = 'bg-gradient-success'
-                                            break;
-                                        case 'isolir':
-                                            badge = 'bg-gradient-dark'
-                                            break;
-                                        case 'tidak aktif':
-                                            badge = 'bg-gradient-dark'
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                    return `
+                    {
+                        data: 'alamat',
+                        className: 'text-sm',
+                    },
+                    {
+                        data: 'status',
+                        className: 'text-center',
+                        render: function(data, type) {
+                            if (type === 'display') {
+                                let badge = null
+                                switch (data) {
+                                    case 'menunggu konfirmasi':
+                                        badge = 'bg-secondary'
+                                        break;
+                                    case 'ditolak':
+                                        badge = 'bg-gradient-danger'
+                                        break;
+                                    case 'sedang diproses':
+                                        badge = 'bg-gradient-primary'
+                                        break;
+                                    case 'ditunda':
+                                        badge = 'bg-gradient-warning'
+                                        break;
+                                    case 'aktif':
+                                        badge = 'bg-gradient-success'
+                                        break;
+                                    case 'isolir':
+                                        badge = 'bg-gradient-dark'
+                                        break;
+                                    case 'tidak aktif':
+                                        badge = 'bg-gradient-dark'
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                return `
                                 <span class="badge badge-sm text-xxs ${badge}">${data}</span>
                                 `
-                                }
-                                return data
                             }
-                        },
-                        {
-                            data: 'created_atFormat',
-                            className: 'text-center',
-                        },
-                        {
-                            data: 'id',
-                            orderable: false,
-                            searchable: false,
-                            className: 'text-center',
-                            render: function(data, type) {
-                                if (type === 'display') {
-                                    return `
-                                <button data-pemasangan="${data}" data-bs-toggle="modal" data-bs-target="#detailModal" class="btn btn-link text-secondary font-weight-normal btn-detail-pemasangan">
-                                    Detail
-                                </button>
-                                `
-                                }
-                                return data;
-                            }
-                        },
-                    ],
-                    language: {
-                        oPaginate: {
-                            sNext: '<i class="fa fa-forward"></i>',
-                            sPrevious: '<i class="fa fa-backward"></i>',
-                            sFirst: '<i class="fa fa-step-backward"></i>',
-                            sLast: '<i class="fa fa-step-forward"></i>'
+                            return data
                         }
                     },
-                    createdRow: function(row) {
-                        let cell = $('td:eq(3)', row);
-                        cell.addClass('force-wrap-space');
-                        cell.addClass('extend-min-width');
+                    {
+                        data: 'created_at',
+                        className: 'text-center text-xs',
+                        render: function(data, type, row) {
+                            if (type === 'display') {
+                                return row.created_atFormat;
+                            }
+                            return data;
+                        }
                     },
-                });
-                initSelect2(wilayahModal);
-                initDetailSelect2(wilayahSelected);
-                $('#tim').next().css('display', 'none');
-                $('#tim').css('display', 'none');
-                $('#nama').css('display', 'none');
-
-
-
-                $('#wilayah').on('change', function() {
-                    wilayah = $('#wilayah').val()
-                    tanggal = $('#tanggal').val()
-                    url = `${baseUrl}?wilayah=${wilayah}&tanggal=${tanggal}`
-                    table.ajax.url(url).load()
-                    wilayahModal = wilayah
-                });
-
-                $('#tanggal').on('change', function() {
-                    wilayah = $('#wilayah').val()
-                    tanggal = $('#tanggal').val()
-                    url = `${baseUrl}?wilayah=${wilayah}&tanggal=${tanggal}`
-                    table.ajax.url(url).load()
-                    wilayahModal = wilayah
-                });
-
-
-                $('#wilayah_id').on('change', function() {
-                    wilayahModal = $('#wilayah_id').val();
-                    if (!isNewPelanggan) {
-                        $('#pelanggan').select2('destroy');
-                        $('#pelanggan').val(null).trigger('change');
-                        initSelect2(wilayahModal)
+                    {
+                        data: 'id',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-center',
+                        render: function(data, type) {
+                            if (type === 'display') {
+                                return `<button data-pemasangan="${data}" data-bs-toggle="modal" data-bs-target="#Modal" class="btn-detail-pemasangan btn btn-link text-secondary font-weight-normal">
+                                        Detail
+                                    </button>`
+                            }
+                            return data;
+                        }
+                    },
+                ],
+                language: {
+                    oPaginate: {
+                        sNext: '<i class="fa fa-forward"></i>',
+                        sPrevious: '<i class="fa fa-backward"></i>',
+                        sFirst: '<i class="fa fa-step-backward"></i>',
+                        sLast: '<i class="fa fa-step-forward"></i>'
                     }
-                });
-
-                table.on('draw', () => {
-                    $('.btn-detail-pemasangan').on('click', (e) => {
-                        let card;
-                        fetch(`${baseUrl}/${e.target.dataset.pemasangan}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                wilayahSelected = data.pelanggan.wilayah_id;
-                                pemasanganSelected = data.id;
-                                $('#ModalImg').attr('src', appUrl + '/storage/private/profile/' +
-                                    data.pelanggan.foto_profil)
-                                $('#detailIdPemasangan').text(data.id)
-                                $('#detailStatus').text(data.status)
-                                $('#detailModalLabel').text(data.pelanggan.nama)
-                                $('#detailModalTime').text(data.waktuFormat)
-                                $('#detailModalDate').text(data.tanggalFormat)
-                                $('#detailpaket_id').val(data.paket_id)
-                                $('#detailnik').val(data.nik)
-                                $('#detailalamat').text(data.alamat)
-                                $('#detailalamat').val(data.alamat)
-                                $('#detailkoordinat_rumah').val(data.koordinat_rumah)
-                                $('#detailPaket').val(data.nama_paket)
-                                $('#detailfoto_ktp + .img-container img').attr('src', appUrl +
-                                    '/storage/private/pemasangan/' +
-                                    data.foto_ktp)
-                                $('#detailfoto_rumah + .img-container img').attr('src', appUrl +
-                                    '/storage/private/pemasangan/' +
-                                    data.foto_rumah)
-                            })
-                    });
-                });
+                },
+                createdRow: function(row) {
+                    let cell = $('td:eq(3)', row);
+                    cell.addClass('force-wrap-space');
+                    cell.addClass('extend-min-width');
+                },
             });
 
-            $('#pelanggan-baru').on('click', function() {
-                isNewPelanggan = (!isNewPelanggan);
-                if (isNewPelanggan) {
-                    $('#nama').css('display', 'inline-block');
-                    $('#pelanggan').next().css('display', 'none');
-                } else {
-                    $('#nama').css('display', 'none');
-                    initSelect2(wilayahModal)
-                    $('#pelanggan').next().css('display', 'inline-block');
-                }
-                $('#nama').val('');
-                $('#pelanggan').val('').trigger('change');
-            })
+            $('#wilayah').on('change', function() {
+                wilayah = $('#wilayah').val()
+                tanggal = $('#tanggal').val()
+                url = `${baseUrl}?wilayah=${wilayah}&tanggal=${tanggal}`
+                table.ajax.url(url).load()
+                wilayahModal = wilayah
+            });
 
-            $('#pelanggan').on('change', function() {
-                $('#nama').val('')
-                $('#no_telp').val('')
-                $('#email').val('')
-                $('#serial_number').val('')
-                $('#alamat').val('')
-                if ($('#pelanggan').val() != '') {
-                    let pelangganId = $('#pelanggan').val();
-                    if (pelangganId != null) {
-                        $.ajax({
-                            url: appUrl + '/api/data-laporan-pelanggan/' + pelangganId,
-                            type: 'GET',
-                            data: {
-                                id: pelangganId,
-                            },
-                            success: function(response) {
-                                $('#nama').val(response.nama)
-                                $('#no_telp').val(response.no_telp)
-                                $('#email').val(response.email)
-                                $('#serial_number').val(response.serial_number)
-                                $('#alamat').val(response.alamat)
-                                $('#nama').removeClass('is-invalid');
-                                $('#namaFeedback').hide();
-                                $('#email').removeClass('is-invalid');
-                                $('#emailFeedback').hide();
-                                $('#serial_number').removeClass('is-invalid');
-                                $('#serial_numberFeedback').hide();
-                                $('#no_telp').removeClass('is-invalid');
-                                $('#no_telpFeedback').hide();
-                                $('#alamat').removeClass('is-invalid');
-                                $('#alamatFeedback').hide();
-                                $('#wilayah_id').removeClass('is-invalid');
-                                $('#wilayah_idFeedback').hide();
+            $('#tanggal').on('change', function() {
+                wilayah = $('#wilayah').val()
+                tanggal = $('#tanggal').val()
+                url = `${baseUrl}?wilayah=${wilayah}&tanggal=${tanggal}`
+                table.ajax.url(url).load()
+                wilayahModal = wilayah
+            });
+
+
+            table.on('draw', () => {
+                $('.btn-detail-pemasangan').on('click', (e) => {
+                    isDetail = true;
+                    pemasanganId = e.currentTarget.dataset.pemasangan
+                    $('.detail-item').removeClass('d-none')
+                    $('#simpan').addClass('d-none')
+                    $('#edit-perform').removeClass('d-none')
+                    $('#Modal .form-control').attr('disabled', 'true')
+                    $('#Modal .form-select').attr('disabled', 'true')
+                    $('#btn-open-map span').text('Lihat peta')
+                    $('#btn-open-map i').removeClass('fa-location-dot')
+                    $('#btn-open-map i').addClass('fa-map')
+                    fetch(`${baseUrl}/${pemasanganId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            $('#ModalLabel').text('Detail Pemasangan ' + data.id);
+                            $('#ModalStatus').text(data.status);
+                            var badge = null
+                            switch (data.status) {
+                                case 'menunggu konfirmasi':
+                                    badge = 'bg-secondary'
+                                    break;
+                                case 'ditolak':
+                                    badge = 'bg-gradient-danger'
+                                    break;
+                                case 'sedang diproses':
+                                    badge = 'bg-gradient-primary'
+                                    break;
+                                case 'ditunda':
+                                    badge = 'bg-gradient-warning'
+                                    break;
+                                case 'aktif':
+                                    badge = 'bg-gradient-success'
+                                    break;
+                                case 'isolir':
+                                    badge = 'bg-secondary'
+                                    break;
+                                case 'tidak aktif':
+                                    badge = 'bg-dark text-light'
+                                    break;
                             }
+                            if (data.marketer) {
+                                $('#marketer').text(' - Marketer: ' + data.marketer.nama)
+                            } else {
+                                $('#marketer').text('')
+                            }
+                            $('#ModalStatus').addClass(badge);
+                            $('#created_at').text(data.created_atFormat);
+                            $('#wilayah_id').val(data.pelanggan.wilayah_id);
+                            $('#nama').val(data.pelanggan.nama);
+                            $('#nik').val(data.nik);
+                            $('#paket_id').val(data.paket_id);
+                            $('#no_telp').val(data.pelanggan.no_telp);
+                            $('#email').val(data.pelanggan.email);
+                            $('#alamat').val(data.alamat);
+                            $('#koordinat_rumah').val(data.koordinat_rumah);
+                            $('.form-group:has(#password)').addClass('d-none')
+                            $('#foto_ktp + div img').removeClass('d-none');
+                            $('#foto_ktp + div img').attr('src', appUrl + '/storage/private/' +
+                                data.foto_ktp);
+                            $('#foto_ktp + div div.img-placeholder').addClass('d-none');
+                            $('#foto_rumah + div img').removeClass('d-none');
+                            $('#foto_rumah + div img').attr('src', appUrl +
+                                '/storage/private/' + data.foto_rumah);
+                            $('#foto_rumah + div div.img-placeholder').addClass('d-none');
+                            koordinat_rumah = data.koordinat_rumah
+                            alamat = data.alamat
+                            $('#Modal').modal('show');
                         })
-                    }
-                }
-
-            })
-
-            $('#tim').on('change', () => {
-                if ($('#tim').val() == '') {
-                    $('#detailSimpan').hide();
-                } else {
-                    $('#detailSimpan').show();
-                }
-            })
-
-            $('#Modal').on('shown.bs.modal', function() {
-                $(this).find('[autofocus]').focus();
-                $(this).on('keypress', function(event) {
-                    if (event.keyCode === 13) {
-                        event.preventDefault();
-                        $('#simpan').click()
-                    }
                 });
             });
 
-            $('#Modal').on('hide.bs.modal', function() {
-                $('#Modal').find('.form-control').removeClass('is-invalid');
-                $('#Modal').find('.invalidFeedback').hide();
-                $('#Modal').find('input.form-control').val('');
-                $('#Modal').find('textarea.form-control').val('');
-                $('#Modal').find('textarea.form-control').text('');
-                $('#wilayah_id').val(wilayah);
-                $('#jenis_gangguan_id').val(0);
-            });
+        });
 
-            $('#detailModal').on('shown.bs.modal', function() {
-                $(this).on('keypress', function(event) {
-                    if (event.keyCode === 13) {
-                        event.preventDefault();
-                        $('#detailSimpan').click()
-                    }
-                });
-            });
-
-            $('#detailModal').on('hide.bs.modal', function() {
-                $('#detailModal').find('.form-control').removeClass('is-invalid');
-                $('#detailModal').find('.invalidFeedback').hide();
-                $('#detailModal').find('.form-control').val('');
-                $('#tim').next().css('display', 'none');
-                $('#tugaskan').css('display', 'block');
-            });
-
-            $('#tugaskan').on('click', () => {
-                $('#tugaskan').hide()
-                initDetailSelect2(wilayahSelected);
-                $('#tim').show()
-            })
-
-            $('#simpan').on('click', function(e) {
-                e.preventDefault();
-                $.ajaxSetup({
+        $('#simpan').on('click', function(e) {
+            axios.post(baseUrl, {
+                    wilayah_id: $('#wilayah_id').val(),
+                    nama: $('#nama').val(),
+                    nik: $('#nik').val(),
+                    paket_id: $('#paket_id').val(),
+                    no_telp: $('#no_telp').val(),
+                    email: $('#email').val(),
+                    alamat: $('#alamat').val(),
+                    koordinat_rumah: $('#koordinat_rumah').val(),
+                    password: $('#password').val(),
+                    foto_ktp: $('#foto_ktp')[0].files[0],
+                    foto_rumah: $('#foto_rumah')[0].files[0],
+                }, {
                     headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        'Content-Type': 'multipart/form-data'
                     }
-                });
-                $.ajax({
-                    url: appUrl + '/api/laporan',
-                    type: 'POST',
-                    data: {
-                        is_new: isNewPelanggan,
-                        id: $('#pelanggan').val(),
-                        nama: $('#nama').val(),
-                        email: $('#email').val(),
-                        password: $('#password').val(),
-                        no_telp: $('#no_telp').val(),
-                        wilayah_id: $('#wilayah_id').val(),
-                        alamat: $('#alamat').val(),
-                        serial_number: $('#serial_number').val(),
-                        jenis_gangguan_id: $('#jenis_gangguan_id').val(),
-                        ket: $('#ket').val(),
-                    },
-                    success: function(response) {
-                        if (response.status == 400) {
-                            console.log(response);
-                            if (response.errors['nama'] == undefined) {
-                                $('#nama').removeClass('is-invalid');
-                                $('#namaFeedback').hide();
-                            } else {
-                                $('#namaFeedback').text(response.errors['nama']);
-                                $('#nama').addClass('is-invalid');
-                            }
-                            if (response.errors['email'] == undefined) {
-                                $('#email').removeClass('is-invalid');
-                                $('#emailFeedback').hide();
-                            } else {
-                                $('#emailFeedback').text(response.errors['email']);
-                                $('#email').addClass('is-invalid');
-                            }
-                            if (response.errors['no_telp'] == undefined) {
-                                $('#no_telp').removeClass('is-invalid');
-                                $('#no_telpFeedback').hide();
-                            } else {
-                                $('#no_telpFeedback').text(response.errors['no_telp']);
-                                $('#no_telp').addClass('is-invalid');
-                            }
-                            if (response.errors['alamat'] == undefined) {
-                                $('#alamat').removeClass('is-invalid');
-                                $('#alamatFeedback').hide();
-                            } else {
-                                $('#alamatFeedback').text(response.errors['alamat']);
-                                $('#alamat').addClass('is-invalid');
-                            }
-                            if (response.errors['serial_number'] == undefined) {
-                                $('#serial_number').removeClass('is-invalid');
-                                $('#serial_numberFeedback').hide();
-                            } else {
-                                $('#serial_numberFeedback').text(response.errors['serial_number']);
-                                $('#serial_number').addClass('is-invalid');
-                            }
-                            if (response.errors['wilayah_id'] == undefined) {
-                                $('#wilayah_id').removeClass('is-invalid');
-                                $('#wilayah_idFeedback').hide();
-                            } else {
-                                $('#wilayah_idFeedback').text(response.errors['wilayah_id']);
-                                $('#wilayah_id').addClass('is-invalid');
-                            }
-                            if (response.errors['jenis_gangguan_id'] == undefined) {
-                                $('#jenis_gangguan_id').removeClass('is-invalid');
-                                $('#jenis_gangguan_idFeedback').hide();
-                            } else {
-                                $('#jenis_gangguan_idFeedback').text(response.errors['jenis_gangguan_id']);
-                                $('#jenis_gangguan_id').addClass('is-invalid');
-                            }
-                        } else {
+                })
+                .then(response => {
+                    console.log(response);
+                    $('#jenis_gangguan_id').val(null)
+                    $('#pelapor').val(null)
+                    $('#ket').val('')
+                    table.ajax.reload();
+                    $('#Modal').modal('hide');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        timer: 1500,
+                        showConfirmButton: false,
+                    });
+                })
+                .catch(error => {
+                    $('#Modal').find('.invalid-feedback').text('')
+                    $('#Modal').find('.form-control').removeClass('is-invalid')
+                    $('#Modal').find('.form-select').removeClass('is-invalid')
+                    var errors = error.response.data.errors;
+                    for (const key in errors) {
+                        if (errors.hasOwnProperty(key)) {
+                            $('#' + key).addClass('is-invalid');
+                            $('#' + key + 'Feedback').show();
+                            $('#' + key + 'Feedback').text(errors[key]);
+                        }
+                    }
+                })
+        })
+        $('#hapus').on('click', function(e) {
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: 'Apakah Anda yakin ingin menghapus data pemasangan ini?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    axios.delete(baseUrl + '/' + pemasanganId)
+                        .then(function(response) {
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Success',
-                                text: response.message,
+                                text: response.data.message,
                                 timer: 1500,
                                 showConfirmButton: false,
                             });
-                            $('#Modal').find('.form-control').val('');
-                            $('#Modal').find('.form-control').removeClass('is-invalid');
-                            $('#Modal').find('.invalidFeedback').hide();
                             $('#Modal').modal('hide');
                             table.ajax.reload();
-                        }
-                    }
-                });
+                        })
+                        .catch(function(error) {
+                            Swal.fire('Error', error.response.data.message, 'error');
+                        });
+                }
             });
+        });
+        $('#btn-add').on('click', () => {
+            isDetail = false;
+            $('#Modal .form-control').val(null);
+            $('#Modal .form-control:not(.form-control.disabled)').removeAttr('disabled');
+            $('#Modal .form-select:not(#wilayah_id)').val(null);
+            $('#Modal .form-select:not(.form-select.disabled)').removeAttr('disabled');
+            $('#Modal').find('.invalid-feedback').text('')
+            $('#Modal').find('.form-control').removeClass('is-invalid')
+            $('#Modal').find('.form-select').removeClass('is-invalid')
+            $('#Modal').find('img').addClass('d-none')
+            $('#Modal').find('.img-placeholder').removeClass('d-none')
+            $('#btn-open-map span').text('Pilih lewat peta')
+            $('#btn-open-map i').removeClass('fa-map')
+            $('#btn-open-map i').addClass('fa-location-dot')
+            $('.detail-item').addClass('d-none')
+            $('#edit-perform').addClass('d-none')
+            $('#ModalLabel').text('Tambah Pemasangan');
+            $('#wilayah_id').val(wilayah);
+            $('#paket_id').val('');
+            $('#paketKet').text('');
+            $('.form-group:has(#password)').removeClass('d-none')
+            const copyBtn = document.getElementById("copy-btn");
+            const tooltip = new bootstrap.Tooltip(copyBtn);
+            copyBtn.setAttribute("data-bs-original-title", "Copy Password")
+            copyBtn.addEventListener("click", function() {
+                var passwordInput = document.getElementById("password");
+                passwordInput.select();
+                document.execCommand("copy");
+                copyBtn.setAttribute("data-bs-original-title", "Password Copied")
+                tooltip.show()
+            })
+            copyBtn.addEventListener("mouseout", function() {
+                copyBtn.setAttribute("data-bs-original-title", "Copy Password")
+            })
 
+            generateRandomPassword()
+            koordinat_rumah = null
+            alamat = null
+            $('#simpan').removeClass('d-none')
+        })
 
-            $('#detailSimpan').on('click', function(e) {
-                e.preventDefault();
-                $.ajaxSetup({
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    }
-                });
-                $.ajax({
-                    url: appUrl + '/api/pekerjaan',
-                    type: 'POST',
-                    data: {
-                        jenis_pekerjaan_id: 1,
-                        tim_id: $('#tim').val(),
-                        wilayah_id: wilayahSelected,
-                        pemasangan_id: pemasanganSelected,
-                        poin: $('#detailpoin').val()
-                    },
-                    success: function(response) {
-                        if (response.status == 400) {
-                            console.log(response);
-                            if (response.errors['tim_id'] == undefined) {
-                                $('#tim').removeClass('is-invalid');
-                                $('#timFeedback').hide();
-                            } else {
-                                $('#timFeedback').text(response.errors['tim']);
-                                $('#tim').addClass('is-invalid');
-                            }
-                            if (response.errors['poin'] == undefined) {
-                                $('#detailpoin').removeClass('is-invalid');
-                                $('#detailpoinFeedback').hide();
-                            } else {
-                                $('#detailpoinFeedback').text(response.errors['poin']);
-                                $('#detailpoin').addClass('is-invalid');
-                            }
-                        } else {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success',
-                                text: response.message,
-                                timer: 1500,
-                                showConfirmButton: false,
-                            });
-                            $('#detailModal').find('.form-control').val('');
-                            $('#detailModal').find('.form-control').removeClass('is-invalid');
-                            $('#detailModal').find('.invalidFeedback').hide();
-                            $('#detailModal').modal('hide');
-                            table.ajax.reload();
-                        }
-                    }
-                });
+        $('#Modal').on('shown.bs.modal', function() {
+            $(this).on('keypress', function(event) {
+                if (event.keyCode === 13) {
+                    event.preventDefault();
+                    $('#simpan').click()
+                }
             });
+        });
+
+        $('#nama').on('blur', e => {
+            if (e.target.value && e.target.value != '') {
+                fetch(baseUrl + '/data-pelanggan?wilayah=' + $('#wilayah_id').val() + '&nama=' + $('#nama').val() +
+                        '%')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.nama) {
+                            $('#nama').val(data.nama)
+                            $('#no_telp').val(data.no_telp)
+                            $('#email').val(data.email)
+                            $('#alamat').val(data.alamat)
+                            $('#koordinat_rumah').val(data.koordinat_rumah)
+                            alamat = data.alamat
+                            koordinat_rumah = data.koordinat_rumah
+                        }
+                    })
+            }
+        })
+        $('#paket_id').on('change', e => {
+            for (let i = 0; i < pakets.length; i++) {
+                if (pakets[i].id == $('#paket_id').val()) {
+                    console.log(pakets[i].ket);
+                    $('#paketKet').text(pakets[i].ket)
+                    break;
+                }
+            }
+        });
+
+
+
+        let map = null;
+
+        function getAddressFromCoordinatesMap(position) {
+            var lat = position.coords.latitude;
+            var long = position.coords.longitude;
+            setupMap(lat, long)
+        }
+
+        function setupMap(lat, long, alm = null) {
+            if (map != null) {
+
+                map.remove()
+
+            }
+            map = L.map('map').setView([lat, long], 16);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 20,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+            var popup = L.popup();
+            var address;
+
+            let getDisplayAddress = async (lat, lng) => {
+                try {
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+                    );
+                    const data = await response.json();
+                    return data.display_name;
+                } catch (error) {
+                    console.error('Error:', error);
+                    $('#mapModal').find('.leaflet-popup-content .text-center').html(
+                        'Gagal mendapatkan alamat'
+                    );
+                }
+            };
+
+            if (!alm) {
+                getDisplayAddress(lat, long).then(address => {
+                    const marker = L.marker([lat, long]).addTo(map);
+                    let button = isDetail ? '' :
+                        '<button class="btn btn-primary btn-pilih-lokasi w-100">Pilih Lokasi</button>';
+                    marker.bindPopup(`
+                <div class="mb-3 w-auto">${address}</div>
+                ${button}
+                `).openPopup();
+                    $('.btn-pilih-lokasi').on('click', () => {
+                        $('#alamat').val(address);
+                        $('#alamat').text(address);
+                        $('#koordinat_rumah').val(lat + ',' + long);
+                        $('#mapModal').modal('hide');
+                        $('#Modal').modal('show');
+                        alamat = address
+                        koordinat_rumah = lat + ',' + long
+                    });
+                });
+            } else {
+                let button = isDetail ? '' :
+                    '<button class="btn btn-primary btn-pilih-lokasi w-100">Pilih Lokasi</button>';
+                const marker = L.marker([lat, long]).addTo(map);
+                marker.bindPopup(`
+                <div class="mb-3 w-auto">${alamat}</div>
+                ${button}
+                `).openPopup();
+                $('.btn-pilih-lokasi').on('click', () => {
+                    $('#alamat').val(alamat);
+                    $('#alamat').text(alamat);
+                    $('#koordinat_rumah').val(lat + ',' + long);
+                    $('#mapModal').modal('hide');
+                    $('#Modal').modal('show');
+                    alamat = address
+                    koordinat_rumah = lat + ',' + long
+                });
+            }
+
+            if (!isDetail) {
+                let button = isDetail ? '' :
+                    '<button class="btn btn-primary btn-pilih-lokasi w-100">Pilih Lokasi</button>';
+                map.on('click', async e => {
+                    popup
+                        .setLatLng(e.latlng)
+                        .setContent(`
+                <div class="text-center">
+                    <i class="fa-solid fa-spinner fa-spin me-1"></i>
+                </div>
+            `).openOn(map);
+                    const address = await getDisplayAddress(e.latlng.lat, e.latlng.lng);
+                    $('#mapModal').find('.leaflet-popup-content').html(`
+                    <div class="mb-3 w-auto">${address}</div>
+                    ${button}
+                `);
+                    $('.btn-pilih-lokasi').on('click', () => {
+                        $('#alamat').val(address);
+                        $('#alamat').text(address);
+                        $('#koordinat_rumah').val(e.latlng.lat + ',' + e.latlng.lng);
+                        $('#mapModal').modal('hide');
+                        $('#Modal').modal('show');
+                        alamat = address
+                        koordinat_rumah = e.latlng.lat + ',' + e.latlng.lng
+                    });
+                });
+            }
+
+
+        }
+
+        $('#mapModal').on('shown.bs.modal', e => {
+            mapHeight = document.getElementById('map-container').offsetHeight
+            $('#map').css('height', mapHeight)
+            if (koordinat_rumah != null && alamat != null) {
+                var parts = koordinat_rumah.split(',');
+                var lat = parseFloat(parts[0]);
+                var long = parseFloat(parts[1]);
+                setupMap(lat, long, alamat)
+            } else if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(getAddressFromCoordinatesMap, errGeolokasi);
+            } else {
+                setupMap(-0.0277, 109.3425)
+            }
+        })
+
+
+        function errGeolokasi(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert('Pengguna menolak permintaan Geolokasi.');
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert('Informasi lokasi tidak tersedia.');
+                    break;
+                case error.TIMEOUT:
+                    alert('Waktu permintaan untuk mendapatkan lokasi pengguna habis.');
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert('Terjadi kesalahan yang tidak diketahui.');
+                    break;
+            }
+        }
+        $('#generate-btn').on('click', e => {
+            e.preventDefault()
+            generateRandomPassword()
+        })
+
+        function generateRandomPassword() {
+            var length = 6;
+            var charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var password = "";
+
+            for (var i = 0; i < length; i++) {
+                var randomIndex = Math.floor(Math.random() * charset.length);
+                password += charset.charAt(randomIndex);
+            }
+            $('#password').val(password);
+        }
+
+        function readURL(input) {
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function(e) {
+                    input.nextElementSibling.querySelector('.img-preview').src = e.target.result;
+                    input.nextElementSibling.querySelector('.img-preview').classList.remove('d-none');
+                    input.nextElementSibling.querySelector('.img-placeholder').classList.add('d-none');
+                };
+
+                reader.readAsDataURL(input.files[0]);
+
+            }
+        }
+        $('input[type="file"]').on('change', function(e) {
+            e.preventDefault();
+            readURL(this);
+        });
 
 
 
 
-            // end event listners
-        </script>
-    @endpush
+        // end event listners
+    </script>
+@endpush

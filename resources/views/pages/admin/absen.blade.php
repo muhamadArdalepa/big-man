@@ -73,7 +73,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header gap-2">
-                <img src="/storage/private/profile/" alt="foto profil" height="50" class="rounded-3" id="ModalImg">
+                <img src="/storage/private/" alt="foto profil" height="50" class="rounded-3" id="ModalImg">
                 <div class="d-flex flex-column justify-content-end">
                     <small class="m-0">Detail absen</small>
                     <h5 class="m-0 lh-1" id="ModalLabel"></h5>
@@ -141,7 +141,7 @@
                             <div class="ms-3" style="white-space: nowrap;">
                                 <div>`+ data + `</div>
                             </div>
-                            <img class="rounded-3" src="${appUrl}/storage/private/profile/${row.foto_profil}" alt="foto profil" height="35">
+                            <img class="rounded-3" src="${appUrl}/storage/private/${row.foto_profil}" alt="foto profil" height="35">
                         </div>
                          `
                         }
@@ -268,7 +268,7 @@
                 fetch(`${baseUrl}/${e.currentTarget.dataset.absen}`)
                     .then(response => response.json())
                     .then(data => {
-                        $('#ModalImg').attr('src', appUrl+'/storage/private/profile/' + data.user.foto_profil)
+                        $('#ModalImg').attr('src', appUrl+'/storage/private/' + data.user.foto_profil)
                         $('#ModalDate').text(data.tanggalFormat)
                         $('#ModalLabel').text(data.user.nama)
                         let aktivitass = data.aktivitass

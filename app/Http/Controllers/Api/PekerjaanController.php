@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\JenisPekerjaan;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 
@@ -65,7 +66,7 @@ class PekerjaanController extends Controller
                     )
                         ->join('users', 'pelanggan', '=', 'users.id')
                         ->find($pekerjaan->pemasangan_id);
-                    $pekerjaan->detail = $pemasangan->nama . ' - ' . $pemasangan->alamat;
+                    $pekerjaan->detail = $pemasangan->nama . '<br><div class="text-sm lh-sm opacity-7">' . $pemasangan->alamat . '<div/>';
                     break;
                 case 2:
                     $laporan = Laporan::select(
@@ -75,7 +76,7 @@ class PekerjaanController extends Controller
                         ->join('users', 'pelapor', '=', 'users.id')
                         ->join('pemasangans', 'pelanggan', '=', 'pemasangans.pelanggan')
                         ->find($pekerjaan->laporan_id);
-                    $pekerjaan->detail = $laporan->nama . ' - ' . $laporan->alamat;
+                    $pekerjaan->detail = $laporan->nama . '<br><div class="text-sm lh-sm opacity-7">' . $laporan->alamat . '<div/>';
                     break;
                 default:
                     $pekerjaan->detail = $pekerjaan->detail;
@@ -87,6 +88,65 @@ class PekerjaanController extends Controller
         return response()->json($pekerjaans);
     }
 
+    public function select2_tim(Request $request)
+    {
+        if (auth()->user()->role == 1) {
+            $tims = Tim::select(
+                'tims.id',
+                'user_id',
+                'nama',
+            )
+                ->join('users', 'user_id', '=', 'users.id')
+                ->where('status', 'Standby')
+                ->orderBy('tims.id', 'asc')
+                ->groupBy('tims.id');
+
+            if ($request->has('wilayah') && !empty($request->wilayah)) {
+                $tims->where('users.wilayah_id', $request->wilayah);
+            }
+
+            $data = $tims->get();
+            foreach ($data as $i => $tim) {
+                $tim->text = $data[$i]->nama . '(ketua)';
+                foreach (TimAnggota::select('users.nama')
+                    ->where('tim_id', $tim->id)
+                    ->whereNot('user_id', $data[$i]->user_id)
+                    ->join('users', 'user_id', '=', 'users.id')
+                    ->get() as $j => $a) {
+                    $tim->text .= ', ' . $a->nama;
+                }
+            }
+
+            return response()->json($data);
+        }
+    }
+    public function select2_pemasangan(Request $request)
+    {
+        $query = Pemasangan::select(
+            'pemasangans.id',
+            'nama',
+            'alamat',
+        )
+            ->join('users', 'pelanggan', '=', 'users.id')
+            ->where('status', 'menunggu konfirmasi');
+            // ->whereDate('pemasangans.created_at', '=', Carbon::today());
+
+        if ($request->has('terms') && !empty($request->terms)) {
+            $query->where('nama', 'LIKE', '%' . $request->terms . '%')
+                ->orWhere('alamat', 'LIKE', '%' . $request->terms . '%');
+        }
+
+
+
+        $data = [
+            "results" => $query->get(),
+            "pagination" => [
+                "more" => false
+            ]
+        ];
+
+        return response()->json($data);
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -105,34 +165,92 @@ class PekerjaanController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'tim_id' => 'required',
-            'poin' => 'required',
-            'wilayah_id' => 'required',
-            'pemasangan_id' => 'nullable',
-            'laporan_id' => 'nullable',
-            'jenis_pekerjaan_id' => 'required',
-        ], [
-            'tim_id.required' => 'Pilih tim.',
-            'poin.required' => 'Poin harus diisi.'
-        ]);
+        // return $request->all();
+        switch ($request->jenis_pekerjaan_id) {
+            case 0:
+                $validatedData = $request->validate([
+                    'jenis_pekerjaan_id' => 'required',
+                    'tim_id' => 'required',
+                    'wilayah_id' => 'required',
+                    'poin' => 'required',
+                    'nama_pekerjaan' => 'required',
+                    'detail' => 'required',
+                    'alamat' => 'required',
+                ], [
+                    'jenis_pekerjaan_id.required' => 'Pilih jenis pekerjaan.',
+                    'tim_id.required' => 'Pilih tim.',
+                    'wilayah_id.required' => 'Wilayah harus diisi.',
+                    'poin.required' => 'Poin harus diisi.',
+                    'nama_pekerjaan.required' => 'Nama pekerjaan harus diisi.',
+                    'detail.required' => 'Detail pekerjaan harus diisi.',
+                    'alamat.required' => 'Alamat pekerjaan harus diisi.',
+                ]);
+                $jenisPekerjaan = JenisPekerjaan::create(['nama_pekerjaan' => $request->nama_pekerjaan]);
+                $validatedData['jenis_pekerjaan_id'] = $jenisPekerjaan->id;
+                break;
 
+            case 1:
+                $validatedData = $request->validate([
+                    'jenis_pekerjaan_id' => 'required',
+                    'tim_id' => 'required',
+                    'wilayah_id' => 'required',
+                    'poin' => 'required',
+                    'pemasangan_id' => 'required',
+                ], [
+                    'jenis_pekerjaan_id.required' => 'Pilih jenis pekerjaan.',
+                    'tim_id.required' => 'Pilih tim.',
+                    'wilayah_id.required' => 'Wilayah harus diisi.',
+                    'poin.required' => 'Poin harus diisi.',
+                    'pemasangan_id.required' => 'Data pemasangan harus diisi.',
+                ]);
+                Pemasangan::find($request->pemasangan_id)->update(['status' => 'sedang diproses']);
+                break;
+
+            case 2:
+                $validatedData = $request->validate([
+                    'jenis_pekerjaan_id' => 'required',
+                    'tim_id' => 'required',
+                    'wilayah_id' => 'required',
+                    'poin' => 'required',
+                    'laporan_id' => 'required',
+                ], [
+                    'jenis_pekerjaan_id.required' => 'Pilih jenis pekerjaan.',
+                    'tim_id.required' => 'Pilih tim.',
+                    'wilayah_id.required' => 'Wilayah harus diisi.',
+                    'poin.required' => 'Poin harus diisi.',
+                    'laporan_id.required' => 'Data laporan harus diisi.',
+                ]);
+                Laporan::find($request->laporan_id)->update(['status' => 'sedang diproses']);
+                break;
+
+            default:
+                $validatedData = $request->validate([
+                    'jenis_pekerjaan_id' => 'required',
+                    'tim_id' => 'required',
+                    'wilayah_id' => 'required',
+                    'poin' => 'required',
+                    'detail' => 'required',
+                    'alamat' => 'required',
+                ], [
+                    'jenis_pekerjaan_id.required' => 'Pilih jenis pekerjaan.',
+                    'tim_id.required' => 'Pilih tim.',
+                    'wilayah_id.required' => 'Wilayah harus diisi.',
+                    'poin.required' => 'Poin harus diisi.',
+                    'detail.required' => 'Detail pekerjaan harus diisi.',
+                    'alamat.required' => 'Alamat pekerjaan harus diisi.',
+                ]);
+                break;
+        }
         $validatedData['status'] = 'sedang diproses';
         $pekerjaan = Pekerjaan::create($validatedData);
+        Tim::find($request->tim_id)->update(['status' => 'Bekerja']);
         Aktivitas::create([
             'user_id' => auth()->user()->id,
             'pekerjaan_id' => $pekerjaan->id,
             'aktivitas' => 'Pekerjaan dimulai',
         ]);
-        if ($request->has('laporan_id')) {
-            Laporan::find($request->laporan_id)->update(['status' => 3]);
-        }
-        if ($request->has('pemasangan_id')) {
-            Pemasangan::find($request->pemasangan_id)->update(['status' => 'sedang diproses']);
-        }
-        return response()->json([
-            'status' => 200,
-            'message' => 'Tim teknisi telah ditugaskan',
+        return response([
+            'message' => 'Pekerjaan baru telah ditambahkan',
         ]);
     }
 

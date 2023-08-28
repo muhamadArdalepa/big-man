@@ -65,7 +65,7 @@
                     <div class="form-group">
                         <label for="jenis_gangguan_id">Jenis Gangguan</label>
                         <select id="jenis_gangguan_id" class="form-control" autofocus tabindex="1">
-                            <option selected disabled value="0">
+                            <option selected disabled value="null">
                                 -- Pilih jenis gangguan --
                             </option>
                             @foreach ($jenis_gangguans as $jg)
@@ -80,7 +80,7 @@
                         <label for="ket">Keterangan</label>
                         <textarea class="form-control" id="ket" rows="3" placeholder="Tambahkan keterangan gangguan" tabindex="2"></textarea>
                     </div>
-                    
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn bg-gradient-secondary me-2" data-bs-dismiss="modal">
@@ -99,9 +99,6 @@
         const appUrl = `{{ env('APP_URL') }}`;
         const baseUrl = appUrl + "/api/laporan";
 
-        // functions
-        // end functions
-
         // event listeners
         $(document).ready(function() {
             let table = $("#table").DataTable({
@@ -118,8 +115,16 @@
                 order: [
                     [0, "desc"]
                 ],
-                columns: [{
-                        data: "tanggalFormat",
+                columns: [
+                    {
+                        data: 'created_at',
+                        className: 'text-sm',
+                        render: function(data, type, row) {
+                            if (type === 'display') {
+                                return row.dateFormat;
+                            }
+                            return data;
+                        }
                     },
                     {
                         data: "nama",
@@ -128,54 +133,48 @@
                     {
                         data: "nama_gangguan",
                     },
-
                     {
-                        data: "waktuFormat",
-                        className: "text-center text-sm",
+                        data: 'created_at',
+                        className: 'text-center text-sm w-0 px-1',
+                        render: function(data, type, row) {
+                            if (type === 'display') {
+                                return row.timeFormat;
+                            }
+                            return data;
+                        }
                     },
                     {
                         data: "status",
-                        className: "text-center",
+                        className: "text-center w-0",
                         render: function(data, type) {
-                            if (type === "display") {
-                                let badge = null;
+                            if (type === 'display') {
+                                let badge = null
                                 switch (data) {
-                                    case "menunggu konfirmasi":
-                                        badge = "bg-secondary";
+                                    case 'menunggu konfirmasi':
+                                        badge = 'bg-secondary'
                                         break;
-                                    case "ditolak":
-                                        badge = "bg-gradient-danger";
+                                    case 'sedang diproses':
+                                        badge = 'bg-gradient-primary'
                                         break;
-                                    case "sedang diproses":
-                                        badge = "bg-gradient-primary";
+                                    case 'ditunda':
+                                        badge = 'bg-gradient-warning'
                                         break;
-                                    case "ditunda":
-                                        badge = "bg-gradient-warning";
-                                        break;
-                                    case "aktif":
-                                        badge = "bg-gradient-success";
-                                        break;
-                                    case "isolir":
-                                        badge = "bg-gradient-dark";
-                                        break;
-                                    case "tidak aktif":
-                                        badge = "bg-gradient-dark";
-                                        break;
-                                    default:
+                                    case 'selesai':
+                                        badge = 'bg-gradient-success'
                                         break;
                                 }
                                 return `
                                 <span class="badge badge-sm text-xxs ${badge}">${data}</span>
-                                `;
+                                `
                             }
-                            return data;
+                            return data
                         },
                     },
                     {
                         data: "id",
                         orderable: false,
                         searchable: false,
-                        className: "text-center",
+                        className: "text-center w-0",
                         render: function(data, type) {
                             if (type === "display") {
                                 return `
@@ -209,54 +208,40 @@
             });
 
             $("#Modal").on("hide.bs.modal", function() {
-                $("#jenis_gangguan_id").val(0);
+                $("#jenis_gangguan_id").val(null);
             });
 
             $("#simpan").on("click", function(e) {
-                $.ajaxSetup({
-                    headers: {
-                        "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
-                            "content"
-                        ),
-                    },
-                });
-                $.ajax({
-                    url: appUrl + "/api/pelanggan-laporan",
-                    type: "POST",
-                    data: {
+                axios.post(baseUrl, {
                         jenis_gangguan_id: $("#jenis_gangguan_id").val(),
                         ket: $("#ket").val(),
-                    },
-                    success: function(response) {
-                        if (response.status == 400) {
-                            console.log(response);
-                            $("#Modal").find(".invalidFeedback").show();
-                            if (response.errors["jenis_gangguan_id"] == undefined) {
-                                $("#jenis_gangguan_id").removeClass("is-invalid");
-                                $("#jenis_gangguan_idFeedback").hide();
-                            } else {
-                                $("#jenis_gangguan_idFeedback").text(
-                                    response.errors["jenis_gangguan_id"]
-                                );
-                                $("#jenis_gangguan_id").addClass("is-invalid");
+                    })
+                    .then(response => {
+                        $("#Modal .form-control").removeClass("is-invalid");
+                        $("#Modal .form-select").removeClass("is-invalid");
+                        $("#Modal").modal("hide");
+                        table.ajax.reload();
+                        Swal.fire({
+                            icon: "success",
+                            title: "Success",
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false,
+                        });
+                    })
+                    .catch(error => {
+                        $('#Modal').find('.invalid-feedback').text('')
+                        $('#Modal').find('.form-control').removeClass('is-invalid')
+                        $('#Modal').find('.form-select').removeClass('is-invalid')
+                        var errors = error.response.data.errors;
+                        for (const key in errors) {
+                            if (errors.hasOwnProperty(key)) {
+                                $('#' + key).addClass('is-invalid');
+                                $('#' + key + 'Feedback').show();
+                                $('#' + key + 'Feedback').text(errors[key]);
                             }
-                        } else {
-                            Swal.fire({
-                                icon: "success",
-                                title: "Success",
-                                text: response.message,
-                                timer: 1500,
-                                showConfirmButton: false,
-                            });
-                            $("#Modal")
-                                .find(".form-control")
-                                .removeClass("is-invalid");
-                            $("#Modal").find(".invalidFeedback").hide();
-                            $("#Modal").modal("hide");
-                            table.ajax.reload();
                         }
-                    },
-                });
+                    });
             });
         });
         // end event listners

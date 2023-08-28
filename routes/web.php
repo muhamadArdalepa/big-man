@@ -1,44 +1,26 @@
 <?php
-
-
 use Illuminate\Support\Facades\Route;
-// auth
-use App\Http\Controllers\Auth\LoginController as Login;
-use App\Http\Controllers\Auth\RegisterController as Register;
-
-// storage
-use App\Http\Controllers\StorageController as Storage;
-
-// admin
-use App\Http\Controllers\Api\TimController as AdminTim;
-use App\Http\Controllers\Api\AbsenController as AdminAbsen;
-use App\Http\Controllers\Api\LaporanController as AdminLaporan;
-use App\Http\Controllers\Api\PemasanganController as AdminPemasangan;
-use App\Http\Controllers\Api\TeknisiController as AdminTeknisi;
-use App\Http\Controllers\Api\PelangganController as AdminPelanggan;
-use App\Http\Controllers\Api\PekerjaanController as AdminPekerjaan;
-
-// teknisi
-use App\Http\Controllers\Api\TeknisiAbsenController as TeknisiAbsen;
-use App\Http\Controllers\Api\TeknisiPekerjaanController as TeknisiPekerjaan;
-
-// pelanggan
-use App\Http\Controllers\Api\PelangganLaporanController as PelangganLaporan;
-use App\Http\Controllers\Api\PelangganPemasanganController as PelangganPemasangan;
-
-// pages
 use App\Http\Controllers\PageController as Page;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
+// teknisi
+use App\Http\Controllers\StorageController as Storage;
+use App\Http\Controllers\Api\TimController as AdminTim;
+
+// pelanggan
+use App\Http\Controllers\Auth\LoginController as Login;
+use App\Http\Controllers\Api\AbsenController as AdminAbsen;
+use App\Http\Controllers\Api\DashboardController;
+// pages
+use App\Http\Controllers\Auth\RegisterController as Register;
+use App\Http\Controllers\Api\LaporanController as AdminLaporan;
+use App\Http\Controllers\Api\TeknisiController as AdminTeknisi;
+use App\Http\Controllers\Api\PekerjaanController as AdminPekerjaan;
+use App\Http\Controllers\Api\PelangganController as AdminPelanggan;
+use App\Http\Controllers\Api\PemasanganController as AdminPemasangan;
+use App\Http\Controllers\Api\PelangganLaporanController as PelangganLaporan;
+use App\Http\Controllers\Api\TeknisiPekerjaanController as TeknisiPekerjaan;
+use App\Http\Controllers\Api\PelangganPemasanganController as PelangganPemasangan;
+
 
 // guest
 Route::group(['middleware' => 'guest'], function () {
@@ -54,6 +36,7 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::get('/', function () {
 		return redirect(route('home'));
 	});
+
 	Route::get('/home', function () {
 		return redirect(route('home'));
 	});
@@ -75,39 +58,44 @@ Route::group(['middleware' => 'auth'], function () {
 
 
 	//post
-	// Route::post('/profile', 					[UserProfile::class, 'update'])->name('profile.update');
+	Route::post('/profile', 					[UserProfile::class, 'update']	)->name('profile.update');
 	Route::post('logout', 						[Login::class, 'logout'])->name('logout');
 });
 
 
 // api
-Route::middleware('auth.api')->group(function () {
-	// admin
-	Route::resource('api/pekerjaan',			AdminPekerjaan::class)->except(['create','edit','show']);
-	Route::resource('api/laporan', 				AdminLaporan::class)->except(['create','edit']);
-	Route::resource('api/pemasangan',			AdminPemasangan::class)->except(['create','edit']);
-	Route::post('api/pemasangan/{pemasangan}',	[AdminPemasangan::class,'update_foto']);
-	Route::resource('api/tim',					AdminTim::class)->except(['create','edit']);
-	Route::resource('api/absen',				AdminAbsen::class)->except(['create','edit']);
+Route::middleware('auth.api')->group(function () {	
+	Route::get('api/laporan/data-pelanggan/{id}',		[AdminLaporan::class,'data_pelanggan']);
+	Route::get('api/laporan/select2-pelanggan',			[AdminLaporan::class,'select2_pelanggan']);
+	Route::get('api/pekerjaan/select2-pemasangan',		[AdminPekerjaan::class,'select2_pemasangan']);
+	Route::get('api/pekerjaan/select2-tim',				[AdminPekerjaan::class,'select2_tim']);
 
-	Route::resource('api/teknisi',				AdminTeknisi::class)->except(['create','edit']);
-	Route::resource('api/pelanggan',			AdminPelanggan::class)->except(['create','edit']);
+
+	
+	Route::resource('api/dashboard',					DashboardController::class)->except(['create','edit','show']);
+	Route::resource('api/pekerjaan',					AdminPekerjaan::class)->except(['create','edit','show']);
+	Route::resource('api/laporan', 						AdminLaporan::class)->except(['create','edit']);
+
+	Route::get('api/pemasangan/data-pelanggan',			[AdminPemasangan::class,'data_pelanggan']);
+	Route::post('api/pemasangan/{pemasangan}',			[AdminPemasangan::class,'update_foto']);
+	Route::resource('api/pemasangan',					AdminPemasangan::class)->except(['create','edit']);
+	Route::resource('api/tim',							AdminTim::class)->except(['create','edit']);
+	Route::resource('api/absen',						AdminAbsen::class)->except(['create','edit']);
+
+	Route::resource('api/teknisi',						AdminTeknisi::class)->except(['create','edit']);
+	Route::resource('api/pelanggan',					AdminPelanggan::class)->except(['create','edit']);
 	
 	// teknisi
-	Route::resource('api/teknisi-absen',		TeknisiAbsen::class)->except(['create','edit']);
-	Route::resource('api/teknisi-pekerjaan',	TeknisiPekerjaan::class)->except(['create','edit']);
+	Route::resource('api/teknisi-pekerjaan',			TeknisiPekerjaan::class)->except(['create','edit']);
 	
 	
 	// pelanggan
-	Route::resource('api/pelanggan-laporan',	PelangganLaporan::class)->except(['create','edit']);
-	Route::resource('api/pelanggan-pemasangan',	PelangganPemasangan::class)->except(['create','edit']);
-	
-	// select2-data
-	Route::get('api/select2-laporan-pelanggan',	[AdminLaporan::class,'select2_pelanggan']);
-	Route::get('api/select2-laporan-tim',		[AdminLaporan::class,'select2_tim']);
-	Route::get('api/data-laporan-pelanggan/{id}',		[AdminLaporan::class,'data_pelanggan']);
-
-	Route::get('api/select2-tim-teknisi',			[AdminTim::class,'select2_teknisi']);
+	Route::resource('api/pelanggan-laporan',			PelangganLaporan::class)->except(['create','edit']);
+	Route::resource('api/pelanggan-pemasangan',			PelangganPemasangan::class)->except(['create','edit']);
+		
+	// select2-data	
+	Route::get('api/select2-laporan-tim',				[AdminLaporan::class,'select2_tim']);
+	Route::get('api/select2-tim-teknisi',				[AdminTim::class,'select2_teknisi']);
 });
 
 
@@ -116,10 +104,4 @@ Route::middleware(['auth.storage'])->group(function () {
 	Route::get('/storage/private/{path}', Storage::class)
 		->where('path', '.*')
 		->name('storage.private');
-});
-
-
-// test page
-Route::get('/test', function () {
-	return view('pages.test');
 });
