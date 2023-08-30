@@ -8,7 +8,7 @@ use App\Models\Absen;
 use App\Models\Aktivitas;
 use App\Models\Paket;
 use App\Models\Laporan;
-use App\Models\wilayah;
+use App\Models\Wilayah;
 use App\Models\Pekerjaan;
 use App\Models\Pemasangan;
 use App\Models\TimAnggota;

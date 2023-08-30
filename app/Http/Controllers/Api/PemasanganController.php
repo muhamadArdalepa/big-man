@@ -219,22 +219,6 @@ class PemasanganController extends Controller
             'kabel_tepakai' => 'nullable|integer',
             'port_odp' => 'nullable|string',
             'ket' => 'nullable|string',
-        ], [
-            'nik.numeric' => 'NIK harus berupa angka.',
-            'nik.digits' => 'NIK harus memiliki panjang 16 digit.',
-            'alamat.string' => 'Alamat harus berupa teks.',
-            'koordinat_rumah.string' => 'Koordinat rumah harus berupa teks.',
-            'koordinat_rumah.regex' => 'Format koordinat rumah tidak valid.',
-            'koordinat_odp.string' => 'Koordinat ODP harus berupa teks.',
-            'koordinat_odp.regex' => 'Format koordinat ODP tidak valid.',
-            'serial_number.string' => 'Serial number harus berupa teks.',
-            'ssid.string' => 'SSID harus berupa teks.',
-            'password.string' => 'Password harus berupa teks.',
-            'hasil_opm_user.numeric' => 'Hasil OPM User harus berupa angka.',
-            'hasil_opm_odp.numeric' => 'Hasil OPM ODP harus berupa angka.',
-            'kabel_tepakai.integer' => 'Jumlah kabel yang telah dipakai harus berupa angka.',
-            'port_odp.string' => 'Port ODP harus berupa teks.',
-            'ket.string' => 'Keterangan harus berupa teks.',
         ]);
 
         $pemasangan->fill($validatedData);

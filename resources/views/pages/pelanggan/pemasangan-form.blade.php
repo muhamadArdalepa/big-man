@@ -2,6 +2,10 @@
 @section('content')
     @include('layouts.navbars.auth.topnav', ['title' => 'Pendaftaran Jaringan Bignet'])
     @push('css')
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+            integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
         <style>
             .img-container {
                 min-height: 100px;
@@ -39,13 +43,16 @@
                             <div id="nikFeedback" class="invalid-feedback text-xs"></div>
                         </div>
                         <div class="form-group">
-                            <label for="alamat" class="form-control-label">Alamat</label>
+                            <div class="d-flex align-items-end">
+                                <label for="alamat" class="form-control-label">Alamat</label>
+                                <button class="btn ms-auto btn-link text-secondary font-weight-normal"
+                                    data-bs-toggle="modal" data-bs-target="#mapModal">
+                                    <i class="fas fa-location-dot"></i>
+                                    Pilih Lewat Peta
+                                </button>
+                            </div>
+                            <textarea type="text" id="alamat" class="form-control" placeholder="Alamat"></textarea>
 
-                            <button class="btn btn-link text-secondary font-weight-normal ">
-                                <i class="fas fa-location-dot"></i>
-                                Pilih Lewat Peta
-                            </button>
-                            <textarea id="alamat" rows="3" class="form-control"></textarea>
                             <div id="alamatFeedback" class="invalid-feedback text-xs"></div>
                         </div>
                         <div class="form-group">
@@ -100,12 +107,34 @@
         </div>
         @include('layouts.footers.auth.footer')
     </div>
-    @endsection @push('js')
+@endsection
+@push('modal')
+    <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-body h-100">
+                    <div id="map-container" class="h-100">
+                        <div id="map"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal"
+                        data-bs-target="#mapModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endpush
+@push('js')
     <script>
         // init
         const appUrl = "{{ env('APP_URL') }}";
         const baseUrl = appUrl + '/api/pelanggan-pemasangan'
         const pakets = @json($pakets);
+        let map = null;
+
+        let koordinat_rumah = null
+        let alamat = null
         // endinit
 
 
@@ -128,47 +157,120 @@
             }
         }
 
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(getAddressFromCoordinates, showError);
-            } else {
-                document.getElementById('location').textContent = 'Geolokasi tidak didukung oleh browser ini.';
+
+        function getAddressFromCoordinatesMap(position) {
+            var lat = position.coords.latitude;
+            var long = position.coords.longitude;
+            setupMap(lat, long)
+        }
+
+        function setupMap(lat, long, alm = null) {
+            if (map != null) {
+                map.remove()
             }
-        }
+            map = L.map('map').setView([lat, long], 16);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 20,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+            var popup = L.popup();
+            var address;
 
-        function getAddressFromCoordinates(position) {
-            var latitude = position.coords.latitude;
-            var longitude = position.coords.longitude;
-            koordinat = latitude + ', ' + longitude
-
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
-                .then(response => response.json())
-                .then(data => {
-                    var address = data.display_name;
-                    alamat = address
-                    document.getElementById('koordinat').textContent = koordinat;
-                    document.getElementById('location').textContent = address;
-                })
-                .catch(error => {
+            let getDisplayAddress = async (lat, lng) => {
+                try {
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+                    );
+                    const data = await response.json();
+                    return data.display_name;
+                } catch (error) {
                     console.error('Error:', error);
-                    document.getElementById('location').textContent = 'Gagal mendapatkan alamat';
+                    $('#mapModal').find('.leaflet-popup-content .text-center').html(
+                        'Gagal mendapatkan alamat'
+                    );
+                }
+            };
+
+            if (!alm) {
+                getDisplayAddress(lat, long).then(address => {
+                    const marker = L.marker([lat, long]).addTo(map);
+                    let button = '<button class="btn btn-primary btn-pilih-lokasi w-100">Pilih Lokasi</button>';
+                    marker.bindPopup(`<div class="mb-3 w-auto">${address}</div>${button}`).openPopup();
+                    $('.btn-pilih-lokasi').on('click', () => {
+                        $('#alamat').val(address);
+                        $('#alamat').text(address);
+                        $('#koordinat_rumah').val(lat + ',' + long);
+                        $('#mapModal').modal('hide');
+                        alamat = address
+                        koordinat_rumah = lat + ',' + long
+                    });
                 });
+            } else {
+                let button = '<button class="btn btn-primary btn-pilih-lokasi w-100">Pilih Lokasi</button>';
+                const marker = L.marker([lat, long]).addTo(map);
+                marker.bindPopup(`<div class="mb-3 w-auto">${alamat}</div>${button}`).openPopup();
+                $('.btn-pilih-lokasi').on('click', () => {
+                    $('#alamat').val(alamat);
+                    $('#alamat').text(alamat);
+                    $('#koordinat_rumah').val(lat + ',' + long);
+                    $('#mapModal').modal('hide');
+                    alamat = address
+                    koordinat_rumah = lat + ',' + long
+                });
+            }
+            let button = '<button class="btn btn-primary btn-pilih-lokasi w-100">Pilih Lokasi</button>';
+            map.on('click', async e => {
+                popup
+                    .setLatLng(e.latlng)
+                    .setContent(`<div class="text-center"><i class="fa-solid fa-spinner fa-spin me-1"></i></div>`).openOn(map);
+                const address = await getDisplayAddress(e.latlng.lat, e.latlng.lng);
+                $('#mapModal').find('.leaflet-popup-content').html(`
+                    <div class="mb-3 w-auto">${address}</div>
+                    ${button}
+                `);
+                $('.btn-pilih-lokasi').on('click', () => {
+                    $('#alamat').val(address);
+                    $('#alamat').text(address);
+                    $('#koordinat_rumah').val(e.latlng.lat + ',' + e.latlng.lng);
+                    $('#mapModal').modal('hide');
+                    alamat = address
+                    koordinat_rumah = e.latlng.lat + ',' + e.latlng.lng
+                });
+            });
+
+
+
         }
 
-        function showError(error) {
+        $('#mapModal').on('shown.bs.modal', e => {
+            mapHeight = document.getElementById('map-container').offsetHeight
+            $('#map').css('height', mapHeight)
+            if (koordinat_rumah != null && alamat != null) {
+                var parts = koordinat_rumah.split(',');
+                var lat = parseFloat(parts[0]);
+                var long = parseFloat(parts[1]);
+                setupMap(lat, long, alamat)
+            } else if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(getAddressFromCoordinatesMap, errGeolokasi);
+            } else {
+                setupMap(-0.0277, 109.3425)
+            }
+        })
+
+
+        function errGeolokasi(error) {
             switch (error.code) {
                 case error.PERMISSION_DENIED:
-                    document.getElementById('location').textContent = 'Pengguna menolak permintaan Geolokasi.';
+                    alert('Pengguna menolak permintaan Geolokasi.');
                     break;
                 case error.POSITION_UNAVAILABLE:
-                    document.getElementById('location').textContent = 'Informasi lokasi tidak tersedia.';
+                    alert('Informasi lokasi tidak tersedia.');
                     break;
                 case error.TIMEOUT:
-                    document.getElementById('location').textContent =
-                        'Waktu permintaan untuk mendapatkan lokasi pengguna habis.';
+                    alert('Waktu permintaan untuk mendapatkan lokasi pengguna habis.');
                     break;
                 case error.UNKNOWN_ERROR:
-                    document.getElementById('location').textContent = 'Terjadi kesalahan yang tidak diketahui.';
+                    alert('Terjadi kesalahan yang tidak diketahui.');
                     break;
             }
         }
@@ -237,6 +339,7 @@
                         }, 3000);
                     });
                 })
+                
                 .catch(error => {
                     // if (error.data != undefined) {
                     $('.is-invalid').removeClass('is-invalid')

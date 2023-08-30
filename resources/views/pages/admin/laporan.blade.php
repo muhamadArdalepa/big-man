@@ -36,13 +36,11 @@
                         <label for="tanggal" class="m-0 d-none d-sm-inline-block">Tanggal</label>
                         <input type="date" id="tanggal" class="form-control ms-2" value="{{ $date }}">
                     </div>
-
-                    <button id="btn-add" class="btn btn-icon btn-3 btn-primary m-0 ms-auto" type="button"
+                    <button id="btn-add" class="btn btn-icon btn-3 bg-gradient-danger m-0 ms-auto" type="button"
                         data-bs-toggle="modal" data-bs-target="#Modal" data-bs-title="Tambah Laporan">
                         <span class="btn-inner--icon"><i class="fas fa-plus"></i></span>
                         <span class="btn-inner--text d-none d-sm-inline-block">Tambah Laporan</span>
                     </button>
-
                 </div>
 
             </div>
@@ -392,7 +390,7 @@
             });
 
             table.on('draw', () => {
-            $('.btn-detail-laporan').on('click', (e) => {
+                $('.btn-detail-laporan').on('click', (e) => {
                     laporanId = e.currentTarget.dataset.laporan
                     $('.detail-item').removeClass('d-none')
                     $('#simpan').addClass('d-none')

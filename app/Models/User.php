@@ -26,7 +26,6 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     /**
@@ -49,8 +48,6 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $this->attributes['password'] = bcrypt($value);
     }
-
-
    
     public function wilayah(){
         return $this->belongsTo(Wilayah::class);

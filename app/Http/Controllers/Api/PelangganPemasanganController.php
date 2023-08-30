@@ -44,8 +44,8 @@ class PelangganPemasanganController extends Controller
             'paket_id' => 'required',
             'alamat' => 'required',
             'koordinat_rumah' => 'required',
-            'foto_ktp' =>  'required|image|mimes:jpeg,png,jpg',
-            'foto_rumah' =>  'required|image|mimes:jpeg,png,jpg'
+            'foto_ktp' =>  'required|image',
+            'foto_rumah' =>  'required|image'
         ]);
 
         $validatedData['pelanggan'] = auth()->user()->id;

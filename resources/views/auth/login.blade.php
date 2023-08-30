@@ -20,6 +20,11 @@
                                     <p class="mb-0">Masukkan email dan password untuk melanjutkan</p>
                                 </div>
                                 <div class="card-body">
+                                    @if (session()->has('success'))
+                                    <div class="alert alert-success text-white" role="alert">
+                                        Logout berhasil
+                                    </div>
+                                    @endif
                                     <form role="form" method="POST" action="{{ route('login.perform') }}">
                                         @csrf
                                         <div class="flex flex-col mb-3">

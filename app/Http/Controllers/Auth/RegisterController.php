@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Auth;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
@@ -13,46 +14,24 @@ class RegisterController extends Controller
     public function create()
     {
         $wilayahs = \App\Models\wilayah::all();
-        return view('auth.register',compact('wilayahs'));
+        return view('auth.register', compact('wilayahs'));
     }
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validatedData = $request->validate([
             'nama' => 'required|min:3',
-            'email' => 'required|email',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6|confirmed',
             'wilayah_id' => 'required',
             'no_telp' => 'required|numeric|digits_between:11,15',
             'terms' => 'required'
-        ], [
-            'nama.required' => 'Nama harus diisi.',
-            'nama.min' => 'Nama harus memiliki minimal 3 karakter.',
-            'email.required' => 'Email harus diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'password.required' => 'Password harus diisi.',
-            'password.min' => 'Password harus memiliki minimal 6 karakter.',
-            'password.confirmed' => 'Password dan konfirmasi password harus sesuai.',
-            'wilayah_id.required' => 'wilayah harus dipilih.',
-            'no_telp.required' => 'Nomor telepon harus diisi.',
-            'no_telp.numeric' => 'Nomor telepon harus berupa angka.',
-            'no_telp.digits_between' => 'Nomor telepon memiliki minimal 11 karakter.',
-            'terms.required' => 'Anda harus menyetujui Syarat dan Ketentuan untuk melanjutkan.'
         ]);
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        } else {
-            $user = new User;
-            $user->nama = ucwords(trim($request->nama));
-            $user->role = 3;
-            $user->email = $request->email;
-            $user->password = $request->password;
-            $user->wilayah_id = $request->wilayah_id;
-            $user->no_telp = $request->no_telp;
-            $user->foto_profil = 'profile/dummy.png';
-            $user->save();
-            auth()->login($user);
-            return redirect('/dashboard')->with('success','Selamat bergabung di Big Net');
-        }
+
+        $validatedData['role'] = 3;
+        $validatedData['foto_profil'] = 3;
+        $user = User::create($validatedData);
+        auth()->login($user);
+        event(new Registered($user));
     }
 }

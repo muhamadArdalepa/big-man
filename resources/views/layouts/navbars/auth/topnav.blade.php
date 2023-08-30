@@ -32,11 +32,11 @@
                                     </div>
                                     <div class="d-flex flex-column justify-content-center">
                                         <h6 class="text-sm font-weight-normal mb-1">
-                                            <span class="font-weight-bold">New message</span> from Laur
+                                            <span class="font-weight-bold">Pemasangan Baru</span> dari Nilou
                                         </h6>
                                         <p class="text-xs text-secondary mb-0">
                                             <i class="fa fa-clock me-1"></i>
-                                            13 minutes ago
+                                            13 menit yang lalu
                                         </p>
                                     </div>
                                 </div>
