@@ -80,7 +80,7 @@
                         <div class="carousel-inner border-radius-lg h-100">
                             @foreach ($aktivitas as $i => $item)
                                 <div class="carousel-item h-100 {{ $i == 0 ? 'active' : '' }}"
-                                    style="background-image: url('{{ route('storage.private', $item->foto) }}'); background-size: cover; background-position: center center">
+                                    style="background-image: url('{{ route('storage.private','/'. $item->foto) }}'); background-size: cover; background-position: center center">
                                     <div class="carousel-caption bottom-0 text-start start-0 w-100 px-5"
                                         style="background-image: linear-gradient(to top,rgba(0,0,0,.5),transparent)">
                                         <div class="">
@@ -269,18 +269,18 @@
                     <div class="card-header pb-0 pt-3 bg-transparent">
                         <h6 class="text-capitalize">Teknisi aktif</h6>
                         <p class="text-sm mb-0">
-                            <span class="font-weight-bold">15</span> teknisi aktif dari 60
+                            <span class="font-weight-bold">{{$data['absen']->count()}}</span> teknisi aktif dari {{$data['teknisi']->count()}}
                         </p>
                     </div>
                     <div class="card-body">
-                        @for ($i = 0; $i < 1; $i++)
+                        @foreach ($data['absen']->get() as $i => $absen)
                             <div
                                 class="d-flex align-items-center {{ $i == 0 ? 'pt-0' : 'pt-2' }} gap-2 {{ $i == 4 ? '' : ' pb-2 border-bottom' }}">
-                                <img class="rounded-3" src="{{ route('storage.private', 'profile/dummy.png') }}"
+                                <img class="rounded-3" src="{{ route('storage.private', $absen->user->foto_profil) }}"
                                     alt="foto profil" height="35">
-                                <div class="">{{ fake()->name() }}</div>
+                                <div class="">{{ $absen->user->nama }}</div>
                             </div>
-                        @endfor
+                        @endforeach
                     </div>
                 </div>
             </div>
@@ -293,7 +293,7 @@
                         @php
                             $color = ['gold', 'silver', 'bronze'];
                         @endphp
-                        @foreach ($data['teknisi'] as $i => $teknisi)
+                        @foreach ($data['teknisi']->limit(3)->get() as $i => $teknisi)
                             <div
                                 class="d-flex align-items-center px-4  p-2 gap-2 {{ $i == 0 ? 'pt-0' : 'pt-2' }} {{ $i == 2 ? 'pb-3' : ' border-bottom' }}">
                                 <h6 class="m-0 lh-1 text-center text-{{ $color[$i] }}">
@@ -358,11 +358,14 @@
         gradientStroke1.addColorStop(1, 'rgba(45, 206, 137, 0.5) ');
         gradientStroke1.addColorStop(0.2, 'rgba(45,206,204,0.0)');
         gradientStroke1.addColorStop(0, 'rgba(45,206,204,0)');
-
+        let labels =  @json($chart[0]);
+        let data =  @json($chart[1]);
+        console.log(labels);
+        console.log(data);
         new Chart(ctx1, {
             type: "line",
             data: {
-                labels: @json($chart[0]),
+                labels: labels,
                 datasets: [{
                     label: "Pelanggan baru",
                     tension: 0.4,
@@ -372,7 +375,7 @@
                     backgroundColor: gradientStroke1,
                     borderWidth: 2,
                     fill: true,
-                    data: @json($chart[1]),
+                    data: data,
                     maxBarThickness: 6
 
                 }],

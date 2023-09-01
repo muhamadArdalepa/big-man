@@ -31,26 +31,33 @@
         <div class="card shadow-lg mb-4">
             <div class="card-body p-3">
                 <div class="row gx-4 align-items-end">
-                    @if ($pekerjaan->jenis_pekerjaan_id != 3)
-                        <div class="col-auto">
-                            <div class="avatar avatar-xl position-relative">
-                                <img src="{{ route('storage.private',  $detail->foto_profil) }}"
-                                    alt="profile_image" class="w-100 border-radius-lg shadow-sm">
+                    @if ($pekerjaan->jenis_pekerjaan_id < 3)
+
+                        @if ($detail->status != 'menunggu konfirmasi')
+                            @if ($pekerjaan->jenis_pekerjaan_id != 3)
+                                <div class="col-auto">
+                                    <div class="avatar avatar-xl position-relative">
+                                        <img src="{{ route('storage.private', $detail->foto_profil) }}" alt="profile_image"
+                                            class="w-100 border-radius-lg shadow-sm">
+                                    </div>
+                                </div>
+                            @endif
+                        @endif
+                    @endif
+
+                    @if ($detail->status != 'menunggu konfirmasi')
+                        <div class="col-auto my-auto">
+                            <div class="h-100">
+                                <p class="mb-0 font-weight-bold text-sm">
+                                    {{ $pekerjaan->jenis_pekerjaan->nama_pekerjaan }} <span
+                                        class="badge bg-gradient-primary">{{ $pekerjaan->status }}</span>
+                                </p>
+                                <h5 class="mb-0">
+                                    {{ $detail->nama }}
+                                </h5>
                             </div>
                         </div>
                     @endif
-
-                    <div class="col-auto my-auto">
-                        <div class="h-100">
-                            <p class="mb-0 font-weight-bold text-sm">
-                                {{ $pekerjaan->jenis_pekerjaan->nama_pekerjaan }} <span
-                                    class="badge bg-gradient-primary">{{ $pekerjaan->status }}</span>
-                            </p>
-                            <h5 class="mb-0">
-                                {{ $detail->nama }}
-                            </h5>
-                        </div>
-                    </div>
                     @if (in_array($pekerjaan->status, ['sedang diproses', 'ditunda']))
                         <div class="col-auto d-md-none ms-auto align-self-start">
                             <div class="dropdown">
@@ -212,7 +219,7 @@
                                 <input type="number" id="nik" class="form-control" value="{{ $detail->nik }}">
                                 <div id="nikFeedback" class="invalid-feedback text-xs"></div>
                             </div>
-                            
+
                             <div class="form-group">
                                 <div class="d-flex align-items-end">
                                     <label for="alamat" class="form-control-label">Alamat</label>
@@ -324,8 +331,6 @@
                                         Simpan
                                     </button>
                                 </div>
-
-
                             </div>
                             <hr class="horizontal ">
                             <div class="d-flex align-items-center">
@@ -335,123 +340,123 @@
                                     Simpan
                                 </button>
                             </div>
-                            <div class=""  id="infoFoto">
+                            <div class="" id="infoFoto">
 
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="foto_ktp" class="form-control-label">Foto KTP</label>
-                                        <input type="file" id="foto_ktp" class="d-none">
-                                        <div class="rounded-3 border overflow-hidden position-relative img-container"
-                                            style="cursor: pointer;"
-                                            onclick="document.getElementById('foto_ktp').click()">
-                                            <img src="{{ route('storage.private', '/' . $detail->foto_ktp) }}"
-                                                class="img-preview w-100">
-                                            <div class="text-center d-none top-50 start-50 position-absolute img-placeholder"
-                                                style="transform: translate(-50%, -50%);">
-                                                <i class="fa-regular fa-image fa-2xl mt-3"></i>
-                                                <div class="text-sm opacity-7 mt-3">Upload Foto</div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="foto_ktp" class="form-control-label">Foto KTP</label>
+                                            <input type="file" id="foto_ktp" class="d-none">
+                                            <div class="rounded-3 border overflow-hidden position-relative img-container"
+                                                style="cursor: pointer;"
+                                                onclick="document.getElementById('foto_ktp').click()">
+                                                <img src="{{ route('storage.private', '/' . $detail->foto_ktp) }}"
+                                                    class="img-preview w-100">
+                                                <div class="text-center d-none top-50 start-50 position-absolute img-placeholder"
+                                                    style="transform: translate(-50%, -50%);">
+                                                    <i class="fa-regular fa-image fa-2xl mt-3"></i>
+                                                    <div class="text-sm opacity-7 mt-3">Upload Foto</div>
+                                                </div>
                                             </div>
+                                            <div id="koordinatFeedback" class="invalid-feedback text-xs"></div>
                                         </div>
-                                        <div id="koordinatFeedback" class="invalid-feedback text-xs"></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="foto_rumah" class="form-control-label">Foto Rumah</label>
+                                            <input type="file" id="foto_rumah" class="d-none">
+                                            <div class="rounded-3 border overflow-hidden position-relative img-container"
+                                                style="cursor: pointer;"
+                                                onclick="document.getElementById('foto_rumah').click()">
+                                                <img src="{{ route('storage.private', '/' . $detail->foto_ktp) }}"
+                                                    class="img-preview w-100">
+                                                <div class="text-center d-none top-50 start-50 position-absolute img-placeholder"
+                                                    style="transform: translate(-50%, -50%);">
+                                                    <i class="fa-regular fa-image fa-2xl mt-3"></i>
+                                                    <div class="text-sm opacity-7 mt-3">Upload Foto</div>
+                                                </div>
+                                            </div>
+                                            <div id="koordinatFeedback" class="invalid-feedback text-xs"></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="foto_rumah" class="form-control-label">Foto Rumah</label>
-                                        <input type="file" id="foto_rumah" class="d-none">
-                                        <div class="rounded-3 border overflow-hidden position-relative img-container"
-                                            style="cursor: pointer;"
-                                            onclick="document.getElementById('foto_rumah').click()">
-                                            <img src="{{ route('storage.private', '/' . $detail->foto_ktp) }}"
-                                                class="img-preview w-100">
-                                            <div class="text-center d-none top-50 start-50 position-absolute img-placeholder"
-                                                style="transform: translate(-50%, -50%);">
-                                                <i class="fa-regular fa-image fa-2xl mt-3"></i>
-                                                <div class="text-sm opacity-7 mt-3">Upload Foto</div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="foto_modem" class="form-control-label">Foto KTP</label>
+                                            <input type="file" id="foto_modem" class="d-none">
+                                            <div class="rounded-3 border overflow-hidden position-relative img-container"
+                                                style="cursor: pointer;"
+                                                onclick="document.getElementById('foto_modem').click()">
+                                                <img src="{{ route('storage.private', '/' . $detail->foto_modem) }}"
+                                                    class="img-preview w-100 {{ !$detail->foto_modem ? 'd-none' : '' }}">
+                                                <div class="text-center {{ $detail->foto_modem ? 'd-none' : '' }} top-50 start-50 position-absolute img-placeholder"
+                                                    style="transform: translate(-50%, -50%);">
+                                                    <i class="fa-regular fa-image fa-2xl mt-3"></i>
+                                                    <div class="text-sm opacity-7 mt-3">Upload Foto</div>
+                                                </div>
                                             </div>
+                                            <div id="koordinatFeedback" class="invalid-feedback text-xs"></div>
                                         </div>
-                                        <div id="koordinatFeedback" class="invalid-feedback text-xs"></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="foto_letak_modem" class="form-control-label">Foto KTP</label>
+                                            <input type="file" id="foto_letak_modem" class="d-none">
+                                            <div class="rounded-3 border overflow-hidden position-relative img-container"
+                                                style="cursor: pointer;"
+                                                onclick="document.getElementById('foto_letak_modem').click()">
+                                                <img src="{{ route('storage.private', '/' . $detail->foto_letak_modem) }}"
+                                                    class="img-preview w-100 {{ !$detail->foto_letak_modem ? 'd-none' : '' }}">
+                                                <div class="text-center {{ $detail->foto_letak_modem ? 'd-none' : '' }} top-50 start-50 position-absolute img-placeholder"
+                                                    style="transform: translate(-50%, -50%);">
+                                                    <i class="fa-regular fa-image fa-2xl mt-3"></i>
+                                                    <div class="text-sm opacity-7 mt-3">Upload Foto</div>
+                                                </div>
+                                            </div>
+                                            <div id="koordinatFeedback" class="invalid-feedback text-xs"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="foto_opm_user" class="form-control-label">Foto KTP</label>
+                                            <input type="file" id="foto_opm_user" class="d-none">
+                                            <div class="rounded-3 border overflow-hidden position-relative img-container"
+                                                style="cursor: pointer;"
+                                                onclick="document.getElementById('foto_opm_user').click()">
+                                                <img src="{{ route('storage.private', '/' . $detail->foto_opm_user) }}"
+                                                    class="img-preview w-100 {{ !$detail->foto_opm_user ? 'd-none' : '' }}">
+                                                <div class="text-center {{ $detail->foto_opm_user ? 'd-none' : '' }} top-50 start-50 position-absolute img-placeholder"
+                                                    style="transform: translate(-50%, -50%);">
+                                                    <i class="fa-regular fa-image fa-2xl mt-3"></i>
+                                                    <div class="text-sm opacity-7 mt-3">Upload Foto</div>
+                                                </div>
+                                            </div>
+                                            <div id="koordinatFeedback" class="invalid-feedback text-xs"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="foto_opm_odp" class="form-control-label">Foto KTP</label>
+                                            <input type="file" id="foto_opm_odp" class="d-none">
+                                            <div class="rounded-3 border overflow-hidden position-relative img-container"
+                                                style="cursor: pointer;"
+                                                onclick="document.getElementById('foto_opm_odp').click()">
+                                                <img src="{{ route('storage.private', '/' . $detail->foto_opm_odp) }}"
+                                                    class="img-preview w-100 {{ !$detail->foto_opm_odp ? 'd-none' : '' }}">
+                                                <div class="text-center {{ $detail->foto_opm_odp ? 'd-none' : '' }} top-50 start-50 position-absolute img-placeholder"
+                                                    style="transform: translate(-50%, -50%);">
+                                                    <i class="fa-regular fa-image fa-2xl mt-3"></i>
+                                                    <div class="text-sm opacity-7 mt-3">Upload Foto</div>
+                                                </div>
+                                            </div>
+                                            <div id="koordinatFeedback" class="invalid-feedback text-xs"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="foto_modem" class="form-control-label">Foto KTP</label>
-                                        <input type="file" id="foto_modem" class="d-none">
-                                        <div class="rounded-3 border overflow-hidden position-relative img-container"
-                                            style="cursor: pointer;"
-                                            onclick="document.getElementById('foto_modem').click()">
-                                            <img src="{{ route('storage.private', '/' . $detail->foto_modem) }}"
-                                                class="img-preview w-100 {{ !$detail->foto_modem ? 'd-none' : '' }}">
-                                            <div class="text-center {{ $detail->foto_modem ? 'd-none' : '' }} top-50 start-50 position-absolute img-placeholder"
-                                                style="transform: translate(-50%, -50%);">
-                                                <i class="fa-regular fa-image fa-2xl mt-3"></i>
-                                                <div class="text-sm opacity-7 mt-3">Upload Foto</div>
-                                            </div>
-                                        </div>
-                                        <div id="koordinatFeedback" class="invalid-feedback text-xs"></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="foto_letak_modem" class="form-control-label">Foto KTP</label>
-                                        <input type="file" id="foto_letak_modem" class="d-none">
-                                        <div class="rounded-3 border overflow-hidden position-relative img-container"
-                                            style="cursor: pointer;"
-                                            onclick="document.getElementById('foto_letak_modem').click()">
-                                            <img src="{{ route('storage.private', '/' . $detail->foto_letak_modem) }}"
-                                                class="img-preview w-100 {{ !$detail->foto_letak_modem ? 'd-none' : '' }}">
-                                            <div class="text-center {{ $detail->foto_letak_modem ? 'd-none' : '' }} top-50 start-50 position-absolute img-placeholder"
-                                                style="transform: translate(-50%, -50%);">
-                                                <i class="fa-regular fa-image fa-2xl mt-3"></i>
-                                                <div class="text-sm opacity-7 mt-3">Upload Foto</div>
-                                            </div>
-                                        </div>
-                                        <div id="koordinatFeedback" class="invalid-feedback text-xs"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="foto_opm_user" class="form-control-label">Foto KTP</label>
-                                        <input type="file" id="foto_opm_user" class="d-none">
-                                        <div class="rounded-3 border overflow-hidden position-relative img-container"
-                                            style="cursor: pointer;"
-                                            onclick="document.getElementById('foto_opm_user').click()">
-                                            <img src="{{ route('storage.private', '/' . $detail->foto_opm_user) }}"
-                                                class="img-preview w-100 {{ !$detail->foto_opm_user ? 'd-none' : '' }}">
-                                            <div class="text-center {{ $detail->foto_opm_user ? 'd-none' : '' }} top-50 start-50 position-absolute img-placeholder"
-                                                style="transform: translate(-50%, -50%);">
-                                                <i class="fa-regular fa-image fa-2xl mt-3"></i>
-                                                <div class="text-sm opacity-7 mt-3">Upload Foto</div>
-                                            </div>
-                                        </div>
-                                        <div id="koordinatFeedback" class="invalid-feedback text-xs"></div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="foto_opm_odp" class="form-control-label">Foto KTP</label>
-                                        <input type="file" id="foto_opm_odp" class="d-none">
-                                        <div class="rounded-3 border overflow-hidden position-relative img-container"
-                                            style="cursor: pointer;"
-                                            onclick="document.getElementById('foto_opm_odp').click()">
-                                            <img src="{{ route('storage.private', '/' . $detail->foto_opm_odp) }}"
-                                                class="img-preview w-100 {{ !$detail->foto_opm_odp ? 'd-none' : '' }}">
-                                            <div class="text-center {{ $detail->foto_opm_odp ? 'd-none' : '' }} top-50 start-50 position-absolute img-placeholder"
-                                                style="transform: translate(-50%, -50%);">
-                                                <i class="fa-regular fa-image fa-2xl mt-3"></i>
-                                                <div class="text-sm opacity-7 mt-3">Upload Foto</div>
-                                            </div>
-                                        </div>
-                                        <div id="koordinatFeedback" class="invalid-feedback text-xs"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
 
 

@@ -29,10 +29,10 @@ return new class extends Migration
                 ->constrained()
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
-            $table->string('foto');
-            $table->string('aktivitas');
+            $table->string('foto')->nullable();
+            $table->string('aktivitas')->nullable();
             $table->string('koordinat');
-            $table->string('alamat');
+            $table->string('alamat')->nullable();
             $table->timestamps();
         });
     }

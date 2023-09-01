@@ -5,10 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Models\Tim;
 use App\Models\User;
 use App\Models\TimAnggota;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
 class TimController extends Controller
@@ -82,44 +80,42 @@ class TimController extends Controller
     }
     public function select2_teknisi(Request $request)
     {
-        $query = User::select(
-            'id',
-            'nama',
-            'foto_profil',
-            'speciality',
-        )
-            ->where('role', 2)
-            ->whereNotIn('id', TimAnggota::select('user_id')
-                ->whereDate('created_at', '=', Carbon::today())
-                ->groupBy('user_id')
-                ->get('user_id'));
+        $results = [];
 
+
+        $teknisis = User::with('wilayah', 'tims')->where('role', 2);
         if ($request->has('wilayah') && !empty($request->wilayah)) {
-            $query->where('wilayah_id', $request->wilayah);
+            $teknisis->where('wilayah_id', $request->wilayah);
         }
 
         if ($request->has('nama') && !empty($request->nama)) {
-            $query->where('nama', 'LIKE', '%' . $request->nama . '%');
+            $teknisis->where('nama', 'LIKE', '%' . $request->nama . '%');
         }
 
         if ($request->has('teknisis') && !empty($request->teknisis)) {
             $teknisisArray = json_decode($request->teknisis);
-
+    
             if ($teknisisArray === null) {
                 parse_str($request->teknisis, $parsedArray);
                 $teknisisArray = array_map('intval', $parsedArray['teknisis']);
             }
-            $query->whereNotIn('id', $teknisisArray);
+            $teknisis->whereNotIn('id', $teknisisArray);
         }
 
-        $teknisis = $query->get();
+        $teknisiData = $teknisis->get();
 
-        foreach ($teknisis as  $teknisi) {
-            $teknisi->text = $teknisi->nama;
+        foreach ($teknisiData as $i => $teknisi) {
+
+            $results[$i] = [
+                "id" => $teknisi->id,
+                "text" => $teknisi->nama,
+                "speciality" => $teknisi->speciality,
+                "foto_profil" => $teknisi->foto_profil,
+            ];
         }
 
         $data = [
-            "results" => $teknisis,
+            "results" => $results,
             "pagination" => [
                 "more" => false
             ]

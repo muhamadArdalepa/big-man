@@ -91,13 +91,22 @@
                         </button>
                         <ul class="dropdown-menu  dropdown-menu-end  p-2 me-sm-n3" aria-labelledby="dropdownButton">
 
-                            {{-- <li>
-                                <a class="dropdown-item btn-selesai border-radius-md py-1 " href="javascript:;">
+                            <li>
+                                <a id="terima" class="dropdown-item btn-selesai border-radius-md py-1 " href="javascript:;">
                                     <i class="fa-solid fa-check me-2 text-success"></i>
                                     Terima dan tugaskan perbaikan
 
                                 </a>
-                            </li> --}}
+                            </li>
+
+                            <li>
+                                <a id="lihatDetail" class="dropdown-item btn-selesai border-radius-md py-1 " >
+                                    <i class="fa-solid fa-info"></i>
+                                    Lihat Detail Pemasangan
+
+                                </a>
+                            </li>
+
                             <li>
                                 <a id="edit" class="dropdown-item btn-tunda border-radius-md py-1 "
                                     href="javascript:;">
@@ -203,6 +212,43 @@
         </div>
     </div>
 
+    <div class="modal fade" id="tugaskanModal" tabindex="-1" role="dialog" aria-labelledby="tugaskanModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen-md-down modal-dialog-centered modal-dialog-scrollable" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tugaskanModalLabel">Tugaskan Teknisi</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="poin">Tingkat Kesulitan</label>
+                        <select id="poin" class="form-select">
+                            <option selected disabled value="">-- Poin --</option>
+                            @foreach (\App\Models\Poin::all() as $poin)
+                                <option value="{{ $poin->poin }}">{{ $poin->kesulitan }}
+                                    +{{ $poin->poin }}poin
+                                </option>
+                            @endforeach
+                        </select>
+                        <div id="poinFeedback" class="invalid-feedback text-xs"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tim_id">Tim Teknisi</label>
+                        <select class="form-select" id="tim_id" tabindex="1"></select>
+                        <div id="tim_idFeedback" class="invalid-feedback text-xs"></div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn bg-gradient-secondary me-2" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn bg-gradient-primary" id="simpan">Tambah</button>
+                    <button type="button" class="btn bg-gradient-primary" id="edit-perform">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
@@ -219,6 +265,7 @@
         </div>
     </div>
 
+
 @endpush
 @include('components.dataTables')
 @push('js')
@@ -232,7 +279,58 @@
 
         let koordinat_rumah = null
         let alamat = null
+        function tsTim(data) {
+            if (data.id === '') {
+                return $('<span style="color:#b3bbc2">Nama Pelanggan</span>');
+            }
+            var $data = $(
+                `<div>TIM ${data.id} <span class="text-sm">${data.text}</span> </div>`
+            );
+            return $data;
+        }
 
+        function trTim(data) {
+            if (!data.id) {
+                return data.text;
+            }
+            var $data = $(
+                `<div>
+					<div>TIM ${data.id}</div>
+					<div class="text-sm">${data.text}</div>
+				</div>`
+            );
+            return $data;
+        };
+
+        function initTim(e) {
+            $('#tim_id').empty();
+            $('#tim_id').append($('<option>', {
+                value: null,
+            }));
+            if ($('#tim_id').data('select2')) {
+                $('#tim_id').select2('destroy')
+            }
+            $.ajax({
+                url: appUrl+'api/pekerjaan/select2-tim?wilayah=' + e,
+                type: 'GET',
+                dataType: 'json',
+                success: ((data) => {
+                    data.forEach((option) => {
+                        $('#tim_id').append($('<option>', {
+                            value: option.id,
+                            text: option.text,
+                        }));
+                    });
+                    $('#tim_id').select2({
+                        templateSelection: tsTim,
+                        templateResult: trTim,
+                        width: '100%',
+                        dropdownParent: $('#Modal'),
+                        theme: 'bootstrap-5',
+                    });
+                })
+            })
+        }
         function templateSelection(data) {
             if (data.id === '') {
                 return $('<span style="color:#b3bbc2">Nama Pelanggan</span>');
@@ -282,6 +380,8 @@
         let laporanId = null
 
         $(document).ready(function() {
+            initTim(wilayah)
+
             initSelect2(wilayah);
             $('#pelapor').val(null).trigger('change');
             table = $('#table').DataTable({
@@ -519,6 +619,10 @@
             })
 
         });
+        $('#terima').on('click', function(e) {
+            $('#Modal').modal('hide')
+            $('#tugaskanModal').modal('show')
+        })
         $('#edit').on('click', function(e) {
             $('.form-control:not(.disabled)').removeAttr('disabled')
             $('.form-select:not(.disabled)').removeAttr('disabled')

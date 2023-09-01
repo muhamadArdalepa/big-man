@@ -48,17 +48,6 @@ class PelangganController extends Controller
             'password' => 'required|min:6',
             'wilayah_id' => 'required',
             'no_telp' => 'required|numeric|digits_between:11,15'
-        ], [
-            'nama.required' => 'Nama harus diisi.',
-            'nama.min' => 'Nama harus memiliki minimal 3 karakter.',
-            'email.required' => 'Email harus diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'password.required' => 'Password harus diisi.',
-            'password.min' => 'Password harus memiliki minimal 6 karakter.',
-            'wilayah_id.required' => 'wilayah harus dipilih.',
-            'no_telp.required' => 'Nomor telepon harus diisi.',
-            'no_telp.numeric' => 'Nomor telepon harus berupa angka.',
-            'no_telp.digits_between' => 'Nomor telepon memiliki minimal 11 karakter.',
         ]);
         if ($validator->fails()) {
             return response()->json([

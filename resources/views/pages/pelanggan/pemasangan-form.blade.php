@@ -222,7 +222,9 @@
             map.on('click', async e => {
                 popup
                     .setLatLng(e.latlng)
-                    .setContent(`<div class="text-center"><i class="fa-solid fa-spinner fa-spin me-1"></i></div>`).openOn(map);
+                    .setContent(
+                        `<div class="text-center"><i class="fa-solid fa-spinner fa-spin me-1"></i></div>`)
+                    .openOn(map);
                 const address = await getDisplayAddress(e.latlng.lat, e.latlng.lng);
                 $('#mapModal').find('.leaflet-popup-content').html(`
                     <div class="mb-3 w-auto">${address}</div>
@@ -339,7 +341,7 @@
                         }, 3000);
                     });
                 })
-                
+
                 .catch(error => {
                     // if (error.data != undefined) {
                     $('.is-invalid').removeClass('is-invalid')

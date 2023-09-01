@@ -83,14 +83,6 @@ class PemasanganController extends Controller
             'nama' => 'required|string|max:255',
             'no_telp' => 'required|string|max:15',
             'password' => 'required|string|min:6',
-        ], [
-            'wilayah_id.required' => 'Wilayah harus dipilih.',
-            'wilayah_id.integer' => 'Wilayah harus berupa angka.',
-            'nama.required' => 'Nama harus diisi.',
-            'no_telp.required' => 'Nomor telepon harus diisi.',
-            'no_telp.max' => 'Nomor telepon tidak boleh lebih dari 15 karakter.',
-            'password.required' => 'Password harus diisi.',
-            'password.min' => 'Password minimal 6 karakter.',
         ]);
 
         $pemasanganData = $request->validate([
@@ -100,20 +92,6 @@ class PemasanganController extends Controller
             'koordinat_rumah' => 'required|string',
             'foto_ktp' => 'required|image|mimes:jpeg,png,jpg',
             'foto_rumah' => 'required|image|mimes:jpeg,png,jpg',
-        ], [
-            'nik.required' => 'NIK harus diisi.',
-            'nik.numeric' => 'NIK harus berupa angka.',
-            'nik.digits' => 'NIK harus terdiri dari 16 digit.',
-            'paket_id.required' => 'Paket harus dipilih.',
-            'paket_id.integer' => 'Paket harus berupa angka.',
-            'alamat.required' => 'Alamat harus diisi.',
-            'koordinat_rumah.required' => 'Koordinat rumah harus diisi.',
-            'foto_ktp.required' => 'Foto KTP harus diunggah.',
-            'foto_ktp.image' => 'Foto KTP harus berupa gambar.',
-            'foto_ktp.mimes' => 'Format foto KTP harus jpeg, png, atau jpg.',
-            'foto_rumah.required' => 'Foto rumah harus diunggah.',
-            'foto_rumah.image' => 'Foto rumah harus berupa gambar.',
-            'foto_rumah.mimes' => 'Format foto rumah harus jpeg, png, atau jpg.',
         ]);
 
         $pelanggan = User::where([
@@ -127,10 +105,6 @@ class PemasanganController extends Controller
         if (!$pelanggan) {
             $request->validate([
                 'email' => 'required|email|unique:users,email|max:255',
-            ], [
-                'email.required' => 'Email harus diisi.',
-                'email.email' => 'Format email tidak valid.',
-                'email.unique' => 'Email sudah digunakan.',
             ]);
 
             $pelanggan = User::create([
@@ -140,7 +114,7 @@ class PemasanganController extends Controller
                 'email' => $request->email,
                 'password' => $pelangganData['password'],
                 'wilayah_id' => $pelangganData['wilayah_id'],
-                'foto_profil' => 'dummy.png',
+                'foto_profil' => 'profile/dummy.png',
             ]);
         }
 

@@ -17,7 +17,7 @@ class Pekerjaan extends Model
     
     public function getBadgeJenisPekerjaan() {
         $color = ['success','warning','primary'];
-        $id = $this->jenis_pekerjaan_id ?? 2; 
+        $id = $this->jenis_pekerjaan_id > 2 ? 2 :  $this->jenis_pekerjaan_id; 
         return '<span class="badge bg-gradient-'.$color[$id-1].' text-xxs">'.$this->getNamaPekerjaan().'</span>';
     }
 

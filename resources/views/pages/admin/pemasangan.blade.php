@@ -398,9 +398,9 @@
                         className: 'text-center',
                         render: function(data, type) {
                             if (type === 'display') {
-                                return `<button data-pemasangan="${data}" data-bs-toggle="modal" data-bs-target="#Modal" class="btn-detail-pemasangan btn btn-link text-secondary font-weight-normal">
+                                return `<a href="${appUrl}/pemasangan/${data}" class="btn-detail-pemasangan btn btn-link text-secondary font-weight-normal">
                                         Detail
-                                    </button>`
+                                    </a>`
                             }
                             return data;
                         }

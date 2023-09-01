@@ -24,21 +24,30 @@
                     </a>
                     <ul class="dropdown-menu  dropdown-menu-end  p-2 me-sm-n4"
                         aria-labelledby="dropdownMenuButton">
+                        @foreach (\App\Models\Notifikasi::with('penerima')->where( ['penerima_id'=>auth()->user()->id,'status' => 0])->get() as $notif)                        
                         <li class="">
                             <a class="dropdown-item border-radius-md" href="javascript:;">
                                 <div class="d-flex py-1">
                                     <div class="my-auto">
-                                        <img src="{{route('storage.private','/profile/Nilou.webp')}}" class="avatar avatar-sm  me-3 ">
+                                        <img src="{{route('storage.private','/'.$notif->pengirim->foto_profil)}}" class="avatar avatar-sm  me-3 ">
                                     </div>
                                     <div class="d-flex flex-column justify-content-center">
                                         <h6 class="text-sm font-weight-normal mb-1">
-                                            <span class="font-weight-bold">Pemasangan Baru</span> dari Nilou
+                                            <span class="font-weight-bold">{{$notif->pesan}}</span> dari {{$notif->pengirim->nama}}
                                         </h6>
                                         <p class="text-xs text-secondary mb-0">
                                             <i class="fa fa-clock me-1"></i>
                                             13 menit yang lalu
                                         </p>
                                     </div>
+                                </div>
+                            </a>
+                        </li>
+                        @endforeach
+                        <li class="">
+                            <a class="dropdown-item border-radius-md" href="">
+                                <div class="py-1">
+                                   Tampilkan semua
                                 </div>
                             </a>
                         </li>
@@ -57,7 +66,7 @@
                     </a>
                     <ul class="dropdown-menu  dropdown-menu-end  p-2 me-sm-n4" aria-labelledby="dropdownProfile">
                         <li>
-                            <a class="dropdown-item border-radius-md" href="{{route('auth.profile')}}">
+                            <a class="dropdown-item border-radius-md" href="{{route('profile.index')}}">
                                 <div class="d-flex py-1">
                                     <div class="my-auto">
                                     <img src="{{route('storage.private',auth()->user()->foto_profil)}}" class="avatar avatar-sm  me-3 ">

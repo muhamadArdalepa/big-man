@@ -186,7 +186,7 @@ class LaporanController extends Controller
             'ket.string' => 'Keterangan harus berupa string'
         ]);
         if (auth()->user()->role == 1) {
-            $validatedData['status'] = 'sedang diproses';
+            $validatedData['status'] = 'menunggu konfirmasi';
             $validatedData['penerima'] = auth()->user()->id;
             $validatedData['recieve_at'] = now();
         }

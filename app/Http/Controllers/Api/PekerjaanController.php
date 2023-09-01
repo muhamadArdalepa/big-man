@@ -278,7 +278,7 @@ class PekerjaanController extends Controller
             ->join('jenis_pekerjaans', 'jenis_pekerjaan_id', '=', 'jenis_pekerjaans.id')
             ->join('tim_anggotas', 'tims.id', '=', 'tim_anggotas.tim_id')
             ->where('tim_anggotas.user_id', auth()->user()->id);
-
+            
         $data = [];
         foreach ($query->get() as $i => $pekerjaan) {
             switch ($pekerjaan->jenis_pekerjaan_id) {

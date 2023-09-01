@@ -28,7 +28,7 @@ class PageController extends Controller
         $data['pekerjaan'] = Pekerjaan::where([
             'status' => 'sedang diproses',
             'wilayah_id' => $wilayah
-        ])->get();
+        ])->limit(4)->get();
 
         $data['pemasangan'] = Pemasangan::join('users', 'pelanggan', '=', 'users.id')
             ->where([
@@ -40,7 +40,7 @@ class PageController extends Controller
             ->where([
                 'status' => 'menunggu konfirmasi',
                 'wilayah_id' => $wilayah
-            ])->whereMonth('pemasangans.created_at', date('m'))->get();
+            ])->whereMonth('pemasangans.created_at', date('m'))->limit(3)->get();
 
 
         $data['nLaporan'] = Laporan::join('users', 'pelapor', '=', 'users.id')
@@ -53,10 +53,15 @@ class PageController extends Controller
             ->where([
                 'status' => 'menunggu konfirmasi',
                 'wilayah_id' => $wilayah
-            ])->whereMonth('laporans.created_at', date('m'))->get();
+            ])->whereMonth('laporans.created_at', date('m'))->limit(3)->get();
 
 
-        $data['teknisi'] = User::where('role', 2)->orderBy('poin', 'desc')->limit(3)->get(['nama', 'speciality', 'poin']);
+        $data['absen'] = Absen::join('users','user_id','=','users.id')
+        ->with('users')
+        ->where('wilayah_id',$wilayah)
+        ->whereDate('absens.created_at',date('Y-m-d'));
+
+        $data['teknisi'] = User::where(['role'=> 2,'wilayah_id'=>$wilayah])->orderBy('poin', 'desc');
 
         $p = Pemasangan::selectRaw('DAY(pemasangans.created_at) as tanggal, COUNT(*) as jumlah')
             ->join('users', 'pelanggan', '=', 'users.id')
@@ -73,6 +78,7 @@ class PageController extends Controller
                 'wilayah_id' => $wilayah
             ])
             ->whereMonth('laporans.created_at', date('m'))
+            ->orderBy('tanggal')
             ->groupBy('tanggal');
 
         $chart = [
@@ -174,7 +180,7 @@ class PageController extends Controller
                     ->findOrFail($pekerjaan->laporan_id);
                 break;
             default:
-                # code...
+                $detail = $pekerjaan->detail;
                 break;
         }
         // dd($detail);
@@ -197,35 +203,27 @@ class PageController extends Controller
                 $pemasangan = Pemasangan::where('pelanggan', auth()->user()->id)->first();
                 $this->addBreadcrumb($pemasangan ? 'Daftar Jaringan' : 'Detail Pemasangan', route('pemasangan'));
                 if ($pemasangan) {
-                    $detail = Pemasangan::select(
-                        'pemasangans.id',
-                        'pemasangans.status',
-                        'pemasangans.nik',
-                        'pemasangans.alamat',
-                        'pemasangans.koordinat_rumah',
-                        'pemasangans.koordinat_odp',
-                        'pemasangans.serial_number',
-                        'pemasangans.ssid',
-                        'pemasangans.password',
-                        'pemasangans.hasil_opm_user',
-                        'pemasangans.hasil_opm_odp',
-                        'pemasangans.kabel_terpakai',
-                        'users.nama',
-                        'users.no_telp',
-                        'users.email',
-                        'users.foto_profil',
-                        'marketer.nama as marketer'
-                    )
-                        ->leftJoin('users', 'pelanggan', '=', 'users.id')
-                        ->leftJoin('users as marketer', 'marketer', '=', 'marketer.id')
-                        ->where('pelanggan', auth()->user()->id)->first();
-
-                    $pekerjaan = Pekerjaan::with('jenis_pekerjaan')->where('pemasangan_id', $pemasangan->id)->first();
-                    return view('pages.pekerjaan-show', compact('pekerjaan', 'detail'));
+                    if ($pemasangan->status == 'menunggu konfirmasi') {
+                        $detail = Pemasangan::with('pekerjaan','user')->where('pelanggan', auth()->user()->id)->first();
+                        return view('pages.pemasangan-show', compact( 'detail'));
+                    }else{
+                        $detail = Pemasangan::with('pekerjaan','user')->where('pelanggan', auth()->user()->id)->first();
+                        $pekerjaan = Pekerjaan::with('jenis_pekerjaan')->where('pemasangan_id', $pemasangan->id)->first();
+                        return view('pages.pekerjaan-show', compact('pekerjaan', 'detail'));
+                    }
                 }
                 $pakets = Paket::all();
                 return view('pages.pelanggan.pemasangan-form', compact('pemasangan', 'pakets'));
         }
+    }
+
+    public function pemasangan_show($id) 
+    {
+        $this->addBreadcrumb('pemasangan', route('pemasangan'));
+        $this->addBreadcrumb('pemasangan '.$id, route('pemasangan.show',$id));
+        $pemasangan = Pemasangan::with('user','marketer','paket')->find($id);
+        $pakets = Paket::all();
+        return view('pages.pelanggan.pemasangan-form', compact('pemasangan', 'pakets'));
     }
     public function laporan()
     {
@@ -352,25 +350,19 @@ class PageController extends Controller
         return view('pages.admin.pelanggan', compact('wilayahs'));
     }
 
+    public function wilayah()
+    {
+        $this->addBreadcrumb('wilayah', route('wilayah'));
+        return view('pages.admin.wilayah');
+    }
+    public function paket()
+    {
+        $this->addBreadcrumb('paket', route('paket'));
+        return view('pages.admin.paket');
+    }
+
     public function auth_profile()
     {
-        $tims = Tim::select('tims.id', 'user_id', 'users.nama as ketua', 'foto_profil', 'status')->join('users', 'user_id', '=', 'users.id')->get();
-        foreach ($tims as $i => $tim) {
-            $tim->anggota = TimAnggota::select('user_id', 'nama', 'foto_profil')->join('users', 'user_id', '=', 'users.id')->where('tim_id', $tim->id)->get();
-        }
-        $data = [];
-        foreach ($tims as $i => $tim) {
-            $isHasId = false;
-            foreach ($tim->anggota as $anggota) {
-                if ($anggota->user_id == auth()->user()->id) {
-                    $isHasId = true;
-                }
-            }
-            if ($tim->user_id == auth()->user()->id || $isHasId) {
-                $data[$i] = $tim;
-            }
-        }
-        $this->addBreadcrumb('profile', route('auth.profile'));
-        return view('pages.auth-profile', with(['tims' => $data]));
+
     }
 }

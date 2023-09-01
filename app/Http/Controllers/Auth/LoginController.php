@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -26,14 +27,21 @@ class LoginController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
-        
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->intended('dashboard')->with('success',true);
+        $user = User::where('email', $request->email)->first();
+        if ($user->email_verified_at != null) {
+            if (Auth::attempt($credentials)) {
+                $request->session()->regenerate();
+                return redirect()->intended('dashboard')->with('success', true);
+            }
+        }else{
+            session(['registered_id'=>$user->id]);
+            session(['registered_email'=>$user->email]);
+            return redirect(route('verify-sent'));
         }
 
         return back()->withErrors([
             'email' => __('auth.failed'),
+            'password' => __('auth.failed'),
         ]);
     }
 
@@ -44,7 +52,6 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login')->with('success',true);
+        return redirect('/login')->with('success', true);
     }
-    
 }

@@ -20,11 +20,14 @@ class UserFactory extends Factory
     {
         $firstName = fake()->firstName();
         $lastName = fake()->lastName();
+        $role = fake()->randomElement([2, 3]);
+        
         return [
             'nama' => $firstName . ' ' . $lastName,
             'speciality' => fake()->word().' '.fake()->word(),
-            'role' => fake()->randomElement([2, 3]),
-            'email' => strtolower($firstName.$lastName).fake()->numberBetween(1-100).'@big.com',
+            'role' => $role,
+            'email' => strtolower($firstName.$lastName).random_int(1,100).'@big.com',
+            'email_verified_at' => now(),
             'password' => 'password',
             'wilayah_id' => function () {
                 return \App\Models\Wilayah::inRandomOrder()->first()->id;

@@ -31,7 +31,7 @@
 <body class="{{ $class ?? '' }}">
     <button id="btn-to-top" class="btn btn-dark position-fixed opacity-5 d-flex align-items-center justify-content-center" style="z-index: 100; bottom: -6rem;right: 4rem;width: 3rem;height: 3rem;"><i class="fa-solid fa-chevron-up"></i></button>
     @guest @yield('content') @endguest @auth @if (in_array(request()->route()->getName(),
-            ['auth.profile', 'teknisi.show']))
+            ['profile.index', 'teknisi.show','pelanggan.show']))
         <div class="position-absolute w-100 min-height-300 top-0"
             style="
                 background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/profile-layout-header.jpg');

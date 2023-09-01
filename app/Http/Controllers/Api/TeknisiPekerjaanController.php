@@ -145,7 +145,6 @@ class TeknisiPekerjaanController extends Controller
             'aktivitas.koordinat',
             'aktivitas.aktivitas',
         )
-            ->join('aktivitas_id', 'user_id', '=', 'users.id')
             ->join('users', 'user_id', '=', 'users.id')
             ->where('pekerjaan_id', $id)->orderBy('created_at', 'desc')->get();
         return response()->json($aktivitass);

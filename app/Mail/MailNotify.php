@@ -18,9 +18,10 @@ class MailNotify extends Mailable
      *
      * @return void
      */
-    public function __construct()
+    protected $token;
+    public function __construct($token)
     {
-        //
+        $this->token = $token;
     }
 
     /**
@@ -31,7 +32,7 @@ class MailNotify extends Mailable
     public function envelope()
     {
         return new Envelope(
-            subject: 'Mail Notify',
+            subject: 'Verifikasi akun kamu',
         );
     }
 
@@ -44,6 +45,9 @@ class MailNotify extends Mailable
     {
         return new Content(
             view: 'mail.index',
+            with: [
+                'token' => $this->token
+            ]
         );
     }
 

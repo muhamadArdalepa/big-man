@@ -150,12 +150,12 @@
                     <div class="form-group pemasangan-item">
                         <label for="email">Email</label>
                         <input type="email" id="email" class="form-control" placeholder="Email Pelanggan"
-                            disabled>
+                            >
                         <div id="emailFeedback" class="invalid-feedback text-xs"></div>
                     </div>
                     <div class="form-group pemasangan-item">
                         <label for="paket_id" class="form-control-label">Paket Pilihan</label>
-                        <select class="form-select" id="paket_id" disabled>
+                        <select class="form-select" id="paket_id" >
                             <option selected disabled value="">--Paket Pilihan--</option>
                             @foreach ($pakets as $paket)
                                 <option value="{{ $paket->id }}">
@@ -177,13 +177,13 @@
                                 <span>Lihat Peta</span>
                             </button>
                         </div>
-                        <textarea class="form-control" id="alamat" rows="3" placeholder="Alamat Pekerjaan" disabled></textarea>
+                        <textarea class="form-control" id="alamat" rows="3" placeholder="Alamat Pekerjaan" ></textarea>
                         <div id="alamatFeedback" class="invalid-feedback text-xs"></div>
                     </div>
 
-                    <div class="form-group pemasangan-item laporan-item">
+                    <div class="form-group">
                         <label for="koordinat_rumah" class="form-control-label">Koordinat Rumah</label>
-                        <input type="text" class="form-control" id="koordinat_rumah" placeholder="Koordinat Rumah" disabled>
+                        <input type="text" class="form-control" id="koordinat_rumah" placeholder="Koordinat Rumah" >
                         <div id="koordinat_rumahFeedback" class="invalid-feedback text-xs"></div>
                     </div>
 
@@ -302,8 +302,12 @@
             return $teknisi;
         };
 
-        function templateSelection(teknisi) {
-            return $(`<span class="text-muted">Cari Teknisi . . . </span>`);
+        function templateSelection(data) {
+            if (!data.id) {
+                return data.nama;
+            }
+            var $teknisi = $(`${data.nama} - ${data.alamat}`);
+            return $teknisi;
         };
 
         function initPemasangan() {
@@ -332,6 +336,30 @@
                 theme: 'bootstrap-5',
             });
         }
+
+        $('#pemasangan_id').on('change', e => {
+            $('#nik').val('')
+            $('#no_telp').val('')
+            $('#email').val('')
+            $('#paket_id').val('')
+            $('#alamat').val('')
+            koordinat_rumah = null
+            alamat = null
+            console.log($('#pelapor').val());
+            // if ($('#pelapor').val() != '') {
+            //     fetch(baseUrl + '/data-pemasangan/' + $('#pemasangan_id').val())
+            //         .then(response => response.json())
+            //         .then(data => {
+            //             console.log(data);
+            //             $('#serial_number').val(data.serial_number);
+            //             $('#alamat').val(data.alamat);
+            //             $('#port_odp').val(data.port_odp);
+            //             koordinat_rumah = data.koordinat_rumah;
+            //             alamat = data.alamat;
+            //             $('#btn-open-map').removeClass('d-none')
+            //         })
+            // }
+        })
 
         function tsTim(data) {
             if (data.id === '') {
