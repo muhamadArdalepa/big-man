@@ -15,12 +15,7 @@ return new class extends Migration
     {
         Schema::create('pemasangans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pelanggan')
-                ->constrained('users')
-                ->onDelete('restrict')
-                ->onUpdate('cascade');
-            $table->foreignId('marketer')
-                ->nullable()
+            $table->foreignId('pelanggan_id')
                 ->constrained('users')
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
@@ -44,8 +39,8 @@ return new class extends Migration
             $table->integer('hasil_opm_user')->nullable();
             $table->integer('hasil_opm_odp')->nullable();
             $table->integer('kabel_terpakai')->nullable();
-            $table->enum('status', ['menunggu konfirmasi', 'ditolak', 'sedang diproses', 'ditunda', 'aktif', 'isolir', 'tidak aktif']);
             $table->string('port_odp')->nullable();
+            $table->tinyInteger('status')->default(1);
             $table->text('ket')->nullable();
             $table->timestamps();
         });

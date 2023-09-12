@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use Carbon\Carbon;
+use App\Models\Tim;
 use App\Models\User;
 use App\Models\Aktivitas;
+use App\Models\Pekerjaan;
 use App\Models\Pemasangan;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -20,26 +22,31 @@ class PemasanganController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Pemasangan::select(
-            'pemasangans.id',
-            'pelanggan.nama as pelanggan',
-            'marketer.nama as marketer',
-            'alamat',
-            'status',
-            'pemasangans.created_at',
-        )
-            ->leftJoin('users as pelanggan', 'pelanggan', '=', 'pelanggan.id')
-            ->leftJoin('users as marketer', 'marketer', '=', 'marketer.id');
+        $query = Pemasangan::with('pelanggan:id,wilayah_id,nama,email,no_telp,foto_profil', 'pekerjaan:id,tim_id,pemasangan_id,poin', 'paket:id,nama_paket');
+
         if ($request->has('wilayah') && $request->wilayah != '') {
-            $query->where('pelanggan.wilayah_id', $request->wilayah);
+            $wilayah_id = $request->wilayah;
+            $query->whereHas('pelanggan', function ($query) use ($wilayah_id) {
+                $query->where('wilayah_id', $wilayah_id);
+            });
         }
+
         if ($request->has('tanggal') && $request->tanggal != '') {
-            $query->where('pemasangans.created_at', 'LIKE', '%' . $request->tanggal . '%');
+            $query->where('created_at', 'LIKE', '%' . $request->tanggal . '%');
         }
+
         $pemasangans = $query->get();
-        foreach ($pemasangans as $pemasangan) {
+        $pemasangans->map(function ($pemasangan) {
+            $pemasangan->route_id = $pemasangan->getRouteKey();
+            $pemasangan->get_status = $pemasangan->getStatus();
+            $pemasangan->wilayah = $pemasangan->getWilayah();
             $pemasangan->created_atFormat = Carbon::parse($pemasangan->created_at)->format('H:i');
-        }
+            if ($pemasangan->pekerjaan) {
+                $pemasangan->pekerjaan->route_id = $pemasangan->pekerjaan->getRouteKey();
+                $pemasangan->pekerjaan->tim = $pemasangan->pekerjaan->getFullTim();
+            }
+            return $pemasangan;
+        });
         return response()->json($pemasangans);
     }
 
@@ -142,7 +149,30 @@ class PemasanganController extends Controller
             return response()->json(['message' => 'Pemasangan baru berhasil ditambahkan']);
         }
     }
-
+    public function store_pekerjaan(Request $request, Pemasangan $pemasangan)
+    {
+        $validatedData = $request->validate([
+            'poin' => 'required',
+            'tim_id' => 'required',
+        ]);
+        try {
+            $validatedData['pemasangan_id'] = $pemasangan->id;
+            Pekerjaan::create($validatedData);
+            $pemasangan->update([
+                'status' => 2
+            ]);
+            Tim::find($validatedData['tim_id'])->update([
+                'status' => 2
+            ]);
+            return response([
+                'message' => 'Berhasil menambahkan pekerjaan'
+            ]);
+        } catch (\Throwable $th) {
+            return response([
+                'message' => 'Gagal menambahkan pekerjaan'
+            ],400);
+        }
+    }
     /**
      * Display the specified resource.
      *

@@ -26,7 +26,7 @@ return new class extends Migration
                 ->onUpdate('cascade')
                 ->onDelete('restrict');
             $table->string('no_telp');
-            $table->string('foto_profil')->default('profil/dummy.png');
+            $table->string('foto_profil')->default('profile/dummy.png');
             $table->integer('poin')->default(0);
             $table->timestamps();
         });

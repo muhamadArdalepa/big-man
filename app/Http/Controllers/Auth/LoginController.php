@@ -28,15 +28,17 @@ class LoginController extends Controller
             'password' => ['required'],
         ]);
         $user = User::where('email', $request->email)->first();
-        if ($user->email_verified_at != null) {
-            if (Auth::attempt($credentials)) {
-                $request->session()->regenerate();
-                return redirect()->intended('dashboard')->with('success', true);
+        if ($user) {
+            if ($user->email_verified_at != null) {
+                if (Auth::attempt($credentials)) {
+                    $request->session()->regenerate();
+                    return redirect()->intended('dashboard')->with('success', true);
+                }
+            } else {
+                session(['registered_id' => $user->id]);
+                session(['registered_email' => $user->email]);
+                return redirect(route('verify-sent'));
             }
-        }else{
-            session(['registered_id'=>$user->id]);
-            session(['registered_email'=>$user->email]);
-            return redirect(route('verify-sent'));
         }
 
         return back()->withErrors([

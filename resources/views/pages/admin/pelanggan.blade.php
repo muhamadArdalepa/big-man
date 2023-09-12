@@ -21,10 +21,10 @@
                             @endforeach
                         </select>
                     </div>
-                    <button class="btn btn-icon btn-3 btn-primary m-0 ms-auto" type="button" data-bs-toggle="modal"
+                    <button class="btn btn-icon btn-3 bg-gradient-danger ms-auto" type="button" data-bs-toggle="modal"
                         data-bs-target="#Modal" data-bs-title="Tambah Laporan">
                         <span class="btn-inner--icon"><i class="fas fa-plus"></i></span>
-                        <span class="btn-inner--text d-none d-sm-inline-block">Tambah Laporan</span>
+                        <span class="btn-inner--text d-none d-sm-inline-block">Tambah Pelanggan</span>
                     </button>
 
                 </div>
@@ -97,8 +97,11 @@
                         <div class="col-8">
                             <div class="form-group">
                                 <label for="no_telp" class="form-control-label">No Telepon</label>
-                                <input type="number" class="form-control" id="no_telp" placeholder="No Telepon"
-                                    tabindex="4">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">+</span>
+                                    <input type="number" class="form-control" id="no_telp" placeholder="No Telepon"
+                                        tabindex="4" value="62">
+                                </div>
                                 <div id="no_telpFeedback" class="invalid-feedback text-xs"></div>
                             </div>
                         </div>
@@ -116,12 +119,6 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="alamat">Alamat</label>
-                        <textarea class="form-control" id="alamat" rows="3" placeholder="Alamat"></textarea>
-                        <div id="alamatFeedback" class="invalid-feedback text-xs"></div>
-                    </div>
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn bg-gradient-secondary me-2 " data-bs-dismiss="modal">Batal</button>
@@ -135,7 +132,8 @@
 @include('components.dataTables')
 @push('js')
     <script>
-        const baseUrl = 'api/pelanggan'
+        const appUrl = `{{ env('APP_URL') }}`
+        const baseUrl = appUrl + '/api/pelanggan'
         let url = baseUrl + '?wilayah=' + $('#wilayah').val()
 
         let table = $('#table').DataTable({
@@ -178,7 +176,7 @@
                     }
                 },
                 {
-                    data: 'no_telp',
+                    data: 'email',
                     render: function(data, type) {
                         if (type === 'display') {
                             no = '0' + data.substring(2);
@@ -193,7 +191,19 @@
                     }
                 },
                 {
-                    data: 'pemasangan.alamat',
+                    data: 'no_telp',
+                    render: function(data, type) {
+                        if (type === 'display') {
+                            no = '0' + data.substring(2);
+                            return `
+                        <div class="d-flex flex-row-reverse justify-content-end">
+                            <button class="btn btn-link btn-copy-number m-0 px-2 py-1 text-secondary fw-normal" data-cst="${no}" data-bs-toggle="tooltip">${no}</button>
+                            <a target="blank" href="https://wa.me/${data}" class="btn btn-circle me-1 bg-gradient-success" data-bs-toggle="tooltip" data-bs-title="Hubungi Whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
+                        </div>
+                        `
+                        }
+                        return data;
+                    }
                 },
                 {
                     data: 'id',
@@ -219,10 +229,6 @@
                     sFirst: '<i class="fa fa-step-backward"></i>',
                     sLast: '<i class="fa fa-step-forward"></i>'
                 }
-            },
-            createdRow: function(row) {
-                let cell = $('td:eq(3)', row);
-                cell.addClass('force-wrap-space');
             },
         });
 
@@ -274,7 +280,6 @@
         }
 
         $('#Modal').on('shown.bs.modal', function() {
-            $(this).find('[autofocus]').focus();
             const copyBtn = document.getElementById("copy-btn");
             const tooltip = new bootstrap.Tooltip(copyBtn);
             copyBtn.setAttribute("data-bs-original-title", "Copy Password")
@@ -305,89 +310,51 @@
 
         $(document).on('click', '#simpan', function(e) {
             e.preventDefault();
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                }
-            });
-            $.ajax({
-                url: 'api/pelanggan',
-                type: 'POST',
-                data: {
-                    nama: $('#nama').val(),
-                    email: $('#email').val(),
-                    password: $('#password').val(),
-                    no_telp: $('#no_telp').val(),
-                    wilayah_id: $('#wilayah_id').val(),
-                    alamat: $('#alamat').val(),
-                },
-                success: function(response) {
-                    if (response.status == 400) {
-                        $('#Modal').find('.invalidFeedback').show();
-                        if (response.errors['nama'] == undefined) {
-                            $('#nama').removeClass('is-invalid');
-                            $('#namaFeedback').hide();
-                        } else {
-                            $('#namaFeedback').text(response.errors['nama']);
-                            $('#nama').addClass('is-invalid');
-                            $('#namaFeedback').show();
-                        }
-                        if (response.errors['email'] == undefined) {
-                            $('#email').removeClass('is-invalid');
-                            $('#emailFeedback').hide();
-                        } else {
-                            $('#emailFeedback').text(response.errors['email']);
-                            $('#email').addClass('is-invalid');
-                            $('#emailFeedback').show();
-                        }
-                        if (response.errors['password'] == undefined) {
-                            $('#password').removeClass('is-invalid');
-                            $('#passwordFeedback').hide();
-                        } else {
-                            $('#passwordFeedback').text(response.errors['password']);
-                            $('#password').addClass('is-invalid');
-                            $('#passwordFeedback').show();
-                        }
-                        if (response.errors['no_telp'] == undefined) {
-                            $('#no_telp').removeClass('is-invalid');
-                            $('#no_telpFeedback').hide();
-                        } else {
-                            $('#no_telpFeedback').text(response.errors['no_telp']);
-                            $('#no_telp').addClass('is-invalid');
-                            $('#no_telpFeedback').show();
-                        }
-                        if (response.errors['wilayah_id'] == undefined) {
-                            $('#wilayah_id').removeClass('is-invalid');
-                            $('#wilayah_idFeedback').hide();
-                        } else {
-                            $('#wilayah_idFeedback').text(response.errors['wilayah_id']);
-                            $('#wilayah_id').addClass('is-invalid');
-                            $('#wilayah_idFeedback').show();
-                        }
-                        if (response.errors['alamat'] == undefined) {
-                            $('#alamat').removeClass('is-invalid');
-                            $('#alamatFeedback').hide();
-                        } else {
-                            $('#alamatFeedback').text(response.errors['alamat']);
-                            $('#alamat').addClass('is-invalid');
-                            $('#alamatFeedback').show();
+            data = {
+                nama: $('#nama').val(),
+                email: $('#email').val(),
+                password: $('#password').val(),
+                no_telp: $('#no_telp').val(),
+                wilayah_id: $('#wilayah_id').val(),
+            }
+            axios.post(baseUrl, data)
+                .then((response) => {
+                    $('#Modal').find('.form-control').val('')
+                    $('#Modal').find('.form-select').val('')
+                    $('#Modal').find('#no_telp').val('62')
+                    table.ajax.reload()
+                    $('#Modal').modal('hide');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.data.message,
+                        timer: 1500,
+                        showConfirmButton: false,
+                    });
+                }).catch((error) => {
+                    $('#timModal').find('.invalid-feedback').text('')
+                    $('#timModal').find('.form-select').removeClass('is-invalid')
+                    var errors = error.response.data.errors;
+                    if (error.response.status == 422) {
+                        for (const key in errors) {
+                            if (errors.hasOwnProperty(key)) {
+                                $('#' + key).addClass('is-invalid');
+                                $('#' + key + 'Feedback').show();
+                                $('#' + key + 'Feedback').text(errors[key]);
+                            }
                         }
                     } else {
                         Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: response.message,
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.response.data.message,
                             timer: 1500,
                             showConfirmButton: false,
                         });
-                        $('#Modal').find('.form-control').val('');
-                        $('#Modal').find('.form-control').removeClass('is-invalid');
-                        $('#Modal').find('.invalidFeedback').hide();
-                        $('#Modal').modal('hide');
-                        table.ajax.reload();
+                        $('#timModal').modal('hide');
                     }
-                }
-            });
+
+                })
         });
 
 

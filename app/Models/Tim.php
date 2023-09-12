@@ -10,6 +10,22 @@ class Tim extends Model
     use HasFactory;
 
     protected $guarded = [];
+    public function getStatus()
+    {
+        $status = [
+            1 => ['Standby', 'gradient-warning'],
+            2 => ['Bekerja', 'gradient-success'],
+        ];
+        return $status[$this->status];
+    }
+    public function getPekerjaan()
+    {
+        $status = [
+            'Pemasangan' =>'gradient-success',
+            2 => 'gradient-success',
+        ];
+        return $status[$this->status];
+    }
 
     public function user()
     {

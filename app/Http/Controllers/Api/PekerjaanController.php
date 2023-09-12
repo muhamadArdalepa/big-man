@@ -30,8 +30,6 @@ class PekerjaanController extends Controller
             'pekerjaans.id',
             'tim_id',
             'users.foto_profil',
-            'jenis_pekerjaan_id',
-            'jenis_pekerjaans.nama_pekerjaan',
             'pemasangan_id',
             'laporan_id',
             'detail',
@@ -39,7 +37,6 @@ class PekerjaanController extends Controller
         )
             ->join('tims', 'tim_id', '=', 'tims.id')
             ->join('users', 'tims.user_id', '=', 'users.id')
-            ->join('jenis_pekerjaans', 'jenis_pekerjaan_id', '=', 'jenis_pekerjaans.id')
             ->join('wilayahs', 'pekerjaans.wilayah_id', '=', 'wilayahs.id');
 
         $wilayah = $request->input('wilayah');
@@ -90,35 +87,44 @@ class PekerjaanController extends Controller
 
     public function select2_tim(Request $request)
     {
-        if (auth()->user()->role == 1) {
-            $tims = Tim::select(
-                'tims.id',
-                'user_id',
-                'nama',
-            )
-                ->join('users', 'user_id', '=', 'users.id')
-                ->where('status', 'Standby')
-                ->orderBy('tims.id', 'asc')
-                ->groupBy('tims.id');
+        $wilayah_id = $request->wilayah;
+        $query = Tim::with('tim_anggotas', 'user')
+            ->whereDate('created_at', date('Y-m-d'))
+            ->whereHas('user', function ($query) use ($wilayah_id) {
+                $query->where('wilayah_id', $wilayah_id);
+            });
 
-            if ($request->has('wilayah') && !empty($request->wilayah)) {
-                $tims->where('users.wilayah_id', $request->wilayah);
-            }
-
-            $data = $tims->get();
-            foreach ($data as $i => $tim) {
-                $tim->text = $data[$i]->nama . '(ketua)';
-                foreach (TimAnggota::select('users.nama')
-                    ->where('tim_id', $tim->id)
-                    ->whereNot('user_id', $data[$i]->user_id)
-                    ->join('users', 'user_id', '=', 'users.id')
-                    ->get() as $j => $a) {
-                    $tim->text .= ', ' . $a->nama;
-                }
-            }
-
-            return response()->json($data);
+        if ($request->has('nama') && !empty($request->nama)) {
+            $nama = $request->nama;
+            $query->whereHas('tim_anggotas', function ($query) use ($nama) {
+                $nama = $nama;
+                $query->with('user')
+                    ->whereHas('user', function ($query) use ($nama) {
+                        $query->where('nama', 'LIKE', '%' . $nama . '%');
+                    });
+            });
         }
+
+        foreach ($query->get() as $i => $tim) {
+            foreach ($tim->tim_anggotas as $anggota) {
+                $tim->anggota = TimAnggota::with('user')->where('tim_id',$anggota->tim_id)->get();
+                $tim->anggota = $tim->anggota->pluck('user');
+            }
+            $results[$i] = [
+                "id" => $tim->id,
+                "text" => 'TIM ' . $tim->id,
+                "anggota" => $tim->anggota
+            ];
+        }
+
+        $data = [
+            "results" => $results,
+            "pagination" => [
+                "more" => false
+            ]
+        ];
+
+        return response()->json($data);
     }
     public function select2_pemasangan(Request $request)
     {
@@ -129,14 +135,12 @@ class PekerjaanController extends Controller
         )
             ->join('users', 'pelanggan', '=', 'users.id')
             ->where('status', 'menunggu konfirmasi');
-            // ->whereDate('pemasangans.created_at', '=', Carbon::today());
+        // ->whereDate('pemasangans.created_at', '=', Carbon::today());
 
         if ($request->has('terms') && !empty($request->terms)) {
             $query->where('nama', 'LIKE', '%' . $request->terms . '%')
                 ->orWhere('alamat', 'LIKE', '%' . $request->terms . '%');
         }
-
-
 
         $data = [
             "results" => $query->get(),
@@ -146,6 +150,11 @@ class PekerjaanController extends Controller
         ];
 
         return response()->json($data);
+    }
+
+    public function data_tim($id)
+    {
+        return TimAnggota::with('user')->where('tim_id',$id)->get();
     }
     /**
      * Show the form for creating a new resource.
@@ -278,7 +287,7 @@ class PekerjaanController extends Controller
             ->join('jenis_pekerjaans', 'jenis_pekerjaan_id', '=', 'jenis_pekerjaans.id')
             ->join('tim_anggotas', 'tims.id', '=', 'tim_anggotas.tim_id')
             ->where('tim_anggotas.user_id', auth()->user()->id);
-            
+
         $data = [];
         foreach ($query->get() as $i => $pekerjaan) {
             switch ($pekerjaan->jenis_pekerjaan_id) {

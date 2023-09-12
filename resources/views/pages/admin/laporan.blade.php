@@ -223,7 +223,7 @@
                         <label for="poin">Tingkat Kesulitan</label>
                         <select id="poin" class="form-select">
                             <option selected disabled value="">-- Poin --</option>
-                            @foreach (\App\Models\Poin::all() as $poin)
+                            @foreach (\App\Models\Kesulitan::all() as $poin)
                                 <option value="{{ $poin->poin }}">{{ $poin->kesulitan }}
                                     +{{ $poin->poin }}poin
                                 </option>
@@ -311,7 +311,7 @@
                 $('#tim_id').select2('destroy')
             }
             $.ajax({
-                url: appUrl+'api/pekerjaan/select2-tim?wilayah=' + e,
+                url: appUrl+'/api/pekerjaan/select2-tim?wilayah=' + e,
                 type: 'GET',
                 dataType: 'json',
                 success: ((data) => {
@@ -404,10 +404,10 @@
                         className: 'text-center',
                     },
                     {
-                        data: 'pelapor',
+                        data: 'pelanggan',
                     },
                     {
-                        data: 'penerima',
+                        data: 'admin',
                     },
                     {
                         data: 'nama_gangguan',
@@ -417,24 +417,7 @@
                         className: 'text-center',
                         render: function(data, type) {
                             if (type === 'display') {
-                                let badge = null
-                                switch (data) {
-                                    case 'menunggu konfirmasi':
-                                        badge = 'bg-secondary'
-                                        break;
-                                    case 'sedang diproses':
-                                        badge = 'bg-gradient-primary'
-                                        break;
-                                    case 'ditunda':
-                                        badge = 'bg-gradient-warning'
-                                        break;
-                                    case 'selesai':
-                                        badge = 'bg-gradient-success'
-                                        break;
-                                }
-                                return `
-                                <span class="badge badge-sm text-xxs ${badge}">${data}</span>
-                                `
+                                return `<span class="badge badge-sm text-xxs bg-${data[1]}">${data[0]}</span>`
                             }
                             return data
                         }
@@ -548,9 +531,7 @@
                 $('#Modal').find('.form-select').removeClass('is-invalid')
                 axios.post(baseUrl, {
                         jenis_gangguan_id: $('#jenis_gangguan_id').val(),
-                        pelapor: $('#pelapor').val(),
-                        status: 'menunggu konfirmasi',
-                        penerima: {{ auth()->user()->id }},
+                        pelanggan_id: $('#pelapor').val(),
                         ket: $('#ket').val(),
                     })
                     .then(response => {

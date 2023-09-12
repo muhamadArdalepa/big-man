@@ -31,7 +31,7 @@
                                             <input type="email" name="email" class="form-control form-control-lg" value="{{ old('email')}}" aria-label="Email" placeholder="Email" autofocus autocomplete="1">
                                         </div>
                                         <div class="flex flex-col mb-3">
-                                            <input type="password" name="password" class="form-control form-control-lg" aria-label="Password" placeholder="Password">
+                                            <input type="password" name="password" class="form-control form-control-lg" aria-label="Password" placeholder="Password" value="{{old('email')}}"> 
                                             @error('email') <p class="text-danger text-xs pt-1"> {{$message}} </p>@enderror
                                         </div>
                                         <div class="text-center">
@@ -53,7 +53,7 @@
                                 style="background-image: url('img/bg-login.jpg');
               background-size: cover; background-position: center center;">
                                 <span class="mask bg-white opacity-6"></span>
-                                <img src="/img/logos/big-warna-full.png" class="position-relative" alt="big net logo" width="250px">
+                                <img src="{{asset('img/logos/big-warna-full.png')}}" class="position-relative" alt="big net logo" width="250px">
                             </div>
                         </div>
                     </div>

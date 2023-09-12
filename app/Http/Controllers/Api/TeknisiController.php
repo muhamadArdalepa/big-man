@@ -15,10 +15,10 @@ class TeknisiController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
-{
-        $query = User::with('wilayah:id,nama_wilayah')->select('users.id','users.nama','users.speciality','foto_profil','users.no_telp','users.poin','wilayah_id')->where('role',2);
+    {
+        $query = User::with('wilayah:id,nama_wilayah')->select('users.id', 'users.nama', 'users.speciality', 'foto_profil', 'users.no_telp', 'users.poin', 'wilayah_id')->where('role', 2);
         if ($request->has('wilayah') && $request->wilayah != '') {
-            $query->where('wilayah_id',$request->wilayah);
+            $query->where('wilayah_id', $request->wilayah);
         }
         return response()->json($query->get());
     }
@@ -41,44 +41,21 @@ class TeknisiController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validatedData = $request->validate([
             'nama' => 'required|min:3',
+            'speciality' => 'required',
             'email' => 'required|email',
             'password' => 'required|min:6',
             'wilayah_id' => 'required',
             'no_telp' => 'required|numeric'
-        ], [
-            'nama.required' => 'Nama harus diisi.',
-            'nama.min' => 'Nama harus memiliki minimal 3 karakter.',
-            'email.required' => 'Email harus diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'password.required' => 'Password harus diisi.',
-            'password.min' => 'Password harus memiliki minimal 6 karakter.',
-            'wilayah_id.required' => 'wilayah harus dipilih.',
-            'no_telp.required' => 'Nomor telepon harus diisi.',
-            'no_telp.numeric' => 'Nomor telepon harus berupa angka.',
         ]);
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 400,
-                'errors' => $validator->messages()
-            ]);
-        } else {
-            $data = [
-                'nama' => ucwords(trim($request->nama)),
-                'role' => 2,
-                'email' => $request->email,
-                'password' => bcrypt($request->password),
-                'wilayah_id' => $request->wilayah_id,
-                'no_telp' => $request->no_telp,
-                'foto_profil' => 'dummy.png',
-            ];
-            User::create($data);
-            return response()->json([
-                'status' => 200,
-                'message' => 'Teknisi baru telah ditambahkan',
-            ]);
-        }
+        $validatedData['role'] = 2;
+        $validatedData['foto_profil'] = 'profile/dummy.png';
+        User::create($validatedData);
+        return response()->json([
+            'status' => 200,
+            'message' => 'Teknisi baru telah ditambahkan',
+        ]);
     }
 
     /**
@@ -89,7 +66,7 @@ class TeknisiController extends Controller
      */
     public function show($id)
     {
-        return response()->json(User::with('wilayah','tims')->findOrFail($id));
+        return response()->json(User::with('wilayah', 'tims')->findOrFail($id));
     }
 
     /**

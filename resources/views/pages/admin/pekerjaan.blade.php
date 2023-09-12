@@ -73,32 +73,7 @@
 
                 </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <div class="form-group">
-                                <label for="jenis_pekerjaan_id">Jenis Pekerjaan</label>
-                                <select id="jenis_pekerjaan_id" class="form-select">
-                                    <option selected disabled value="">-- Jenis Pekerjaan --</option>
-                                    @foreach (\App\Models\JenisPekerjaan::all() as $jp)
-                                        <option value="{{ $jp->id }}">{{ $jp->nama_pekerjaan }}</option>
-                                    @endforeach
-                                    <option value="0">Lainnya</option>
-                                </select>
-                                <div id="jenis_pekerjaan_idFeedback" class="invalid-feedback text-xs"></div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="wilayah_id">Wilayah</label>
-                                <select class="form-select" id="wilayah_id" tabindex="1">
-                                    @foreach ($wilayahs as $wilayah)
-                                        <option value="{{ $wilayah->id }}">{{ $wilayah->nama_wilayah }}</option>
-                                    @endforeach
-                                </select>
-                                <div id="wilayah_idFeedback" class="invalid-feedback text-xs"></div>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <div class="form-group lainnya-item">
                         <label for="nama_pekerjaan">Nama Pekerjaan</label>
@@ -230,7 +205,7 @@
                         <label for="poin">Tingkat Kesulitan</label>
                         <select id="poin" class="form-select">
                             <option selected disabled value="">-- Poin --</option>
-                            @foreach (\App\Models\Poin::all() as $poin)
+                            @foreach (\App\Models\Kesulitan::all() as $poin)
                                 <option value="{{ $poin->poin }}">{{ $poin->kesulitan }}
                                     +{{ $poin->poin }}poin
                                 </option>

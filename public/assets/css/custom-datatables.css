@@ -1,14 +1,5 @@
-#table_wrapper
-    > div.d-flex.flex-column.gap-3.align-items-center
-    > div:nth-child(1)
-    > div
-    button {
-    margin: 0 !important;
-}
-
-#table_wrapper > div.row.align-items-center > div:nth-child(1) > div,
-#table_length > label,
-#table_filter > label {
+.table-responsive div.dataTables_wrapper.dt-bootstrap5.no-footer div label,
+.table-responsive div.dataTables_wrapper.dt-bootstrap5.no-footer div button {
     margin: 0 !important;
 }
 

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Absen;
 use App\Models\Aktivitas;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -39,83 +40,147 @@ class AbsenController extends Controller
                     $query->where('wilayah_id', $request->wilayah);
                 }
 
-                $tanggal = '%' . date('Y-m-d') . '%';
+                $tanggal = date('Y-m-d');
                 if ($request->has('tanggal') && !empty($request->tanggal)) {
-                    $tanggal = '%' . $request->tanggal . '%';
+                    $tanggal = $request->tanggal;
                 }
 
                 $users = $query->get();
-                foreach ($users as $i => $user) {
-                    $absens = Absen::where('created_at', 'LIKE', $tanggal)
+                $users->map(function ($user) use ($tanggal) {
+                    $absen = Absen::whereDate('created_at', $tanggal)
                         ->where('user_id', '=', $user->id)
                         ->first();
-                    $user->absen_id = null;
-                    for ($j = 0; $j < 4; $j++) {
-                        $user->absens[$j] = null;
+                    if ($absen) {
+                        $user->absen_id = $absen->id;
+                        $user->absens = $absen->getTimes();
+                        $user->status = $absen->getStatus();
+                    } else {
+                        $absen = [null, null, null, null];
+                        $user->absen_id = null;
+                        $user->absens = $absen;
+                        $user->status = ['Tidak hadir', 'bg-gradient-danger'];
                     }
-
-                    if ($absens) {
-                        $user->absen_id = $absens->id;
-                        $aktivitas = Aktivitas::select('created_at')->where('absen_id', $absens->id)->get();
-                        if ($aktivitas->count() < 4) {
-                            for ($j = 0; $j < 4; $j++) {
-                                $user->absens[$j] = null;
-                            }
-                            for ($j = 0; $j < $aktivitas->count(); $j++) {
-                                $hour = (int) substr($aktivitas[$j]->created_at, 11, 2);
-                                $timeFormat = Carbon::createFromFormat('Y-m-d H:i:s', $aktivitas[$j]->created_at)->format('H:i');
-                                if ($hour >= 8 && $hour < 11) {
-                                    $user->absens[0] = $timeFormat;
-                                } else if ($hour >= 11 && $hour < 13) {
-                                    $user->absens[1] = $timeFormat;
-                                } else if ($hour >= 13 && $hour < 16) {
-                                    $user->absens[2] = $timeFormat;
-                                } else if ($hour >= 16) {
-                                    $user->absens[3] = $timeFormat;
-                                }
-                            }
-                        }
-                    }
-                }
+                    return $user;
+                });
                 return response()->json($users);
-                break;
             case 2:
                 $id = auth()->user()->id;
-                $data = [];
+                $query = Absen::where('user_id', $id);
 
-                $absens = Absen::with('aktivitass')->where('user_id', $id)->get();
-                foreach ($absens as $i => $absen) {
-                    $data[$i]['id'] = $absen->id;
-                    $data[$i]['created_at'] = $absen->created_at;
-                    $data[$i]['tanggalFormat'] = Carbon::parse($absen->created_at)->translatedFormat("l, d F Y");
-                    $n = $absen->aktivitass->count();
-
-                    $data[$i]['absens'] = [];
-                    for ($j = 0; $j < 4; $j++) {
-                        $data[$i]['absens'][$j] = null;
-                    }
-                    for ($j = 0; $j < $n; $j++) {
-                        $hour = (int) substr($absen->aktivitass[$j]->created_at, 11, 2);
-                        if ($hour >= 8 && $hour < 11) {
-                            $data[$i]['absens'][0] = Carbon::createFromFormat('Y-m-d H:i:s', $absen->aktivitass[$j]->created_at)->format('H:i');
-                        } else if ($hour >= 11 && $hour < 13) {
-                            $data[$i]['absens'][1] = Carbon::createFromFormat('Y-m-d H:i:s', $absen->aktivitass[$j]->created_at)->format('H:i');
-                        } else if ($hour >= 13 && $hour < 16) {
-                            $data[$i]['absens'][2] = Carbon::createFromFormat('Y-m-d H:i:s', $absen->aktivitass[$j]->created_at)->format('H:i');
-                        } else if ($hour >= 16) {
-                            $data[$i]['absens'][3] = Carbon::createFromFormat('Y-m-d H:i:s', $absen->aktivitass[$j]->created_at)->format('H:i');
-                        }
-                    }
+                if ($request->has('month') && !empty($request->month)) {
+                    $query->whereMonth('created_at', $request->month);
                 }
-                return response()->json($data);
-                break;
 
+                if ($request->has('year') && !empty($request->year)) {
+                    $query->whereYear('created_at', $request->year);
+                }
+
+                $absens = $query->get();
+                $absens->map(function ($absen) {
+                    $absen->tanggalFormat = Carbon::parse($absen->created_at)->translatedFormat("l, j F Y");
+                    $absen->absens = $absen->getTimes();
+                    $absen->status = $absen->getStatus();
+                    return $absen;
+                });
+                return response()->json($absens);
             default:
-                # code...
-                break;
+                return response()->json(['message' => 'Unauthorized']);
         }
     }
 
+    public function all(Request $request)
+    {
+        switch (auth()->user()->role) {
+            case 1:
+                $query = User::select(
+                    'id',
+                    'nama',
+                    'foto_profil'
+                )
+                    ->where('role', 2)
+                    ->orderBy('nama', 'asc');
+
+                if ($request->has('wilayah') && !empty($request->wilayah)) {
+                    $query->where('wilayah_id', $request->wilayah);
+                }
+
+                $year = $request->year;
+                $month = $request->month;
+                $users = $query->get();
+
+                $users->map(function ($user) use ($year, $month) {
+                    $user->n = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+                    $user->present = Absen::where('user_id', $user->id)
+                        ->whereYear('created_at', $year)
+                        ->whereMonth('created_at', $month)->where('status', 1)->count();
+                    $user->late = Absen::where('user_id', $user->id)
+                        ->whereYear('created_at', $year)
+                        ->whereMonth('created_at', $month)->where('status', 2)->count();
+                    $user->absent = Absen::where('user_id', $user->id)
+                        ->whereYear('created_at', $year)
+                        ->whereMonth('created_at', $month)->where('status', 3)->count();
+
+                    $details = Absen::where('user_id', $user->id)
+                        ->whereYear('created_at', $year)
+                        ->whereMonth('created_at', $month)->get();
+                    $de = [];
+
+                    for ($i = 0; $i < 31; $i++) {
+                        array_push($de, ['-', 'bg-gradient-light']);
+                    }
+                    if ($details) {
+                        foreach ($details as $i => $detail) {
+                            $de[(int)Carbon::parse($detail->created_at)->format('j') - 1] = $detail->getStatus();
+                        }
+                    }
+                    $user->detail = $de;
+                    return $user;
+                });
+                return response()->json($users);
+            case 2:
+                // ambil id
+                $user_id = auth()->user()->id;
+
+                if ($request->year == date('Y')) {
+                    $month = date('n');
+                } else {
+                    $month = 12;
+                }
+                $absens = [];
+                for ($i = 1; $i <= $month; $i++) {
+                    $res = [
+                        'i' => $i,
+                        'bulan' => Carbon::createFromFormat('n', $i)->translatedFormat('F'),
+                        'n' => cal_days_in_month(CAL_GREGORIAN, $i, $request->year),
+                        'present' => Absen::where('user_id', $user_id)
+                            ->whereYear('created_at', $request->year)
+                            ->whereMonth('created_at', $i)->where('status', 1)->count(),
+                        'late' => Absen::where('user_id', $user_id)
+                            ->whereYear('created_at', $request->year)
+                            ->whereMonth('created_at', $i)->where('status', 2)->count(),
+                        'absent' => Absen::where('user_id', $user_id)
+                            ->whereYear('created_at', $request->year)
+                            ->whereMonth('created_at', $i)->where('status', 3)->count(),
+                    ];
+                    $details = Absen::where('user_id', $user_id)
+                        ->whereYear('created_at', $request->year)
+                        ->whereMonth('created_at', $i)->get();
+
+                    for ($j = 0; $j < 31; $j++) {
+                        array_push($res, ['-', 'bg-gradient-secondary']);
+                    }
+                    if ($details) {
+                        foreach ($details as $j => $detail) {
+                            $res[(int)Carbon::parse($detail->created_at)->format('j') - 1] = $detail->getStatus();
+                        }
+                    }
+                    array_push($absens, $res);
+                }
+                return response()->json($absens);
+            default:
+                return response()->json(['message' => 'Unauthorized']);
+        }
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -150,22 +215,30 @@ class AbsenController extends Controller
                 'errors' => $validator->messages()
             ]);
         }
+
         $img = $request->foto;
-        $folderPath = "private/absen/";
+        $folderPath = "private/";
 
         $image_parts = explode(";base64,", $img);
         $image_type_aux = explode("image/", $image_parts[0]);
-        $image_type = $image_type_aux[1];
 
         $image_base64 = base64_decode($image_parts[1]);
-        $fileName = uniqid() . '.png';
+        $fileName = 'aktivitas/' . uniqid() . '.png';
 
         $file = $folderPath . $fileName;
         Storage::put($file, $image_base64);
 
-        $absen =  Absen::where('user_id',$id)->whereDate('created_at',date('Y-m-d'))->first() ?? new Absen;
+        $absen =  Absen::where('user_id', $id)->whereDate('created_at', date('Y-m-d'))->first();
 
-        $absen->user_id = $id;
+        // cek apakah bukan absen pertama
+        if (!$absen) {
+            $absen = new Absen;
+            $absen->user_id = $id;
+        } else {
+            if (Aktivitas::where('absen_id', $absen->id)->count() > 2) {
+                $absen->status = Carbon::parse($absen->created_at)->format('H') > Absen::$late ? 2 : 1;
+            }
+        }
         $absen->save();
 
         $data = [
@@ -192,8 +265,17 @@ class AbsenController extends Controller
      */
     public function show($id)
     {
-        $absen = Absen::with('aktivitass','user')->find($id);
-        $absen->tanggalFormat =Carbon::parse($absen->created_at)->translatedFormat("l, d F Y");
+        $absen = Absen::select('id', 'created_at', 'user_id')
+            ->with(
+                'aktivitass:absen_id,aktivitas,koordinat,alamat,foto,created_at',
+                'user:id,nama,foto_profil'
+            )
+            ->find($id);
+        $absen->tanggalFormat = Carbon::parse($absen->created_at)->translatedFormat("l, j F Y");
+        $absen->aktivitass->map(function ($aktivitas) {
+            $aktivitas->time = Carbon::parse($aktivitas->created_at)->format('H:i');
+            return $aktivitas;
+        });
         return response()->json($absen);
     }
 

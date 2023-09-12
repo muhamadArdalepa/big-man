@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Absen;
 use App\Models\Aktivitas;
 use App\Models\Tim;
 use App\Models\User;
@@ -10,6 +11,7 @@ use App\Models\Pemasangan;
 use App\Models\TimAnggota;
 use App\Models\JenisGangguan;
 use App\Models\JenisPekerjaan;
+use App\Models\Kesulitan;
 use App\Models\Pekerjaan;
 use App\Models\Wilayah;
 use Illuminate\Database\Seeder;
@@ -38,14 +40,6 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        JenisPekerjaan::create([
-            'nama_pekerjaan' => 'Pemasangan',
-            'ket' => '-'
-        ]);
-        JenisPekerjaan::create([
-            'nama_pekerjaan' => 'Perbaikan',
-            'ket' => '-'
-        ]);
 
         JenisGangguan::create([
             'nama_gangguan' => 'Koneksi Lambat',
@@ -104,15 +98,38 @@ class DatabaseSeeder extends Seeder
 
 
         $tim = null;
-        foreach (\App\Models\Wilayah::get() as $i => $wilayah) {
+        $absenId = 0;
+        foreach (\App\Models\Wilayah::get() as $wilayah) {
 
             $teknisis = User::where(['wilayah_id' => $wilayah->id, 'role' => 2])->get();
-
             foreach ($teknisis as $i => $teknisi) {
+                for ($j = 1; $j <= now()->month; $j++) {
+                    for ($k = 1; $k <= cal_days_in_month(CAL_GREGORIAN, $j, 2023); $k++) {
+                        Absen::insert([
+                            'id' => ++$absenId,
+                            'user_id' => $teknisi->id,
+                            'created_at' => '2023-' . $j . '-' . $k . ' 08:00:00',
+                            'status' => 1,
+                        ]);
+                        $time = [8, 11, 13, 16];
+                        foreach ($time as $t) {
+                            Aktivitas::insert([
+                                'user_id' => $teknisi->id,
+                                'absen_id' => $absenId,
+                                'foto' => 'aktivitas/dummy.jpg',
+                                'aktivitas' => fake()->sentence(),
+                                'alamat' => 'Gg. Fitrah, Bangka Belitung Laut, Pontianak, West Kalimantan',
+                                'koordinat' => '-0.0779319,109.3680154',
+                                'created_at' => '2023-' . $j . '-' . $k . ' ' . $t . ':00:00'
+                            ]);
+                        }
+                    }
+                }
+
                 if ($i % 3 == 0) {
                     $tim = Tim::create([
                         'user_id' => $teknisi->id,
-                        'status' => 'Standby'
+                        'status' => 1
                     ]);
                 }
                 TimAnggota::create([
@@ -121,15 +138,30 @@ class DatabaseSeeder extends Seeder
                 ]);
             };
         }
-
+        Kesulitan::create([
+            'kesulitan' => 'Mudah',
+            'poin' => 10,
+        ]);
+        Kesulitan::create([
+            'kesulitan' => 'Sedang',
+            'poin' => 20,
+        ]);
+        Kesulitan::create([
+            'kesulitan' => 'Sulit',
+            'poin' => 30,
+        ]);
+        Kesulitan::create([
+            'kesulitan' => 'Sangat sulit',
+            'poin' => 40,
+        ]);
 
 
         $pelanggans = User::where('role', 3)->get();
         foreach ($pelanggans as $i => $pelanggan) {
-            if ($i > $pelanggans->count() * 2 / 3) {
+            if ($i > round($pelanggans->count() / 3)) {
 
                 Pemasangan::insert([
-                    'pelanggan' => $pelanggan->id,
+                    'pelanggan_id' => $pelanggan->id,
                     'nik' => fake()->numerify('610##############'),
                     'foto_ktp' => 'pemasangan/foto_ktp.jpg',
                     'foto_rumah' => 'pemasangan/foto_rumah.jpg',
@@ -148,7 +180,7 @@ class DatabaseSeeder extends Seeder
                     'hasil_opm_odp' => '24',
                     'kabel_terpakai' => fake()->numberBetween(10, 1000),
                     'port_odp' => fake()->numberBetween(1, 24),
-                    'status' => 'aktif',
+                    'status' => 4,
                     'created_at' => fake()->dateTimeThisMonth(),
                 ]);
                 $pemasangan = Pemasangan::find($i);
@@ -158,11 +190,8 @@ class DatabaseSeeder extends Seeder
                 }
                 $pekerjaan = Pekerjaan::create([
                     'tim_id' => $tim->id,
-                    'wilayah_id' => $pelanggan->wilayah_id,
-                    'jenis_pekerjaan_id' => 1,
                     'pemasangan_id' => $pemasangan->id,
                     'poin' => [10, 30, 50][random_int(0, 2)],
-                    'status' => 'selesai',
                     'created_at' => $pemasangan->created_at
                 ]);
 
@@ -171,9 +200,9 @@ class DatabaseSeeder extends Seeder
                     $teknisi->poin += $pekerjaan->poin;
                     $teknisi->save();
                 }
-            } else {
+            } else if ($i > round($pelanggans->count() * 2 / 3)) {
                 $pemasangan = new Pemasangan;
-                $pemasangan->pelanggan = $pelanggan->id;
+                $pemasangan->pelanggan_id = $pelanggan->id;
                 $pemasangan->nik = fake()->numerify('610##############');
                 $pemasangan->foto_ktp = 'pemasangan/dummy.jpg';
                 $pemasangan->foto_rumah = 'pemasangan/dummy.jpg';
@@ -181,7 +210,7 @@ class DatabaseSeeder extends Seeder
                 $pemasangan->koordinat_rumah = fake()->longitude() . ',' . fake()->latitude();
                 $pemasangan->koordinat_odp = fake()->longitude() . ',' . fake()->latitude();
                 $pemasangan->paket_id = Paket::inRandomOrder()->first()->id;
-                $pemasangan->status = 'sedang diproses';
+                $pemasangan->status = 2;
                 $pemasangan->save();
 
                 $tim = Tim::inRandomOrder()->select('tims.id')->where('wilayah_id', $pelanggan->wilayah_id)->join('users', 'user_id', '=', 'users.id')->first();
@@ -190,22 +219,31 @@ class DatabaseSeeder extends Seeder
                 }
                 $pekerjaan = Pekerjaan::create([
                     'tim_id' => $tim->id,
-                    'wilayah_id' => $pelanggan->wilayah_id,
-                    'jenis_pekerjaan_id' => 1,
                     'pemasangan_id' => $pemasangan->id,
                     'poin' => [10, 30, 50][random_int(0, 2)],
-                    'status' => 'sedang diproses',
                     'created_at' => $pemasangan->created_at
                 ]);
-                for ($j=0; $j < random_int(3,10); $j++) { 
+                for ($j = 0; $j < random_int(3, 10); $j++) {
                     Aktivitas::create([
                         'user_id' => 1,
                         'pekerjaan_id' => $pekerjaan->id,
-                        'foto' => 'aktivitas/dummy'.random_int(1,5).'.png',
+                        'foto' => 'aktivitas/dummy' . random_int(1, 5) . '.png',
                         'koordinat' => $pemasangan->koordinat_rumah,
                         'alamat' => $pemasangan->alamat,
+                        'aktivitas' => fake()->sentence()
                     ]);
                 }
+            } else {
+                $pemasangan = new Pemasangan;
+                $pemasangan->pelanggan_id = $pelanggan->id;
+                $pemasangan->nik = fake()->numerify('610##############');
+                $pemasangan->foto_ktp = 'pemasangan/dummy.jpg';
+                $pemasangan->foto_rumah = 'pemasangan/dummy.jpg';
+                $pemasangan->alamat = fake()->address();
+                $pemasangan->koordinat_rumah = fake()->longitude() . ',' . fake()->latitude();
+                $pemasangan->paket_id = Paket::inRandomOrder()->first()->id;
+                $pemasangan->status = 1;
+                $pemasangan->save();
             }
         }
     }

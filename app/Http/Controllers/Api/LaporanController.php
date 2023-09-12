@@ -30,28 +30,29 @@ class LaporanController extends Controller
             case 1:
                 $query = Laporan::select(
                     'laporans.id',
-                    'pelapor.nama as pelapor',
-                    'penerima.nama as penerima',
+                    'pelanggan.nama as pelanggan',
+                    'admin.nama as admin',
                     'nama_gangguan',
                     'status',
                     'laporans.created_at'
                 )
-                    ->join('users as pelapor', 'pelapor', '=', 'pelapor.id')
-                    ->leftJoin('users as penerima', 'penerima', '=', 'penerima.id')
+                    ->join('users as pelanggan', 'pelanggan_id', '=', 'pelanggan.id')
+                    ->leftJoin('users as admin', 'admin_id', '=', 'admin.id')
                     ->join('jenis_gangguans', 'jenis_gangguan_id', '=', 'jenis_gangguans.id');
 
                 $wilayah = $request->input('wilayah');
                 $tanggal = '%' . $request->input('tanggal') . '%';
                 if ($request->has('wilayah') && !empty($wilayah)) {
-                    $query->where('pelapor.wilayah_id', $wilayah);
+                    $query->where('pelanggan.wilayah_id', $wilayah);
                 }
                 if ($request->has('tanggal') && !empty($tanggal)) {
                     $query->where('laporans.created_at', 'LIKE', $tanggal);
                 }
                 $laporans = $query->get();
-                foreach ($laporans as $laporan) {
+                $laporans->map(function ($laporan) {
                     $laporan->timeFormat = Carbon::parse($laporan->created_at)->format('H:i');
-                }
+                    $laporan->status = $laporan->getStatus();
+                });
                 return response()->json($laporans);
                 break;
             case 3:
@@ -82,8 +83,11 @@ class LaporanController extends Controller
                 'users.id',
                 'nama as text'
             )
-                ->join('pemasangans', 'pelanggan', '=', 'users.id')
-                ->where('role', 3)
+                ->join('pemasangans', 'pelanggan_id', '=', 'users.id')
+                ->where([
+                    'role' => 3,
+                    'status' => 4
+                ])
                 ->whereNotNull('pemasangans.id');
 
             if ($request->has('wilayah') && !empty($request->wilayah)) {
@@ -148,7 +152,7 @@ class LaporanController extends Controller
                 'port_odp',
                 'koordinat_rumah'
             )
-                ->join('pemasangans', 'pelanggan', '=', 'users.id')
+                ->join('pemasangans', 'pelanggan_id', '=', 'users.id')
                 ->find($id);
             return response()->json($user);
         }
@@ -178,17 +182,16 @@ class LaporanController extends Controller
         }
         $validatedData = $request->validate([
             'jenis_gangguan_id' => 'required',
-            'pelapor' => 'required',
+            'pelanggan_id' => 'required',
             'ket' => 'nullable|string'
         ], [
             'jenis_gangguan_id.required' => 'Jenis harus diisi',
-            'pelapor.required' => 'Data pelanggan harus diisi',
+            'pelanggan_id.required' => 'Data pelanggan harus diisi',
             'ket.string' => 'Keterangan harus berupa string'
         ]);
         if (auth()->user()->role == 1) {
-            $validatedData['status'] = 'menunggu konfirmasi';
-            $validatedData['penerima'] = auth()->user()->id;
-            $validatedData['recieve_at'] = now();
+            $validatedData['status'] = 1;
+            $validatedData['admin_id'] = auth()->user()->id;
         }
         Laporan::create($validatedData);
         return response(['message' => 'Laporan gangguan berhasil ditambahkan']);

@@ -19,7 +19,7 @@ return new class extends Migration
                 ->constrained()
                 ->onUpdate('cascade')
                 ->onDelete('restrict');
-            $table->enum('status',['Standby','Bekerja']);
+            $table->tinyInteger('status');
             $table->timestamps();
         });
     }

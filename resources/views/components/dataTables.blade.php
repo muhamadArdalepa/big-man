@@ -10,6 +10,7 @@
     <script src="{{ asset('assets/plugins/pdfmake/vfs_fonts.js') }}"></script>
     <script src="{{ asset('assets/plugins/DataTables/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/DataTables/dataTables.bootstrap5.min.js') }}"></script>
+    <script src="{{ asset('assets/plugins/DataTables/dataTables.fixedColumns.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/Buttons/dataTables.buttons.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/Buttons/buttons.bootstrap5.min.js') }}"></script>
     <script src="{{ asset('assets/plugins/Buttons/buttons.html5.min.js') }}"></script>

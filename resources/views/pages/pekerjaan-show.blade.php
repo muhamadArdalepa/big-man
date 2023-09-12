@@ -58,6 +58,7 @@
                             </div>
                         </div>
                     @endif
+                    
                     @if (in_array($pekerjaan->status, ['sedang diproses', 'ditunda']))
                         <div class="col-auto d-md-none ms-auto align-self-start">
                             <div class="dropdown">

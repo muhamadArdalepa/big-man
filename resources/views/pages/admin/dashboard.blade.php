@@ -51,15 +51,15 @@
                                             </td>
 
                                             <td style="white-space: normal">
-                                                {!! $pekerjaan->getBadgeJenisPekerjaan() !!}
-                                                <div>{{ $pekerjaan->getDetailPekerjaan() }} - </div>
+                                                {{$pekerjaan->nama_pekerjaan}}
+                                                <div>{{ $pekerjaan->alamat }}</div>
                                             </td>
 
                                             <td class="p-0">
-                                                <button
+                                                <a href="{{route('pekerjaan.show',$pekerjaan->id)}}"
                                                     class="btn btn-link btn-icon-only btn-rounded btn-sm text-dark icon-move-right my-auto ms-auto">
                                                     <i class="ni ni-bold-right" aria-hidden="true"></i>
-                                                </button>
+                                                </a>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -151,7 +151,7 @@
 
                                     <div class="d-flex mb-3 lh-1">
                                         <h6 class="text-capitalize m-0">Permintaan Pemasangan</h6>
-                                        <a href="{{ route('pemasangan') }}" class="ms-auto text-danger">Lihat semua</a>
+                                        <a href="{{ route('pemasangan.index') }}" class="ms-auto text-danger">Lihat semua</a>
                                     </div>
                                     @foreach ($data['permintaan'] as $i => $permintaan)
                                         <div

@@ -15,12 +15,12 @@ class PelangganController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+public function index(Request $request)
     {
         if ($request->has('wilayah') && $request->wilayah != '') {
-            return response()->json(User::with('wilayah', 'pemasangan')->where('role', 3)->where('wilayah_id', $request->wilayah)->get());
+            return response()->json(User::with('wilayah')->where('role', 3)->where('wilayah_id', $request->wilayah)->get());
         } else {
-            return response()->json(User::with('wilayah', 'pemasangan')->where('role', 3)->get());
+            return response()->json(User::with('wilayah')->where('role', 3)->get());
         }
     }
 
@@ -42,37 +42,26 @@ class PelangganController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validatdData = $request->validate([
             'nama' => 'required|min:3',
             'email' => 'required|email',
             'password' => 'required|min:6',
             'wilayah_id' => 'required',
             'no_telp' => 'required|numeric|digits_between:11,15'
         ]);
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 400,
-                'errors' => $validator->messages()
-            ]);
-        } else {
-            $pelanggaan = new User;
-            $pelanggaan->nama = ucwords(trim($request->nama));
-            $pelanggaan->role = 3;
-            $pelanggaan->email = $request->email;
-            $pelanggaan->password = $request->password;
-            $pelanggaan->wilayah_id = $request->wilayah_id;
-            $pelanggaan->no_telp = $request->no_telp;
-            $pelanggaan->foto_profil = 'dummy.png';
-            $pelanggaan->save();
-            $pemasangan = new Pemasangan;
-            $pemasangan->user_id = $pelanggaan->id;
-            $pemasangan->alamat = $request->alamat;
-            $pemasangan->save();
-            return response()->json([
-                'status' => 200,
-                'message' => 'Pelanggan baru telah ditambahkan',
-            ]);
-        }
+        $pelanggaan = new User;
+        $pelanggaan->nama = ucwords(trim($request->nama));
+        $pelanggaan->role = 3;
+        $pelanggaan->email = $request->email;
+        $pelanggaan->password = $request->password;
+        $pelanggaan->wilayah_id = $request->wilayah_id;
+        $pelanggaan->no_telp = $request->no_telp;
+        $pelanggaan->foto_profil = 'profile/dummy.png';
+        $pelanggaan->save();
+        return response()->json([
+            'status' => 200,
+            'message' => 'Pelanggan baru telah ditambahkan',
+        ]);
     }
 
     /**
@@ -83,7 +72,7 @@ class PelangganController extends Controller
      */
     public function show($id)
     {
-        return response()->json(User::with('wilayah','pemasangan')->findOrFail($id));
+        return response()->json(User::with('wilayah', 'pemasangan')->findOrFail($id));
     }
 
     /**

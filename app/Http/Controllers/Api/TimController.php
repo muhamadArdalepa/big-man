@@ -8,6 +8,7 @@ use App\Models\TimAnggota;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
+use App\Models\Other;
 
 class TimController extends Controller
 {
@@ -18,50 +19,66 @@ class TimController extends Controller
      */
     public function index(Request $request)
     {
-
-
-        $query = Tim::select(
-            'tims.id',
-            'tims.status',
-            'tims.created_at',
-            'tims.user_id',
+        $query = Tim::with('pekerjaan')->select(
+            'tims.*',
             'users.nama',
             'users.foto_profil',
             'users.speciality',
             'users.wilayah_id',
             'nama_wilayah',
-            'jenis_pekerjaans.nama_pekerjaan',
         )
             ->join('users', 'tims.user_id', '=', 'users.id')
             ->join('wilayahs', 'users.wilayah_id', '=', 'wilayahs.id')
-            ->leftJoin('pekerjaans', 'tims.id', '=', 'pekerjaans.tim_id')
-            ->leftJoin('jenis_pekerjaans', 'jenis_pekerjaan_id', '=', 'jenis_pekerjaans.id');
+            ->orderBy('created_at', 'desc');
 
         if ($request->has('tanggal') && $request->tanggal != '') {
             $tanggal = $request->tanggal;
             $query->where('tims.created_at', 'LIKE', '%' . $tanggal . '%');
         }
+
         if ($request->has('wilayah') && $request->wilayah != '') {
             $wilayah = $request->wilayah;
             $query->where('users.wilayah_id', $wilayah);
         }
+        
+        if ($request->has('search') && $request->search != '') {
+            $search = '%' . $request->search . '%';
+            $query->whereIn('tims.id', TimAnggota::select('tim_id')
+            ->join('users', 'user_id', '=', 'users.id')
+            ->where('users.nama', 'LIKE', $search)
+            ->groupBy('tim_id')
+            ->pluck('tim_id'));
+        }
 
         $tims = $query->get();
-        foreach ($tims as $tim) {
+        $tims->map(function ($tim) {
             $tim->created_atFormat = Carbon::parse($tim->created_at)->format('H:i | d/m/y');
-            $tim->search = '';
-            foreach (TimAnggota::select('users.nama')->join('users', 'user_id', '=', 'users.id')->get() as $temp) {
-                $tim->search .= $temp->nama . ' ';
-            }
-            $tim->anggota = TimAnggota::select(
+            $tim->status = $tim->getStatus();
+            $anggotaQuery = TimAnggota::select(
                 'nama',
                 'foto_profil',
-                'speciality',
+                'speciality'
             )
                 ->join('users', 'user_id', '=', 'users.id')
-                ->where('tim_id', $tim->id)
-                ->whereNot('user_id', $tim->user_id)->get();
-        }
+                ->where('tim_id', $tim->id);
+            $tim->search = implode(' ', $anggotaQuery->pluck('nama')->toArray());
+            $tim->anggota = $anggotaQuery->whereNot('user_id', $tim->user_id)->get();
+            if ($tim->pekerjaan != []) {
+                $tim->pekerjaan->map(function ($pekerjaan) {
+                    if ($pekerjaan->pemasangan_id != null) {
+                        $pekerjaan->nama = 'Pemasangan';
+                    }
+                    if ($pekerjaan->laporan_id != null) {
+                        $pekerjaan->nama = 'Perbaikan';
+                    }
+                    if ($pekerjaan->other_id != null) {
+                        $pekerjaan->nama = Other::find($pekerjaan->other_id)->nama_pekerjaan;
+                    }
+                });
+            }
+            $tim->pekerjaans = $tim->pekerjaan->pluck('nama');
+            return $tim;
+        });
 
         if ($request->has('search') && $request->search != '') {
             $search = '%' . $request->search . '%';
@@ -78,12 +95,25 @@ class TimController extends Controller
 
         return response()->json($tims);
     }
+
     public function select2_teknisi(Request $request)
     {
-        $results = [];
+        $anggota = TimAnggota::select('user_id')
+            ->whereDate('created_at', date('Y-m-d'));
 
+        if ($request->has('included') && !empty($request->included)) {
+            $includedArray = json_decode($request->included);
 
-        $teknisis = User::with('wilayah', 'tims')->where('role', 2);
+            if ($includedArray === null) {
+                parse_str($request->included, $parsedArray);
+                $includedArray = array_map('intval', $parsedArray['included']);
+            }
+            $anggota->whereNotIn('user_id', $includedArray);
+        }
+
+        $teknisis = User::where('role', 2)
+            ->whereNotIn('id', $anggota->pluck('user_id'));
+
         if ($request->has('wilayah') && !empty($request->wilayah)) {
             $teknisis->where('wilayah_id', $request->wilayah);
         }
@@ -94,7 +124,7 @@ class TimController extends Controller
 
         if ($request->has('teknisis') && !empty($request->teknisis)) {
             $teknisisArray = json_decode($request->teknisis);
-    
+
             if ($teknisisArray === null) {
                 parse_str($request->teknisis, $parsedArray);
                 $teknisisArray = array_map('intval', $parsedArray['teknisis']);
@@ -103,7 +133,7 @@ class TimController extends Controller
         }
 
         $teknisiData = $teknisis->get();
-
+        $results = [];
         foreach ($teknisiData as $i => $teknisi) {
 
             $results[$i] = [
@@ -143,7 +173,7 @@ class TimController extends Controller
     {
         $tim = new Tim;
         $tim->user_id = $request->ketua_id;
-        $tim->status = "Standby";
+        $tim->status = 1;
         $teknisis = $request->teknisis;
         $tim->save();
         foreach ($teknisis as $teknisi) {
@@ -152,8 +182,7 @@ class TimController extends Controller
                 'user_id' => $teknisi
             ]);
         }
-        return response()->json([
-            'status' => 200,
+        return response([
             'message' => 'Tim baru telah ditambahkan',
         ]);
     }
@@ -209,7 +238,29 @@ class TimController extends Controller
      */
     public function edit($id)
     {
-        //
+        try {
+            $tim = Tim::select(
+                'user_id',
+                'nama',
+                'speciality',
+                'foto_profil',
+            )
+                ->join('users', 'user_id', '=', 'users.id')
+                ->find($id);
+            $tim->anggota = TimAnggota::select(
+                'user_id',
+                'nama',
+                'speciality',
+                'foto_profil',
+            )
+                ->leftJoin('users', 'user_id', '=', 'users.id')
+                ->where('tim_id', $id)
+                ->whereNot('user_id', $tim->user_id)
+                ->get();
+            return response($tim);
+        } catch (\Throwable $th) {
+            return response(['message' => 'Error while fetching data'], 400);
+        }
     }
 
     /**
@@ -219,9 +270,27 @@ class TimController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Tim $tim)
     {
-        //
+        try {
+            $tim->user_id = $request->ketua_id;
+            $tim->save();
+            TimAnggota::where('tim_id', $tim->id)->delete();
+            $teknisis = $request->teknisis;
+            foreach ($teknisis as $teknisi) {
+                TimAnggota::create([
+                    'tim_id' => $tim->id,
+                    'user_id' => $teknisi
+                ]);
+            }
+            return response([
+                'message' => 'Tim ' . $tim->id . ' berhasil diubah',
+            ]);
+        } catch (\Throwable $th) {
+            return response([
+                'message' => 'Tim ' . $tim->id . ' gagal diubah',
+            ], 400);
+        }
     }
 
     /**
@@ -230,8 +299,17 @@ class TimController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Tim $tim)
     {
-        //
+        try {
+            $tim->delete();
+            return response([
+                'message' => 'Tim ' . $tim->id . ' berhasil dihapus'
+            ]);
+        } catch (\Throwable $th) {
+            return response([
+                'message' => 'Gagal dalam menghapus data'
+            ], 400);
+        }
     }
 }

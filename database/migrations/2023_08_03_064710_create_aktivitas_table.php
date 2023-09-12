@@ -30,9 +30,9 @@ return new class extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             $table->string('foto')->nullable();
-            $table->string('aktivitas')->nullable();
-            $table->string('koordinat');
+            $table->string('aktivitas');
             $table->string('alamat')->nullable();
+            $table->string('koordinat')->nullable();
             $table->timestamps();
         });
     }

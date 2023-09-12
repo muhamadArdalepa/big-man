@@ -19,6 +19,7 @@ return new class extends Migration
                 ->constrained()
                 ->onDelete('restrict')
                 ->onUpdate('cascade');
+            $table->tinyInteger('status')->default(3);
             $table->timestamps();
         });
     }

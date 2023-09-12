@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -18,6 +19,17 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array<int, string>
      */
     protected $guarded = ['id'];
+    protected $encrypts = ['id'];
+
+    public function getRouteKey()
+    {
+        return Crypt::encrypt($this->id);
+    }
+
+    public   function resolveRouteBinding($value, $field = null)
+    {
+        return $this->where($field ?? $this->getRouteKeyName(), Crypt::decrypt($value))->firstOrFail();
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -67,7 +79,7 @@ class User extends Authenticatable implements MustVerifyEmail
     }
     public function pemasangan()
     {
-        return $this->hasOne(Pemasangan::class,'pelanggan');
+        return $this->hasOne(Pemasangan::class,'pelanggan_id');
     }
     public function absens()
     {

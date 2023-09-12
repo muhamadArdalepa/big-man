@@ -5,16 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Tim;
 use App\Models\User;
 use App\Models\Absen;
-use App\Models\Aktivitas;
 use App\Models\Paket;
 use App\Models\Laporan;
 use App\Models\Wilayah;
+use App\Models\Aktivitas;
 use App\Models\Pekerjaan;
 use App\Models\Pemasangan;
 use App\Models\TimAnggota;
 use App\Models\JenisGangguan;
 use App\Models\JenisPekerjaan;
+use App\Models\Other;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Crypt;
 
 class PageController extends Controller
 {
@@ -22,136 +24,17 @@ class PageController extends Controller
     {
         Carbon::setLocale('id');
     }
-    public function home()
+
+    public function pekerjaan_show($route_id)
     {
-        $wilayah = auth()->user()->wilayah_id;
-        $data['pekerjaan'] = Pekerjaan::where([
-            'status' => 'sedang diproses',
-            'wilayah_id' => $wilayah
-        ])->limit(4)->get();
-
-        $data['pemasangan'] = Pemasangan::join('users', 'pelanggan', '=', 'users.id')
-            ->where([
-                'status' => 'aktif',
-                'wilayah_id' => $wilayah
-            ])->whereMonth('pemasangans.created_at', date('m'));
-
-        $data['permintaan'] = Pemasangan::join('users', 'pelanggan', '=', 'users.id')
-            ->where([
-                'status' => 'menunggu konfirmasi',
-                'wilayah_id' => $wilayah
-            ])->whereMonth('pemasangans.created_at', date('m'))->limit(3)->get();
-
-
-        $data['nLaporan'] = Laporan::join('users', 'pelapor', '=', 'users.id')
-            ->where([
-                'status' => 'aktif',
-                'wilayah_id' => $wilayah
-            ])->whereMonth('laporans.created_at', date('m'));
-
-        $data['laporans'] = Laporan::join('users', 'pelapor', '=', 'users.id')
-            ->where([
-                'status' => 'menunggu konfirmasi',
-                'wilayah_id' => $wilayah
-            ])->whereMonth('laporans.created_at', date('m'))->limit(3)->get();
-
-
-        $data['absen'] = Absen::join('users','user_id','=','users.id')
-        ->with('users')
-        ->where('wilayah_id',$wilayah)
-        ->whereDate('absens.created_at',date('Y-m-d'));
-
-        $data['teknisi'] = User::where(['role'=> 2,'wilayah_id'=>$wilayah])->orderBy('poin', 'desc');
-
-        $p = Pemasangan::selectRaw('DAY(pemasangans.created_at) as tanggal, COUNT(*) as jumlah')
-            ->join('users', 'pelanggan', '=', 'users.id')
-            ->where([
-                'status' => 'aktif',
-                'wilayah_id' => $wilayah
-            ])
-            ->whereMonth('pemasangans.created_at', date('m'))
-            ->groupBy('tanggal');
-
-        $l = Laporan::selectRaw('DAY(laporans.created_at) as tanggal, COUNT(*) as jumlah')
-            ->join('users', 'pelapor', '=', 'users.id')
-            ->where([
-                'wilayah_id' => $wilayah
-            ])
-            ->whereMonth('laporans.created_at', date('m'))
-            ->orderBy('tanggal')
-            ->groupBy('tanggal');
-
-        $chart = [
-            $p->pluck('tanggal'),
-            $p->pluck('jumlah'),
-            $l->pluck('tanggal'),
-            $l->pluck('jumlah'),
-        ];
-
-        $aktivitas = Aktivitas::join('users', 'user_id', '=', 'users.id')
-            ->where(['wilayah_id' => $wilayah])
-            ->orderBy('aktivitas.created_at','asc')->get();
-        return view('pages.admin.dashboard', compact('data', 'chart', 'aktivitas'));
-    }
-    public function pekerjaan()
-    {
-        $this->addBreadcrumb('pekerjaan', route('pekerjaan'));
-
-        $wilayahs = Wilayah::all();
-        $pakets = Paket::all();
-        $jenis_pekerjaans = JenisPekerjaan::all();
-        $jenis_gangguans = JenisGangguan::all();
-        $date = date('Y-m-d');
-        switch (auth()->user()->role) {
-            case 1:
-                return view('pages.admin.pekerjaan', compact('wilayahs', 'jenis_pekerjaans',  'jenis_gangguans', 'pakets', 'date'));
-                break;
-            case 2:
-                $pekerjaan = Pekerjaan::select(
-                    'pekerjaans.id',
-                    'pekerjaans.tim_id',
-                    'jenis_pekerjaan_id',
-                    'jenis_pekerjaans.nama_pekerjaan',
-                    'pemasangan_id',
-                    'laporan_id',
-                    'detail',
-                    'pekerjaans.poin',
-                    'pekerjaans.status',
-                    'pekerjaans.created_at'
-                )
-                    ->join('tims', 'pekerjaans.tim_id', '=', 'tims.id')
-                    ->join('jenis_pekerjaans', 'jenis_pekerjaan_id', '=', 'jenis_pekerjaans.id')
-                    ->join('tim_anggotas', 'tims.id', '=', 'tim_anggotas.tim_id')
-                    ->where('tim_anggotas.user_id', auth()->user()->id)
-                    ->where('tim_anggotas.user_id', auth()->user()->id)
-                    ->latest()->first();
-
-                switch ($pekerjaan->jenis_pekerjaan_id) {
-                    case 1:
-                        $pemasangan = Pemasangan::select('users.nama', 'alamat')->join('users', 'pelanggan', '=', 'users.id')->find($pekerjaan->pemasangan_id);
-                        $pekerjaan->detail = $pemasangan->nama . ' - ' . $pemasangan->alamat;
-                        break;
-                    case 2:
-                        $laporan = Laporan::select('users.nama', 'pemasangans.alamat')->join('users', 'pelapor', '=', 'users.id')
-                            ->join('pemasangans', 'user_id', '=', 'pemasangans.user_id')->find($pekerjaan->laporan_id);
-                        $pekerjaan->detail = $laporan->nama . ' - ' . $laporan->alamat;
-                        break;
-                    default:
-                        $pekerjaan->detail = $pekerjaan->detail;
-                        break;
-                };
-                $pekerjaan->created_atFormat = Carbon::parse($pekerjaan->created_at)->translatedFormat('H:i');
-                $pekerjaan->updated_atFormat = Carbon::parse($pekerjaan->updated_at)->translatedFormat('H:i');
-                return view('pages.teknisi.pekerjaan', compact('jenis_pekerjaans', 'pekerjaan'));
-                break;
+        try {
+            $id = Crypt::decrypt($route_id);
+        } catch (\Throwable $th) {
+            abort(404);
         }
-    }
-
-    public function pekerjaan_show($id)
-    {
-        $this->addBreadcrumb('Pekerjaan', route('pekerjaan'));
+        $this->addBreadcrumb('Pekerjaan', url('pekerjaan'));
         $this->addBreadcrumb('Pekerjaan ' . $id, route('pekerjaan.show', $id));
-        $pekerjaan = Pekerjaan::with('jenis_pekerjaan')->findOrFail($id);
+        $pekerjaan = Pekerjaan::findOrFail($id);
         switch ($pekerjaan->jenis_pekerjaan_id) {
             case 1:
                 $detail = Pemasangan::select(
@@ -190,38 +73,43 @@ class PageController extends Controller
     {
         switch (auth()->user()->role) {
             case 1:
-                $this->addBreadcrumb('pemasangan', route('pemasangan'));
+                $this->addBreadcrumb('pemasangan', route('pemasangan.index'));
                 $wilayahs = Wilayah::all();
                 $date = date('Y-m-d');
                 $pakets = Paket::all();
+                $pemasangan = Pemasangan::with('pelanggan', 'pekerjaan', 'paket')->first();
 
-                return view('pages.admin.pemasangan', compact('wilayahs', 'date', 'pakets'));
-            case 2:
-                $this->addBreadcrumb('pemasangan', route('pemasangan'));
-                return view('pages.teknisi.pemasangan');
+                $pemasangan->route_id = $pemasangan->getRouteKey();
+                $pemasangan->status = $pemasangan->getStatus();
+                $pemasangan->created_atFormat = Carbon::parse($pemasangan->created_at)->format('H:i');
+
+                return view('pages.admin.pemasangan', compact('wilayahs', 'date', 'pakets', 'pemasangan'));
+
             case 3:
-                $pemasangan = Pemasangan::where('pelanggan', auth()->user()->id)->first();
-                $this->addBreadcrumb($pemasangan ? 'Daftar Jaringan' : 'Detail Pemasangan', route('pemasangan'));
+                $pemasangan = Pemasangan::where('pelanggan_id', auth()->user()->id)->first();
+                $this->addBreadcrumb($pemasangan ? 'Daftar Jaringan' : 'Detail Pemasangan', route('pemasangan.index'));
                 if ($pemasangan) {
-                    if ($pemasangan->status == 'menunggu konfirmasi') {
-                        $detail = Pemasangan::with('pekerjaan','user')->where('pelanggan', auth()->user()->id)->first();
-                        return view('pages.pemasangan-show', compact( 'detail'));
-                    }else{
-                        $detail = Pemasangan::with('pekerjaan','user')->where('pelanggan', auth()->user()->id)->first();
+                    if ($pemasangan->status == 1) {
+                        $detail = Pemasangan::with('pekerjaan', 'user')->where('pelanggan', auth()->user()->id)->first();
+                        return view('pages.pemasangan-show', compact('detail'));
+                    } else {
+                        $detail = Pemasangan::with('pekerjaan', 'user')->where('pelanggan', auth()->user()->id)->first();
                         $pekerjaan = Pekerjaan::with('jenis_pekerjaan')->where('pemasangan_id', $pemasangan->id)->first();
                         return view('pages.pekerjaan-show', compact('pekerjaan', 'detail'));
                     }
                 }
                 $pakets = Paket::all();
                 return view('pages.pelanggan.pemasangan-form', compact('pemasangan', 'pakets'));
+            default:
+                abort(404);
         }
     }
 
-    public function pemasangan_show($id) 
+    public function pemasangan_show($id)
     {
-        $this->addBreadcrumb('pemasangan', route('pemasangan'));
-        $this->addBreadcrumb('pemasangan '.$id, route('pemasangan.show',$id));
-        $pemasangan = Pemasangan::with('user','marketer','paket')->find($id);
+        $this->addBreadcrumb('pemasangan', route('pemasangan.index'));
+        $this->addBreadcrumb('pemasangan ' . $id, route('pemasangan.show', $id));
+        $pemasangan = Pemasangan::with('user', 'marketer', 'paket')->find($id);
         $pakets = Paket::all();
         return view('pages.pelanggan.pemasangan-form', compact('pemasangan', 'pakets'));
     }
@@ -265,51 +153,6 @@ class PageController extends Controller
                 break;
         }
     }
-    public function absen()
-    {
-        $this->addBreadcrumb('absen', route('absen'));
-
-        $wilayahs = Wilayah::all();
-        $date = date('Y-m-d');
-        $id = auth()->user()->id;
-
-        if (auth()->user()->role === 1) {
-            return view('pages.admin.absen', compact('wilayahs', 'date'));
-        }
-        if (auth()->user()->role === 2) {
-            $absen = Absen::select('created_at')
-                ->where('user_id', $id)
-                ->whereDate('created_at', date('Y-m-d'))
-                ->orderBy('created_at', 'desc')
-                ->first();
-            $date = Carbon::parse($date)->translatedFormat("l, d F Y");
-            $action = false;
-            $whichAbsen = null;
-            $hour = substr(now(), 11, 2);
-
-            if ($absen == null) {
-                $action = true;
-                $whichAbsen = 'Pertama';
-            } else {
-                $lastAbsen = substr(Carbon::parse($absen->created_at)->format('H:i:s'), 0, 2);
-                if (($hour >= 0 && $hour < 1) && ($lastAbsen >= 8 && $lastAbsen < 11)) {
-                    $whichAbsen = 'Kedua';
-                    $action = true;
-                }
-                if (($hour >= 13 && $hour < 16) && ($lastAbsen >= 11 && $lastAbsen < 13)) {
-                    $whichAbsen = 'Ketiga';
-                    $action = true;
-                }
-                if (($hour >= 16) && ($lastAbsen >= 11 && $lastAbsen < 13)) {
-                    $whichAbsen = 'Keempat';
-                    $action = true;
-                }
-            }
-
-            return view('pages.teknisi.absen', compact('date', 'action', 'whichAbsen'));
-        }
-    }
-
 
     public function teknisi()
     {
@@ -363,6 +206,5 @@ class PageController extends Controller
 
     public function auth_profile()
     {
-
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Other;
 use App\Models\Laporan;
 use App\Models\Aktivitas;
 use App\Models\Pekerjaan;
@@ -10,8 +11,8 @@ use App\Models\TimAnggota;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\Storage;
 
 class TeknisiPekerjaanController extends Controller
 {
@@ -27,43 +28,43 @@ class TeknisiPekerjaanController extends Controller
     public function index()
     {
         $pekerjaans = Pekerjaan::select(
-            'pekerjaans.id',
-            'pekerjaans.tim_id',
-            'jenis_pekerjaan_id',
-            'jenis_pekerjaans.nama_pekerjaan',
-            'pemasangan_id',
-            'laporan_id',
-            'detail',
-            'pekerjaans.poin',
-            'pekerjaans.status',
-            'pekerjaans.created_at'
+            'pekerjaans.*'
         )
             ->join('tims', 'pekerjaans.tim_id', '=', 'tims.id')
-            ->join('jenis_pekerjaans', 'jenis_pekerjaan_id', '=', 'jenis_pekerjaans.id')
             ->join('tim_anggotas', 'tims.id', '=', 'tim_anggotas.tim_id')
-            ->where('tim_anggotas.user_id', auth()->user()->id);
+            ->where('tim_anggotas.user_id', auth()->user()->id)
+            ->where('tim_anggotas.user_id', auth()->user()->id)
+            ->latest()->get();
+        $pekerjaans->map(function ($pekerjaan) {
+            $pekerjaan->route_id = $pekerjaan->getRouteKey();
+            if ($pekerjaan->pemasangan_id) {
+                $pemasangan = Pemasangan::select('users.nama', 'alamat','status')->join('users', 'pelanggan_id', '=', 'users.id')
+                    ->find($pekerjaan->pemasangan_id);
+                $pekerjaan->detail = $pemasangan->nama . ' - ' . $pemasangan->alamat;
+                $pekerjaan->nama_pekerjaan = 'Pemasangan';
+                $pekerjaan->status = $pemasangan->getStatus();
+            }
+            if ($pekerjaan->laporan_id) {
+                $laporan = Laporan::select('users.nama', 'pemasangans.alamat','laporans.status')->join('users', 'pelanggan_id', '=', 'users.id')
+                    ->join('pemasangans', 'pelanggan_id', '=', 'pemasangans.pelanggan_id')->find($pekerjaan->laporan_id);
+                $pekerjaan->detail = $laporan->nama . ' - ' . $laporan->alamat;
+                $pekerjaan->nama_pekerjaan = 'Perbaikan';
+                $pekerjaan->status = $laporan->status;
 
-        $data = [];
-        foreach ($pekerjaans->get() as $i => $pekerjaan) {
-            switch ($pekerjaan->jenis_pekerjaan_id) {
-                case 1:
-                    $pemasangan = Pemasangan::select('users.nama', 'alamat')->join('users', 'pelanggan', '=', 'users.id')->find($pekerjaan->pemasangan_id);
-                    $pekerjaan->detail = $pemasangan->nama . ' - ' . $pemasangan->alamat;
-                    break;
-                case 2:
-                    $laporan = Laporan::select('users.nama', 'pemasangans.alamat')->join('users', 'pelapor', '=', 'users.id')
-                        ->join('pemasangans', 'user_id', '=', 'pemasangans.user_id')->find($pekerjaan->laporan_id);
-                    $pekerjaan->detail = $laporan->nama . ' - ' . $laporan->alamat;
-                    break;
-                default:
-                    $pekerjaan->detail = $pekerjaan->detail;
-                    break;
-            };
-            $pekerjaan->created_atFormat = Carbon::parse($pekerjaan->created_at)->translatedFormat('d/m/Y');
-            $pekerjaan->updated_atFormat = Carbon::parse($pekerjaan->updated_at)->translatedFormat('H:i');
-            $data[$i] = $pekerjaan;
-        }
-        return response()->json($data);
+            }
+            if ($pekerjaan->other_id) {
+                $other = Other::find($pekerjaan->other_id);
+                $pekerjaan->detail = $other->detail . ' - ' . $other->alamat;
+                $pekerjaan->nama_pekerjaan = $other->nama_pekerjaan;
+                $pekerjaan->status = $other->status;
+
+            }
+
+            $pekerjaan->created_atFormat = Carbon::parse($pekerjaan->created_at)->translatedFormat('l, d F Y | H:i');
+            $pekerjaan->updated_atFormat = Carbon::parse($pekerjaan->updated_at)->translatedFormat('l, d F Y | H:i');
+            return $pekerjaan;
+        });
+        return response()->json($pekerjaans);
     }
 
     /**
@@ -110,7 +111,7 @@ class TeknisiPekerjaanController extends Controller
                 $constraint->upsize();
             });
 
-            $compressedImagePath = 'private/' .$fotoName;
+            $compressedImagePath = 'private/' . $fotoName;
             Storage::put($compressedImagePath, (string) $compressedImage->encode());
 
             $validatedData['foto'] = $fotoName;

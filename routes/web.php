@@ -3,7 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
 
-// teknisi
+// pages
+use App\Http\Controllers\DashboardController as DashboardPage;
+use App\Http\Controllers\AbsenController as AbsenPage;
+use App\Http\Controllers\PekerjaanController as PekerjaanPage;
+use App\Http\Controllers\PemasanganController as PemasanganPage;
+
+
 use App\Http\Controllers\Api\TimController;
 
 // pelanggan
@@ -17,7 +23,6 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Api\LaporanController;
 use App\Http\Controllers\Api\TeknisiController;
 use App\Http\Controllers\Api\WilayahController;
-use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\PekerjaanController;
 use App\Http\Controllers\Api\PelangganController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -43,16 +48,24 @@ Route::group(['middleware' => 'guest'], function () {
 Route::group(['middleware' => 'auth'], function () {
 	// get
 	Route::get('/', function () {
-		return redirect(route('home'));
+		return redirect(url('dashboard'));
 	});
 
 	Route::get('/home', function () {
-		return redirect(route('home'));
-	});
+		return redirect(url('dashboard'));
+	})->name('home');
+
 
 	// pages
-	Route::get('/dashboard', 					[PageController::class, 'home'])->name('home');
-	Route::get('/pekerjaan', 					[PageController::class, 'pekerjaan'])->name('pekerjaan');
+	Route::get('/dashboard', DashboardPage::class);
+	Route::get('/absen', AbsenPage::class);
+	Route::get('/pekerjaan', [PekerjaanPage::class, 'index']);
+	Route::get('/pekerjaan/{route_id}', [PekerjaanPage::class, 'show']);
+	Route::get('/pemasangan', [PemasanganPage::class, 'index']);
+
+
+
+	Route::get('/pekerjaan/{id}', 				[PageController::class, 'pekerjaan_show'])->name('pekerjaan.show');
 	Route::get('/pekerjaan/{id}', 				[PageController::class, 'pekerjaan_show'])->name('pekerjaan.show');
 	Route::get('/laporan', 						[PageController::class, 'laporan'])->name('laporan');
 	Route::get('/laporan/{id}',					[PageController::class, 'laporan_show'])->name('laporan.show');
@@ -60,7 +73,6 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::get('/pemasangan/{id}',				[PageController::class, 'pemasangan_show'])->name('pemasangan.show');
 	Route::get('/pemasangan/create',			[PageController::class, 'pemasangan_create'])->name('pemasangan.create');
 	Route::get('/tim', 							[PageController::class, 'tim'])->name('tim');
-	Route::get('/absen', 						[PageController::class, 'absen'])->name('absen');
 	Route::get('/teknisi', 						[PageController::class, 'teknisi'])->name('teknisi');
 	Route::get('/teknisi/{id}', 				[PageController::class, 'teknisi_show'])->name('teknisi.show');
 	Route::get('/pelanggan', 					[PageController::class, 'pelanggan'])->name('pelanggan');
@@ -70,28 +82,40 @@ Route::group(['middleware' => 'auth'], function () {
 
 
 	//post
-	// Route::post('/profile', 					[UserProfileController::class, 'update'])->name('profile.update');
+	Route::post('/profile', 					[UserProfileController::class, 'update'])->name('profile.update');
 	Route::post('logout', 						[LoginController::class, 'logout'])->name('logout');
 });
 
 
 // api
 Route::middleware('auth.api')->group(function () {
-	Route::get('api/laporan/data-pelanggan/{id}',		[LaporanController::class, 'data_pelanggan']);
-	Route::get('api/laporan/select2-pelanggan',			[LaporanController::class, 'select2_pelanggan']);
+	// dashboard
+	Route::resource('api/dashboard',					DashboardController::class, ['as' => 'api'])->except(['create', 'edit', 'show']);
+
+	// pekerjaan
 	Route::get('api/pekerjaan/select2-pemasangan',		[PekerjaanController::class, 'select2_pemasangan']);
+	Route::get('api/pekerjaan/data-tim/{id}',				[PekerjaanController::class, 'data_tim']);
 	Route::get('api/pekerjaan/select2-tim',				[PekerjaanController::class, 'select2_tim']);
-
-
-
-	Route::resource('api/dashboard',					DashboardController::class)->except(['create', 'edit', 'show']);
 	Route::resource('api/pekerjaan',					PekerjaanController::class)->except(['create', 'edit', 'show']);
-	Route::resource('api/laporan', 						LaporanController::class)->except(['create', 'edit']);
 
+	// pemasangan
+	Route::get('api/pemasangan/select2-tim',			[PemasanganController::class, 'select2_tim']);
 	Route::get('api/pemasangan/data-pelanggan',			[PemasanganController::class, 'data_pelanggan']);
+	Route::post('api/pemasangan/store-pekerjaan/{pemasangan}', [PemasanganController::class, 'store_pekerjaan']);
 	Route::post('api/pemasangan/{pemasangan}',			[PemasanganController::class, 'update_foto']);
 	Route::resource('api/pemasangan',					PemasanganController::class)->except(['create', 'edit']);
-	Route::resource('api/tim',							TimController::class)->except(['create', 'edit']);
+
+	// laporan
+	Route::get('api/laporan/data-pelanggan/{id}',		[LaporanController::class, 'data_pelanggan']);
+	Route::get('api/laporan/select2-pelanggan',			[LaporanController::class, 'select2_pelanggan']);
+	Route::resource('api/laporan', 						LaporanController::class)->except(['create', 'edit']);
+
+	// tim
+	Route::get('api/tim/select2-teknisi',				[TimController::class, 'select2_teknisi']);
+	Route::resource('api/tim',							TimController::class)->except(['create']);
+
+	// absen
+	Route::get('api/absen/all', [AbsenController::class, 'all']);
 	Route::resource('api/absen',						AbsenController::class)->except(['create', 'edit']);
 
 	Route::resource('api/teknisi',						TeknisiController::class)->except(['create', 'edit']);
@@ -109,7 +133,6 @@ Route::middleware('auth.api')->group(function () {
 
 	// select2-data	
 	Route::get('api/select2-laporan-tim',				[LaporanController::class, 'select2_tim']);
-	Route::get('api/select2-tim-teknisi',				[TimController::class, 'select2_teknisi']);
 });
 
 

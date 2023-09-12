@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('nama_wilayah',32);
             $table->string('ket',128)->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
