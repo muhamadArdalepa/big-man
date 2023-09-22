@@ -1,18 +1,14 @@
 @extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
-
-@push('css')
-@endpush
-
 @section('content')
     @include('layouts.navbars.auth.topnav', ['title' => 'Pelanggan'])
     <div class="container-fluid px-0 px-sm-4 py-4">
         <div class="card mb-4">
-            <div class="card-header pb-0">
-                <div class="d-flex gap-3">
-                    <div class="d-flex align-items-center">
-                        <label for="wilayah" class="m-0">wilayah</label>
-                        <select class="form-control ms-2" id="wilayah" onchange="(gantiwilayah())">
-                            <option value="">Semua wilayah</option>
+            <div class="card-header align-items-center d-flex gap-2 pb-0 flex-column flex-md-row">
+                <div class="d-flex gap-3 w-100">
+                    <div class="form-group flex-grow-1 flex-md-grow-0 m-0">
+                        <label for="wilayah" class="m-0 flex-shrink-0 me-2">Wilayah</label>
+                        <select class="form-select form-select-sm pe-md-5" id="wilayah">
+                            <option value="">Semua Wilayah</option>
                             @foreach ($wilayahs as $wilayah)
                                 <option value="{{ $wilayah->id }}"
                                     {{ auth()->user()->wilayah_id == $wilayah->id ? 'selected' : '' }}>
@@ -21,8 +17,11 @@
                             @endforeach
                         </select>
                     </div>
-                    <button class="btn btn-icon btn-3 bg-gradient-danger ms-auto" type="button" data-bs-toggle="modal"
-                        data-bs-target="#Modal" data-bs-title="Tambah Laporan">
+
+
+
+                    <button class="btn btn-icon bg-gradient-danger m-0 ms-auto align-self-end btn-add-pemasangan"
+                        data-bs-toggle="modal" data-bs-target="#addPelangganModal">
                         <span class="btn-inner--icon"><i class="fas fa-plus"></i></span>
                         <span class="btn-inner--text d-none d-sm-inline-block">Tambah Pelanggan</span>
                     </button>
@@ -55,341 +54,111 @@
         @include('layouts.footers.auth.footer')
     </div>
 @endsection
-@push('modal')
-    <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document" id="Modal-Content">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="ModalLabel">Tambah Pelanggan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true" class="text-dark">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="nama" class="form-control-label">Nama Pelanggan</label>
-                        <input type="nama" id="nama" class="form-control" placeholder="Nama Pelanggan" autofocus
-                            tabindex="1">
-                        <div id="namaFeedback" class="invalid-feedback text-xs"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="example-text-input" class="form-control-label">Email</label>
-                        <input type="email" id="email" class="form-control" placeholder="Alamat email" tabindex="2">
-                        <div id="emailFeedback" class="invalid-feedback text-xs"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="example-text-input" class="form-control-label">Password</label>
-                        <div class="row">
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="password" tabindex="3">
-                                <button type="button" id="copy-btn" class="btn m-0 btn-primary" data-bs-toggle="tooltip">
-                                    <i class="fas fa-copy"></i>
-                                </button>
-                                <button type="button" id="generate-btn" class="btn m-0 btn-warning"
-                                    onclick="generateRandomPassword()">Generate</button>
-                            </div>
-                            <div id="passwordFeedback" class="invalid-feedback text-xs"></div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-8">
-                            <div class="form-group">
-                                <label for="no_telp" class="form-control-label">No Telepon</label>
-                                <div class="input-group mb-3">
-                                    <span class="input-group-text">+</span>
-                                    <input type="number" class="form-control" id="no_telp" placeholder="No Telepon"
-                                        tabindex="4" value="62">
-                                </div>
-                                <div id="no_telpFeedback" class="invalid-feedback text-xs"></div>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="form-group">
-                                <label for="no_telp" class="form-control-label">wilayah</label>
-                                <select class="form-control" id="wilayah_id" tabindex="5">
-                                    <option selected disabled>--Pilih wilayah--</option>
-                                    @foreach ($wilayahs as $wilayah)
-                                        <option value="{{ $wilayah->id }}">{{ $wilayah->nama_wilayah }}</option>
-                                    @endforeach
-                                </select>
-                                <div id="wilayah_idFeedback" class="invalid-feedback text-xs"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn bg-gradient-secondary me-2 " data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn bg-gradient-primary" id="simpan">Simpan</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-@endpush
-@include('components.dataTables')
+@include('components.datatables.dataTables')
 @push('js')
     <script>
-        const appUrl = `{{ env('APP_URL') }}`
         const baseUrl = appUrl + '/api/pelanggan'
         let url = baseUrl + '?wilayah=' + $('#wilayah').val()
+        let table = $('#table');
 
-        let table = $('#table').DataTable({
-            ajax: {
-                url: url,
-                type: 'GET',
-                serverside: true,
-                dataSrc: '',
-            },
-            dom: "<'d-flex flex-column flex-md-row gap-3 align-items-center '<'d-flex align-items-center w-100 w-sm-auto'<'whitespace-nowrap'B><'ms-sm-3 ms-auto'l>><'ms-0 ms-md-auto'f>>" +
-                "<'row'<'col-sm-12't>>" +
-                "<'row'<'col-sm-5'i><'col-sm-7'p>>",
-            buttons: [
-                'excel', 'pdf'
-            ],
-            order: [
-                [0, "desc"]
-            ],
-            columns: [
-
-                {
-                    data: 'id',
-                    className: 'text-center',
+        $(document).ready(() => {
+            table = $('#table').DataTable({
+                ajax: {
+                    url: url,
+                    type: 'GET',
+                    serverside: true,
+                    dataSrc: '',
                 },
-                {
-                    data: 'nama',
-                    render: function(data, type, row) {
+                dom: @include('components.datatables.dom'),
+                buttons: [
+                    'excel'
+                ],
+                order: [
+                    [0, "desc"]
+                ],
+                columns: [
 
-                        if (type === 'display') {
-                            return `
-                        <div class="d-flex flex-row-reverse justify-content-end align-items-center">
-                            <div class="ms-3" style="white-space: nowrap;">
-                                <div>` + data + `</div>
+                    {
+                        data: 'id',
+                        className: 'text-center',
+                    },
+                    {
+                        data: 'nama',
+                        render: function(data, type, row) {
+
+                            if (type === 'display') {
+                                return `<div class="d-flex flex-row-reverse justify-content-end align-items-center">
+                                <div class="ms-3" style="white-space: nowrap;">
+                                    <div>` + data + `</div>
+                                </div>
+                                <img class="rounded-3" src="{{ env('APP_URL') }}/storage/private/${row.foto_profil}" alt="foto profil" height="35">
                             </div>
-                            <img class="rounded-3" src="{{ env('APP_URL') }}/storage/private/${row.foto_profil}" alt="foto profil" height="35">
-                        </div>
                          `
+                            }
+                            return data;
                         }
-                        return data;
-                    }
-                },
-                {
-                    data: 'email',
-                    render: function(data, type) {
-                        if (type === 'display') {
-                            no = '0' + data.substring(2);
-                            return `
-                        <div class="d-flex flex-row-reverse justify-content-end">
-                            <button class="btn btn-link btn-copy-number m-0 px-2 py-1 text-secondary fw-normal" data-cst="${no}" data-bs-toggle="tooltip">${no}</button>
-                            <a target="blank" href="https://wa.me/${data}" class="btn btn-circle me-1 bg-gradient-success" data-bs-toggle="tooltip" data-bs-title="Hubungi Whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
-                        </div>
-                        `
+                    },
+                    {
+                        data: 'email',
+                        render: function(data, type) {
+                            if (type === 'display') {
+                                return `<button class="btn btn-link m-0 px-2 py-1 text-secondary fw-normal" onclick="copyText('body','Email','${data}')" data-bs-toggle="tooltip" data-bs-title="Salin email">${data}</button>`
+                            }
+                            return data;
                         }
-                        return data;
-                    }
-                },
-                {
-                    data: 'no_telp',
-                    render: function(data, type) {
-                        if (type === 'display') {
-                            no = '0' + data.substring(2);
-                            return `
-                        <div class="d-flex flex-row-reverse justify-content-end">
-                            <button class="btn btn-link btn-copy-number m-0 px-2 py-1 text-secondary fw-normal" data-cst="${no}" data-bs-toggle="tooltip">${no}</button>
-                            <a target="blank" href="https://wa.me/${data}" class="btn btn-circle me-1 bg-gradient-success" data-bs-toggle="tooltip" data-bs-title="Hubungi Whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
-                        </div>
-                        `
+                    },
+                    {
+                        data: 'no_telp',
+                        render: function(data, type) {
+                            if (type === 'display') {
+                                no = '0' + data.substring(2);
+                                return `<div class="d-flex flex-row-reverse justify-content-end">
+                                    <button class="btn btn-link m-0 px-2 py-1 text-secondary fw-normal btn-copy-number" onclick="copyText('body','Nomor','${no}')" data-bs-toggle="tooltip" data-bs-title="Salin nomor">${no}</button>
+                                    <a target="blank" href="https://wa.me/${data}" class="btn btn-circle me-1 bg-gradient-success" data-bs-toggle="tooltip" data-bs-title="Hubungi Whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
+                                </div>`
+                            }
+                            return data;
                         }
-                        return data;
-                    }
-                },
-                {
-                    data: 'id',
-                    orderable: false,
-                    searchable: false,
-                    className: 'text-center',
-                    render: function(data, type) {
-                        if (type === 'display') {
-                            return `
-                        <a href="/pelanggan/${data}" class="btn btn-link text-secondary font-weight-normal">
+                    },
+                    {
+                        data: 'id',
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-center',
+                        render: function(data, type) {
+                            if (type === 'display') {
+                                return `
+                        <a href="${appUrl}/pelanggan/${data}" class="btn btn-link text-secondary font-weight-normal">
                             Detail
                         </a>
                         `
+                            }
+                            return data;
                         }
-                        return data;
+                    },
+                ],
+                language: {
+                    oPaginate: {
+                        sNext: '<i class="fa fa-forward"></i>',
+                        sPrevious: '<i class="fa fa-backward"></i>',
+                        sFirst: '<i class="fa fa-step-backward"></i>',
+                        sLast: '<i class="fa fa-step-forward"></i>'
                     }
                 },
-            ],
-            language: {
-                oPaginate: {
-                    sNext: '<i class="fa fa-forward"></i>',
-                    sPrevious: '<i class="fa fa-backward"></i>',
-                    sFirst: '<i class="fa fa-step-backward"></i>',
-                    sLast: '<i class="fa fa-step-forward"></i>'
-                }
-            },
-        });
+            });
+        })
 
-
-
-        function gantiwilayah() {
-            url = baseUrl + '?wilayah=' + $('#wilayah').val()
-            console.log(url);
-            table.ajax.url(url).load()
-        }
-
-        table.on('draw.dt', function() {
+        table.on('draw.dt', () => {
             const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(
-                tooltipTriggerEl))
-
-            let btnCopyNumber = document.getElementsByClassName('btn-copy-number');
-            Array.from(btnCopyNumber).forEach((btn) => {
-                const tooltip = new bootstrap.Tooltip(btn);
-                btn.setAttribute("data-bs-original-title", "Salin nomor")
-                btn.addEventListener("click", function() {
-                    const el = document.createElement('textarea');
-                    el.value = btn.dataset.cst;
-
-                    document.body.appendChild(el);
-                    el.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(el);
-                    btn.setAttribute("data-bs-original-title", "Number Copied")
-                    tooltip.show()
-                })
-                btn.addEventListener("mouseout", function() {
-                    btn.setAttribute("data-bs-original-title", "Salin nomor")
-                })
-            })
+            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
         })
 
 
-        function generateRandomPassword() {
-            var length = 6;
-            var charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            var password = "";
+        $('#wilayah').on('change', () => {
+            url = baseUrl + '?wilayah=' + $('#wilayah').val()
+            table.ajax.url(url).load()
+        })
 
-            for (var i = 0; i < length; i++) {
-                var randomIndex = Math.floor(Math.random() * charset.length);
-                password += charset.charAt(randomIndex);
-            }
-            $('#password').val(password);
-        }
-
-        $('#Modal').on('shown.bs.modal', function() {
-            const copyBtn = document.getElementById("copy-btn");
-            const tooltip = new bootstrap.Tooltip(copyBtn);
-            copyBtn.setAttribute("data-bs-original-title", "Copy Password")
-            copyBtn.addEventListener("click", function() {
-                var passwordInput = document.getElementById("password");
-                passwordInput.select();
-                document.execCommand("copy");
-                copyBtn.setAttribute("data-bs-original-title", "Password Copied")
-                tooltip.show()
-            })
-            copyBtn.addEventListener("mouseout", function() {
-                copyBtn.setAttribute("data-bs-original-title", "Copy Password")
-            })
-
-            generateRandomPassword()
-            $(this).on('keypress', function(event) {
-                if (event.keyCode === 13) {
-                    event.preventDefault();
-                    $('#simpan').click()
-                }
-            });
-        });
-
-        $('#Modal').on('hide.bs.modal', function() {
-            $('#Modal').find('.form-control').removeClass('is-invalid');
-            $('#Modal').find('.invalidFeedback').hide();
-        });
-
-        $(document).on('click', '#simpan', function(e) {
-            e.preventDefault();
-            data = {
-                nama: $('#nama').val(),
-                email: $('#email').val(),
-                password: $('#password').val(),
-                no_telp: $('#no_telp').val(),
-                wilayah_id: $('#wilayah_id').val(),
-            }
-            axios.post(baseUrl, data)
-                .then((response) => {
-                    $('#Modal').find('.form-control').val('')
-                    $('#Modal').find('.form-select').val('')
-                    $('#Modal').find('#no_telp').val('62')
-                    table.ajax.reload()
-                    $('#Modal').modal('hide');
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: response.data.message,
-                        timer: 1500,
-                        showConfirmButton: false,
-                    });
-                }).catch((error) => {
-                    $('#timModal').find('.invalid-feedback').text('')
-                    $('#timModal').find('.form-select').removeClass('is-invalid')
-                    var errors = error.response.data.errors;
-                    if (error.response.status == 422) {
-                        for (const key in errors) {
-                            if (errors.hasOwnProperty(key)) {
-                                $('#' + key).addClass('is-invalid');
-                                $('#' + key + 'Feedback').show();
-                                $('#' + key + 'Feedback').text(errors[key]);
-                            }
-                        }
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: error.response.data.message,
-                            timer: 1500,
-                            showConfirmButton: false,
-                        });
-                        $('#timModal').modal('hide');
-                    }
-
-                })
-        });
-
-
-        function deletePelanggan(id) {
-            Swal.fire({
-                title: 'Konfirmasi',
-                text: 'Apakah Anda yakin ingin menghapus data pelanggan ini?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Hapus',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: `/api/pelanggan/delete/${id}`,
-                        type: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        success: function(response) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success',
-                                text: response.message,
-                                timer: 1500,
-                                showConfirmButton: false,
-                            });
-                            table.ajax.reload()
-                        },
-                        error: function(response) {
-                            Swal.fire('Error', response.message, 'error');
-                        }
-                    });
-                }
-            });
-        }
     </script>
 @endpush
+@include('pages.admin.pelanggan.add-modal')

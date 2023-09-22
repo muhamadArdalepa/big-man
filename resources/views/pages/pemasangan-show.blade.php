@@ -976,7 +976,7 @@
         }
 
         $('#mapModal').on('shown.bs.modal', e => {
-            // setup map 
+            // setup map
             mapHeight = document.getElementById('map-container').offsetHeight
             $('#map').css('height', mapHeight)
             if (navigator.geolocation) {

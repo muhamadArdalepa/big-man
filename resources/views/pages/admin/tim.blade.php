@@ -1,7 +1,5 @@
 @extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
-@push('css')
-    @include('components.select2css')
-@endpush
+@include('components.select2css')
 @section('content')
     @include('layouts.navbars.auth.topnav', ['title' => 'Tim'])
     <div class="container-fluid py-4">
@@ -80,16 +78,13 @@
     </div>
 @endpush
 @push('js')
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
     <script>
         const wilayah = document.getElementById('wilayah');
         let teknisiIdArray = [];
         let includedTeknisiId = [];
         let ketuaId = null
         let wilayahValue = wilayah.value == '' ? {{ auth()->user()->wilayah_id }} : wilayah.value;
-        const appUrl = `{{ env('APP_URL') }}`
-        const baseUrl = `{{ env('APP_URL') }}/api/tim`
+        const baseUrl = `${appUrl}/api/tim`
         let url = `${baseUrl}?wilayah=${wilayah}`;
         let timer;
         let tim_id = null;
@@ -103,7 +98,7 @@
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-					console.log(data);
+                    console.log(data);
                     if (!Array.isArray(data)) {
                         throw new Error('Data is not an array');
                     }
@@ -323,7 +318,7 @@
         }
 
         function templateResult(teknisi) {
-            console.log(teknisi);
+            // console.log(teknisi);
             if (!teknisi.id) {
                 return teknisi.text;
             }
@@ -525,9 +520,16 @@
                     document.getElementById('teknisi-container').innerHTML = '';
                     $('#teknisi-select').select2('destroy');
                     $('#teknisi-select').val(null).trigger('change');
-                    initSelect2(wilayahValue, teknisiIdArray)
                 }, 250)
             });
+
+            $('#Modal').on('show.bs.modal', e => {
+                initSelect2(wilayahValue, teknisiIdArray)
+            })
+            $('#wilayah').on('change', () => {
+                wilayahValue = $('#wilayah').val() == '' ? 1 : $('#wilayah').val();
+                console.log(wilayahValue);
+            })
         });
     </script>
 @endpush

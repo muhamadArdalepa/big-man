@@ -1,0 +1,1 @@
+"<'d-flex flex-column flex-md-row gap-3 align-items-center'<'d-flex gap-3 align-items-center'<B><l>><'ms-0 ms-md-auto'f>><'row'<'col-sm-12't>><'row'<'col-sm-5'i><'col-sm-7'p>>"

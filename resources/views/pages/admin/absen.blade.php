@@ -1,5 +1,5 @@
 @extends('layouts.app', ['class' => 'g-sidenav-show bg-gray-100'])
-@include('components.dataTables')
+@include('components.datatables.dataTables')
 @push('css')
 @endpush
 
@@ -153,8 +153,6 @@
 @endpush
 @push('js')
     <script>
-        // inits
-        const appUrl = `{{ env('APP_URL') }}`;
         const wilayah = document.getElementById('wilayah');
         const tanggal = document.getElementById('tanggal');
         const baseUrl = `${appUrl}/api/absen`;
@@ -170,9 +168,7 @@
                     type: 'GET',
                     dataSrc: '',
                 },
-                dom: "<'d-flex flex-column flex-md-row gap-3 align-items-center'<'d-flex gap-3 align-items-center'<B><l>><'ms-0 ms-md-auto'f>>" +
-                    "<'row'<'col-sm-12't>>" +
-                    "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+                dom: @include('components.datatables.dom'),
                 buttons: [{
                     extend: 'excelHtml5',
                     title: 'Rekap Absen Tanggal ' + $('#tanggal').val(),
@@ -456,6 +452,7 @@
                     serverside: true,
                     dataSrc: '',
                 },
+                responsive: true,
                 dom: "<'d-flex flex-column flex-md-row gap-3 align-items-center'<'d-flex gap-3 align-items-center'<B><l>><'ms-0 ms-md-auto'f>>" +
                     "<'row'<'col-sm-12't>>" +
                     "<'row'<'col-sm-5'i><'col-sm-7'p>>",

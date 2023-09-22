@@ -22,7 +22,7 @@ class PemasanganController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Pemasangan::with('pelanggan:id,wilayah_id,nama,email,no_telp,foto_profil', 'pekerjaan:id,tim_id,pemasangan_id,poin', 'paket:id,nama_paket');
+        $query = Pemasangan::with('pelanggan:id,wilayah_id,nama,email,no_telp,foto_profil', 'marketer:id,nama,speciality,foto_profil', 'pekerjaan:id,tim_id,pemasangan_id,poin', 'paket:id,nama_paket');
 
         if ($request->has('wilayah') && $request->wilayah != '') {
             $wilayah_id = $request->wilayah;
@@ -67,6 +67,53 @@ class PemasanganController extends Controller
         return response()->json($pelanggan);
     }
 
+    public function select2_pelanggan(Request $request)
+    {
+        $wilayah_id = $request->wilayah;
+        $query = User::select('id', 'nama as text', 'foto_profil', 'no_telp', 'email')->with('pemasangan')
+            ->where([
+                'wilayah_id' => $wilayah_id,
+                'role' => 3
+            ])
+            ->whereDoesntHave('pemasangan');
+
+        if ($request->has('nama') && !empty($request->nama)) {
+            $query->where('nama', 'LIKE', '%' . $request->nama . '%');
+        }
+
+        $data = [
+            "results" => $query->get(),
+            "pagination" => [
+                "more" => false
+            ]
+        ];
+
+        return response()->json($data);
+    }
+
+    public function select2_marketer(Request $request)
+    {
+        $wilayah_id = $request->wilayah;
+        $query = User::select('id', 'nama as text', 'foto_profil', 'speciality')
+            ->where([
+                'wilayah_id' => $wilayah_id,
+                'role' => 2
+            ]);
+
+        if ($request->has('nama') && !empty($request->nama)) {
+            $query->where('nama', 'LIKE', '%' . $request->nama . '%');
+        }
+
+        $data = [
+            "results" => $query->get(),
+            "pagination" => [
+                "more" => false
+            ]
+        ];
+
+        return response()->json($data);
+    }
+
     /**
      * Show the form for creating a new resource.
      *
@@ -85,56 +132,24 @@ class PemasanganController extends Controller
      */
     public function store(Request $request)
     {
-        $pelangganData = $request->validate([
-            'wilayah_id' => 'required|integer',
-            'nama' => 'required|string|max:255',
-            'no_telp' => 'required|string|max:15',
-            'password' => 'required|string|min:6',
-        ]);
-
         $pemasanganData = $request->validate([
+            'pelanggan_id' => 'required',
+            'marketer_id' => 'nullable',
             'nik' => 'required|numeric|digits:16',
-            'paket_id' => 'required|integer',
-            'alamat' => 'required|string',
-            'koordinat_rumah' => 'required|string',
-            'foto_ktp' => 'required|image|mimes:jpeg,png,jpg',
-            'foto_rumah' => 'required|image|mimes:jpeg,png,jpg',
+            'alamat' => 'required',
+            'koordinat_rumah' => 'required',
+            'foto_ktp' => 'required|image',
+            'foto_rumah' => 'required|image',
+            'paket_id' => 'required',
+            'total_tarikan' => 'nullable',
         ]);
 
-        $pelanggan = User::where([
-            'nama' => $pelangganData['nama'],
-            'role' => 3,
-            'no_telp' => $pelangganData['no_telp'],
-            'email' => $request->email,
-            'wilayah_id' => $pelangganData['wilayah_id'],
-        ])->first();
-
-        if (!$pelanggan) {
-            $request->validate([
-                'email' => 'required|email|unique:users,email|max:255',
-            ]);
-
-            $pelanggan = User::create([
-                'nama' => $pelangganData['nama'],
-                'role' => 3,
-                'no_telp' => $pelangganData['no_telp'],
-                'email' => $request->email,
-                'password' => $pelangganData['password'],
-                'wilayah_id' => $pelangganData['wilayah_id'],
-                'foto_profil' => 'profile/dummy.png',
-            ]);
-        }
-
-        $pemasanganData['pelanggan'] = $pelanggan->id;
-        $pemasanganData['status'] = 'menunggu konfirmasi';
-        $pemasanganData['marketer'] = auth()->user()->id;
-
-
+        $pemasanganData['status'] = 1;
         foreach (['foto_ktp', 'foto_rumah'] as $field) {
             if ($request->hasFile($field)) {
                 $fotoName = uniqid() . '.' . $request->file($field)->getClientOriginalExtension();
                 $compressedImage = Image::make($request->file($field)->getRealPath());
-                $compressedImage->resize(800, null, function ($constraint) {
+                $compressedImage->resize(700, null, function ($constraint) {
                     $constraint->aspectRatio();
                     $constraint->upsize();
                 });
@@ -146,7 +161,7 @@ class PemasanganController extends Controller
         }
 
         if (Pemasangan::create($pemasanganData)) {
-            return response()->json(['message' => 'Pemasangan baru berhasil ditambahkan']);
+            return response(['message' => 'Pemasangan baru berhasil ditambahkan']);
         }
     }
     public function store_pekerjaan(Request $request, Pemasangan $pemasangan)
@@ -170,7 +185,7 @@ class PemasanganController extends Controller
         } catch (\Throwable $th) {
             return response([
                 'message' => 'Gagal menambahkan pekerjaan'
-            ],400);
+            ], 400);
         }
     }
     /**
@@ -197,7 +212,7 @@ class PemasanganController extends Controller
      */
     public function edit($id)
     {
-        //
+        return Pemasangan::with('pelanggan')->findOrFail($id);
     }
 
     /**
@@ -209,25 +224,34 @@ class PemasanganController extends Controller
      */
     public function update(Request $request, Pemasangan $pemasangan)
     {
-        $validatedData = $request->validate([
-            'nik' => 'nullable|numeric|digits:16',
-            'alamat' => 'nullable|string',
-            'koordinat_rumah' => ['nullable', 'string', 'regex:/^(-?\d{1,2}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)$/i'],
-            'koordinat_odp' => ['nullable', 'string', 'regex:/^(-?\d{1,2}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)$/i'],
-            'serial_number' => 'nullable|string',
-            'ssid' => 'nullable|string',
-            'password' => 'nullable|string',
-            'paket_id' => 'nullable|integer',
-            'hasil_opm_user' => 'numeric',
-            'hasil_opm_odp' => 'numeric',
-            'kabel_tepakai' => 'nullable|integer',
-            'port_odp' => 'nullable|string',
-            'ket' => 'nullable|string',
+        $pemasanganData = $request->validate([
+            'pelanggan_id' => 'required',
+            'nik' => 'required|numeric|digits:16',
+            'alamat' => 'required',
+            'koordinat_rumah' => 'required',
+            'foto_ktp' => 'nullable|image',
+            'foto_rumah' => 'nullable|image',
+            'paket_id' => 'required',
         ]);
 
-        $pemasangan->fill($validatedData);
-        $pemasangan->save();
-        return response(['message' => 'Data berhasil diperbarui']);
+        foreach (['foto_ktp', 'foto_rumah'] as $field) {
+            if ($request->hasFile($field)) {
+                $fotoName = uniqid() . '.' . $request->file($field)->getClientOriginalExtension();
+                $compressedImage = Image::make($request->file($field)->getRealPath());
+                $compressedImage->resize(700, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+
+                $folderPath = 'pemasangan/' . $fotoName;
+                Storage::put('private/' . $folderPath, (string) $compressedImage->encode());
+                $pemasanganData[$field] = $folderPath;
+            }
+        }
+
+        if ($pemasangan->update($pemasanganData)) {
+            return response(['message' => 'Data pemasangan berhasil diubah']);
+        }
     }
 
     public function update_foto(Request $request, Pemasangan $pemasangan)

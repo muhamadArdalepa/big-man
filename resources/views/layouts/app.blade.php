@@ -19,19 +19,19 @@
 
     <!-- CSS Files -->
 
-    <link href="{{ asset('build/assets/argon-dashboard-6eef2d09.css') }}" rel="stylesheet" />
+    {{-- <link href="{{ asset('build/assets/argon-dashboard-6eef2d09.css') }}" rel="stylesheet" /> --}}
 
     @vite(['resources/scss/argon-dashboard.scss', 'resources/js/app.js'])
     @stack('css')
-    <style>
-
-    </style>
 </head>
 
 <body class="{{ $class ?? '' }}">
-    <button id="btn-to-top" class="btn btn-dark position-fixed opacity-5 d-flex align-items-center justify-content-center" style="z-index: 100; bottom: -6rem;right: 4rem;width: 3rem;height: 3rem;"><i class="fa-solid fa-chevron-up"></i></button>
+    <button id="btn-to-top"
+        class="btn btn-dark position-fixed opacity-5 d-flex align-items-center justify-content-center"
+        style="z-index: 100; bottom: -6rem;right: 4rem;width: 3rem;height: 3rem;"><i
+            class="fa-solid fa-chevron-up"></i></button>
     @guest @yield('content') @endguest @auth @if (in_array(request()->route()->getName(),
-            ['profile.index', 'teknisi.show','pelanggan.show']))
+            ['profile.index', 'teknisi.show', 'pelanggan.show']))
         <div class="position-absolute w-100 min-height-300 top-0"
             style="
                 background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/profile-layout-header.jpg');
@@ -47,7 +47,7 @@
 @endauth
 @stack('modal')
 
-<script src="{{ asset('build/assets/app-54d9a510.js') }}"></script>
+{{-- <script src="{{ asset('build/assets/app-54d9a510.js') }}"></script> --}}
 <script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -55,14 +55,14 @@
             damping: '0.5'
         }
         Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-        
+
 
     }
     window.addEventListener("scroll", function() {
         if (window.pageYOffset > 300) {
             document.getElementById('btn-to-top').style.bottom = "4rem";
         } else {
-            document.getElementById('btn-to-top').style.bottom = "-6rem" ;
+            document.getElementById('btn-to-top').style.bottom = "-6rem";
         }
     });
     document.getElementById('btn-to-top').addEventListener('click', () => {
@@ -72,10 +72,29 @@
         });
     })
 </script>
-
-
 <script src="{{ asset('assets/plugins/Buttons/buttons.js') }}"></script>
 <script src="{{ asset('assets/plugins/jquery/jquery-3.7.0.min.js') }}"></script>
+<script>
+    // global variables
+    const appUrl = "{{ env('APP_URL') }}";
+
+    // global function
+    function copyText(parentModal, title, text) {
+        el = `<textarea class="copy-container-temp">${text}</textarea>`
+        $(parentModal).append(el);
+        $('.copy-container-temp')[0].select()
+        document.execCommand('copy');
+        $('.copy-container-temp').remove()
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 1500,
+            icon: 'success',
+            title: title + ' berhasil disalin'
+        })
+    }
+</script>
 
 @stack('js')
 </body>

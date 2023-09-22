@@ -10,24 +10,12 @@ class Pemasangan extends Model
 {
     use HasFactory;
     protected $guarded = ['id'];
-    protected $encrypts = ['id'];
-
-    public function getRouteKey()
-    {
-        return Crypt::encrypt($this->id);
-    }
-
-    public   function resolveRouteBinding($value, $field = null)
-    {
-        return $this->where($field ?? $this->getRouteKeyName(), Crypt::decrypt($value))->firstOrFail();
-    }
 
     // getter
-
     public function getStatus()
     {
         $status = [
-            1 => ['Menunggu Konfirmasi', 'secondary'],
+            1 => ['Menunggu Konfirmasi', 'gradient-secondary'],
             2 => ['Sedang Diproses', 'gradient-primary'],
             3 => ['pending', 'gradient-warning'],
             4 => ['aktif', 'gradient-success'],
@@ -55,6 +43,10 @@ class Pemasangan extends Model
     public function pelanggan()
     {
         return $this->belongsTo(User::class, 'pelanggan_id', 'id');
+    }
+    public function marketer()
+    {
+        return $this->belongsTo(User::class, 'marketer_id', 'id');
     }
     public function paket()
     {

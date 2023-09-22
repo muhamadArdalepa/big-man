@@ -94,37 +94,37 @@ class DatabaseSeeder extends Seeder
                 'ket' => fake()->sentence(),
             ]);
         }
-        \App\Models\User::factory()->count(300)->create();
+        \App\Models\User::factory()->count(50)->create();
 
 
         $tim = null;
-        $absenId = 0;
+        // $absenId = 0;
         foreach (\App\Models\Wilayah::get() as $wilayah) {
 
             $teknisis = User::where(['wilayah_id' => $wilayah->id, 'role' => 2])->get();
             foreach ($teknisis as $i => $teknisi) {
-                for ($j = 1; $j <= now()->month; $j++) {
-                    for ($k = 1; $k <= cal_days_in_month(CAL_GREGORIAN, $j, 2023); $k++) {
-                        Absen::insert([
-                            'id' => ++$absenId,
-                            'user_id' => $teknisi->id,
-                            'created_at' => '2023-' . $j . '-' . $k . ' 08:00:00',
-                            'status' => 1,
-                        ]);
-                        $time = [8, 11, 13, 16];
-                        foreach ($time as $t) {
-                            Aktivitas::insert([
-                                'user_id' => $teknisi->id,
-                                'absen_id' => $absenId,
-                                'foto' => 'aktivitas/dummy.jpg',
-                                'aktivitas' => fake()->sentence(),
-                                'alamat' => 'Gg. Fitrah, Bangka Belitung Laut, Pontianak, West Kalimantan',
-                                'koordinat' => '-0.0779319,109.3680154',
-                                'created_at' => '2023-' . $j . '-' . $k . ' ' . $t . ':00:00'
-                            ]);
-                        }
-                    }
-                }
+                //     for ($j = 1; $j <= now()->month; $j++) {
+                //         for ($k = 1; $k <= cal_days_in_month(CAL_GREGORIAN, $j, 2023); $k++) {
+                //             Absen::insert([
+                //                 'id' => ++$absenId,
+                //                 'user_id' => $teknisi->id,
+                //                 'created_at' => '2023-' . $j . '-' . $k . ' 08:00:00',
+                //                 'status' => 1,
+                //             ]);
+                //             $time = [8, 11, 13, 16];
+                //             foreach ($time as $t) {
+                //                 Aktivitas::insert([
+                //                     'user_id' => $teknisi->id,
+                //                     'absen_id' => $absenId,
+                //                     'foto' => 'aktivitas/dummy.jpg',
+                //                     'aktivitas' => fake()->sentence(),
+                //                     'alamat' => 'Gg. Fitrah, Bangka Belitung Laut, Pontianak, West Kalimantan',
+                //                     'koordinat' => '-0.0779319,109.3680154',
+                //                     'created_at' => '2023-' . $j . '-' . $k . ' ' . $t . ':00:00'
+                //                 ]);
+                //             }
+                //         }
+                //     }
 
                 if ($i % 3 == 0) {
                     $tim = Tim::create([
@@ -156,95 +156,95 @@ class DatabaseSeeder extends Seeder
         ]);
 
 
-        $pelanggans = User::where('role', 3)->get();
-        foreach ($pelanggans as $i => $pelanggan) {
-            if ($i > round($pelanggans->count() / 3)) {
+        // $pelanggans = User::where('role', 3)->get();
+        // foreach ($pelanggans as $i => $pelanggan) {
+        //     if ($i > round($pelanggans->count() / 3)) {
 
-                Pemasangan::insert([
-                    'pelanggan_id' => $pelanggan->id,
-                    'nik' => fake()->numerify('610##############'),
-                    'foto_ktp' => 'pemasangan/foto_ktp.jpg',
-                    'foto_rumah' => 'pemasangan/foto_rumah.jpg',
-                    'foto_letak_modem' => 'pemasangan/foto_letak_modem.jpg',
-                    'foto_opm_odp' => 'pemasangan/foto_opm_odp.jpg',
-                    'foto_opm_user' => 'pemasangan/foto_opm_user.jpg',
-                    'foto_modem' => 'pemasangan/foto_modem.jpg',
-                    'alamat' => fake()->address(),
-                    'koordinat_rumah' => fake()->longitude() . ',' . fake()->latitude(),
-                    'koordinat_odp' => fake()->longitude() . ',' . fake()->latitude(),
-                    'serial_number' => 'ZTE' . fake()->regexify('[A-Z]{3}\d{3}[A-Z]{3}\d{3}'),
-                    'ssid' => fake()->word(),
-                    'password' => fake()->password(),
-                    'paket_id' => Paket::inRandomOrder()->first()->id,
-                    'hasil_opm_user' => '24',
-                    'hasil_opm_odp' => '24',
-                    'kabel_terpakai' => fake()->numberBetween(10, 1000),
-                    'port_odp' => fake()->numberBetween(1, 24),
-                    'status' => 4,
-                    'created_at' => fake()->dateTimeThisMonth(),
-                ]);
-                $pemasangan = Pemasangan::find($i);
-                $tim = Tim::inRandomOrder()->select('tims.id')->where('wilayah_id', $pelanggan->wilayah_id)->join('users', 'user_id', '=', 'users.id')->first();
-                if (!$tim) {
-                    return $pelanggan;
-                }
-                $pekerjaan = Pekerjaan::create([
-                    'tim_id' => $tim->id,
-                    'pemasangan_id' => $pemasangan->id,
-                    'poin' => [10, 30, 50][random_int(0, 2)],
-                    'created_at' => $pemasangan->created_at
-                ]);
+        //         Pemasangan::insert([
+        //             'pelanggan_id' => $pelanggan->id,
+        //             'nik' => fake()->numerify('610##############'),
+        //             'foto_ktp' => 'pemasangan/foto_ktp.jpg',
+        //             'foto_rumah' => 'pemasangan/foto_rumah.jpg',
+        //             'foto_letak_modem' => 'pemasangan/foto_letak_modem.jpg',
+        //             'foto_opm_odp' => 'pemasangan/foto_opm_odp.jpg',
+        //             'foto_opm_user' => 'pemasangan/foto_opm_user.jpg',
+        //             'foto_modem' => 'pemasangan/foto_modem.jpg',
+        //             'alamat' => fake()->address(),
+        //             'koordinat_rumah' => fake()->longitude() . ',' . fake()->latitude(),
+        //             'koordinat_odp' => fake()->longitude() . ',' . fake()->latitude(),
+        //             'serial_number' => 'ZTE' . fake()->regexify('[A-Z]{3}\d{3}[A-Z]{3}\d{3}'),
+        //             'ssid' => fake()->word(),
+        //             'password' => fake()->password(),
+        //             'paket_id' => Paket::inRandomOrder()->first()->id,
+        //             'hasil_opm_user' => '24',
+        //             'hasil_opm_odp' => '24',
+        //             'kabel_terpakai' => fake()->numberBetween(10, 1000),
+        //             'port_odp' => fake()->numberBetween(1, 24),
+        //             'status' => 4,
+        //             'created_at' => fake()->dateTimeThisMonth(),
+        //         ]);
+        //         $pemasangan = Pemasangan::find($i);
+        //         $tim = Tim::inRandomOrder()->select('tims.id')->where('wilayah_id', $pelanggan->wilayah_id)->join('users', 'user_id', '=', 'users.id')->first();
+        //         if (!$tim) {
+        //             return $pelanggan;
+        //         }
+        //         $pekerjaan = Pekerjaan::create([
+        //             'tim_id' => $tim->id,
+        //             'pemasangan_id' => $pemasangan->id,
+        //             'poin' => [10, 30, 50][random_int(0, 2)],
+        //             'created_at' => $pemasangan->created_at
+        //         ]);
 
-                $teknisis = User::where('tim_id', $tim->id)->join('tim_anggotas', 'users.id', '=', 'user_id')->get();
-                foreach ($teknisis as $teknisi) {
-                    $teknisi->poin += $pekerjaan->poin;
-                    $teknisi->save();
-                }
-            } else if ($i > round($pelanggans->count() * 2 / 3)) {
-                $pemasangan = new Pemasangan;
-                $pemasangan->pelanggan_id = $pelanggan->id;
-                $pemasangan->nik = fake()->numerify('610##############');
-                $pemasangan->foto_ktp = 'pemasangan/dummy.jpg';
-                $pemasangan->foto_rumah = 'pemasangan/dummy.jpg';
-                $pemasangan->alamat = fake()->address();
-                $pemasangan->koordinat_rumah = fake()->longitude() . ',' . fake()->latitude();
-                $pemasangan->koordinat_odp = fake()->longitude() . ',' . fake()->latitude();
-                $pemasangan->paket_id = Paket::inRandomOrder()->first()->id;
-                $pemasangan->status = 2;
-                $pemasangan->save();
+        //         $teknisis = User::where('tim_id', $tim->id)->join('tim_anggotas', 'users.id', '=', 'user_id')->get();
+        //         foreach ($teknisis as $teknisi) {
+        //             $teknisi->poin += $pekerjaan->poin;
+        //             $teknisi->save();
+        //         }
+        //     } else if ($i > round($pelanggans->count() * 2 / 3)) {
+        //         $pemasangan = new Pemasangan;
+        //         $pemasangan->pelanggan_id = $pelanggan->id;
+        //         $pemasangan->nik = fake()->numerify('610##############');
+        //         $pemasangan->foto_ktp = 'pemasangan/dummy.jpg';
+        //         $pemasangan->foto_rumah = 'pemasangan/dummy.jpg';
+        //         $pemasangan->alamat = fake()->address();
+        //         $pemasangan->koordinat_rumah = fake()->longitude() . ',' . fake()->latitude();
+        //         $pemasangan->koordinat_odp = fake()->longitude() . ',' . fake()->latitude();
+        //         $pemasangan->paket_id = Paket::inRandomOrder()->first()->id;
+        //         $pemasangan->status = 2;
+        //         $pemasangan->save();
 
-                $tim = Tim::inRandomOrder()->select('tims.id')->where('wilayah_id', $pelanggan->wilayah_id)->join('users', 'user_id', '=', 'users.id')->first();
-                if (!$tim) {
-                    return $pelanggan;
-                }
-                $pekerjaan = Pekerjaan::create([
-                    'tim_id' => $tim->id,
-                    'pemasangan_id' => $pemasangan->id,
-                    'poin' => [10, 30, 50][random_int(0, 2)],
-                    'created_at' => $pemasangan->created_at
-                ]);
-                for ($j = 0; $j < random_int(3, 10); $j++) {
-                    Aktivitas::create([
-                        'user_id' => 1,
-                        'pekerjaan_id' => $pekerjaan->id,
-                        'foto' => 'aktivitas/dummy' . random_int(1, 5) . '.png',
-                        'koordinat' => $pemasangan->koordinat_rumah,
-                        'alamat' => $pemasangan->alamat,
-                        'aktivitas' => fake()->sentence()
-                    ]);
-                }
-            } else {
-                $pemasangan = new Pemasangan;
-                $pemasangan->pelanggan_id = $pelanggan->id;
-                $pemasangan->nik = fake()->numerify('610##############');
-                $pemasangan->foto_ktp = 'pemasangan/dummy.jpg';
-                $pemasangan->foto_rumah = 'pemasangan/dummy.jpg';
-                $pemasangan->alamat = fake()->address();
-                $pemasangan->koordinat_rumah = fake()->longitude() . ',' . fake()->latitude();
-                $pemasangan->paket_id = Paket::inRandomOrder()->first()->id;
-                $pemasangan->status = 1;
-                $pemasangan->save();
-            }
-        }
+        //         $tim = Tim::inRandomOrder()->select('tims.id')->where('wilayah_id', $pelanggan->wilayah_id)->join('users', 'user_id', '=', 'users.id')->first();
+        //         if (!$tim) {
+        //             return $pelanggan;
+        //         }
+        //         $pekerjaan = Pekerjaan::create([
+        //             'tim_id' => $tim->id,
+        //             'pemasangan_id' => $pemasangan->id,
+        //             'poin' => [10, 30, 50][random_int(0, 2)],
+        //             'created_at' => $pemasangan->created_at
+        //         ]);
+        //         for ($j = 0; $j < random_int(3, 10); $j++) {
+        //             Aktivitas::create([
+        //                 'user_id' => 1,
+        //                 'pekerjaan_id' => $pekerjaan->id,
+        //                 'foto' => 'aktivitas/dummy' . random_int(1, 5) . '.png',
+        //                 'koordinat' => $pemasangan->koordinat_rumah,
+        //                 'alamat' => $pemasangan->alamat,
+        //                 'aktivitas' => fake()->sentence()
+        //             ]);
+        //         }
+        //     } else {
+        //         $pemasangan = new Pemasangan;
+        //         $pemasangan->pelanggan_id = $pelanggan->id;
+        //         $pemasangan->nik = fake()->numerify('610##############');
+        //         $pemasangan->foto_ktp = 'pemasangan/dummy.jpg';
+        //         $pemasangan->foto_rumah = 'pemasangan/dummy.jpg';
+        //         $pemasangan->alamat = fake()->address();
+        //         $pemasangan->koordinat_rumah = fake()->longitude() . ',' . fake()->latitude();
+        //         $pemasangan->paket_id = Paket::inRandomOrder()->first()->id;
+        //         $pemasangan->status = 1;
+        //         $pemasangan->save();
+        //     }
+        // }
     }
 }

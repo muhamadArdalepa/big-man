@@ -104,7 +104,7 @@ class PekerjaanController extends Controller
                     });
             });
         }
-
+        $results = [];
         foreach ($query->get() as $i => $tim) {
             foreach ($tim->tim_anggotas as $anggota) {
                 $tim->anggota = TimAnggota::with('user')->where('tim_id',$anggota->tim_id)->get();

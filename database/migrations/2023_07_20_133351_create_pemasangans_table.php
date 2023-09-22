@@ -15,6 +15,11 @@ return new class extends Migration
     {
         Schema::create('pemasangans', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('marketer_id')
+                ->nullable()
+                ->constrained('users')
+                ->onDelete('restrict')
+                ->onUpdate('cascade');
             $table->foreignId('pelanggan_id')
                 ->constrained('users')
                 ->onDelete('restrict')
@@ -39,6 +44,7 @@ return new class extends Migration
             $table->integer('hasil_opm_user')->nullable();
             $table->integer('hasil_opm_odp')->nullable();
             $table->integer('kabel_terpakai')->nullable();
+            $table->integer('total_tarikan')->nullable();
             $table->string('port_odp')->nullable();
             $table->tinyInteger('status')->default(1);
             $table->text('ket')->nullable();

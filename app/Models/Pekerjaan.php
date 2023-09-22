@@ -62,7 +62,6 @@ class Pekerjaan extends Model
             case 1:
                 $pemasangan = Pemasangan::with('user')->find($this->pemasangan_id);
                 return $pemasangan->user->nama . ' - ' . $pemasangan->alamat;
-                break;
 
             default:
                 # code...
